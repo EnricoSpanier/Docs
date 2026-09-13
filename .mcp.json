@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "vault": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "D:\\Claude\\Brain\\01-Projects\\Event-Management-System"
+      ],
+      "env": {}
+    },
+    "tcc": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "E:\\TCC\\GerenciadorEventos"
+      ],
+      "env": {}
+    }
+  }
+}

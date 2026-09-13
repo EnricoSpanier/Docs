@@ -1,0 +1,7 @@
+/* Keep the search input always expanded on mobile, instead of collapsing
+   to an icon-only 2rem box until tapped/focused (default plugin behavior). */
+@media (max-width: 576px) {
+  .navbar__search-input:not(:focus) {
+    width: 9rem !important;
+  }
+}

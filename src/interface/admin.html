@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>Docs — Atualizar conteúdo</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+    :root {
+      --chassis: #16181b;
+      --panel: #202327;
+      --panel-2: #262a2f;
+      --edge: #34393f;
+      --amber: #ffb400;
+      --fault: #ff5449;
+      --alu-1: #cfd3d6;
+      --alu-2: #9ba0a5;
+      --paper: #ece7d9;
+      --paper-dim: #9b9484;
+      --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+      --r: 10px;
+    }
+
+    * { box-sizing: border-box; }
+    html { color-scheme: dark; }
+    [hidden] { display: none !important; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background:
+        radial-gradient(1100px 700px at 18% -12%, #1e2226 0%, transparent 60%),
+        repeating-linear-gradient(115deg, rgba(255,255,255,.015) 0 2px, transparent 2px 6px),
+        var(--chassis);
+      color: var(--paper);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .panel {
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      background: linear-gradient(180deg, var(--panel-2), var(--panel));
+      border: 1px solid var(--edge);
+      border-radius: 16px;
+      padding: 30px 26px 28px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.03), 0 24px 48px -24px rgba(0,0,0,.65);
+      position: relative;
+    }
+    .panel::before, .panel::after {
+      content: '';
+      position: absolute;
+      top: 12px;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, var(--alu-1), var(--alu-2));
+    }
+    .panel::before { left: 12px; }
+    .panel::after { right: 12px; }
+
+    h1 {
+      font-family: var(--mono);
+      font-size: .82rem;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--paper);
+      margin: 0 0 18px;
+    }
+
+    .status {
+      font-family: var(--mono);
+      font-size: .78rem;
+      color: var(--paper-dim);
+      margin: 0 0 22px;
+      line-height: 1.6;
+    }
+    .status strong { color: var(--paper); }
+
+    button {
+      --face: var(--amber); --face-hi: #ffc94d; --skirt: #a57500; --ink: #1c1400;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5em;
+      font-family: var(--mono);
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      font-size: .82rem;
+      color: var(--ink);
+      background: linear-gradient(180deg, var(--face-hi), var(--face) 55%);
+      border: none;
+      border-radius: var(--r);
+      padding: .9em 1.4em;
+      cursor: pointer;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.5),
+        inset 0 -2px 0 rgba(0,0,0,.12),
+        0 3px 0 var(--skirt),
+        0 10px 16px -8px rgba(0,0,0,.6);
+      transition: transform .08s cubic-bezier(.2,.9,.3,1), box-shadow .08s cubic-bezier(.2,.9,.3,1), filter .15s ease;
+    }
+    button:hover:not(:disabled) { filter: brightness(1.05); }
+    button:active:not(:disabled) {
+      transform: translateY(3px);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.35),
+        inset 0 -1px 0 rgba(0,0,0,.12),
+        0 1px 0 var(--skirt),
+        0 3px 6px -3px rgba(0,0,0,.5);
+    }
+    button:disabled { opacity: .55; cursor: default; }
+
+    .mensagem {
+      margin-top: 16px;
+      font-family: var(--mono);
+      font-size: .76rem;
+      min-height: 1.4em;
+    }
+    .mensagem.erro { color: var(--fault); }
+    .mensagem.ok { color: #8fd66a; }
+
+    a.voltar {
+      display: inline-block;
+      margin-top: 20px;
+      font-family: var(--mono);
+      font-size: .7rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--paper-dim);
+      text-decoration: none;
+    }
+    a.voltar:hover { color: var(--paper); }
+  </style>
+</head>
+<body>
+  <div class="panel">
+    <h1>Atualizar conteúdo</h1>
+    <p class="status">
+      Última atualização: <strong id="ultima-atualizacao">carregando…</strong>
+    </p>
+    <button id="botao-atualizar" type="button">Atualizar agora</button>
+    <p id="mensagem" class="mensagem"></p>
+    <a class="voltar" href="/">&larr; Voltar pro site</a>
+  </div>
+
+  <script>
+    const elUltima = document.getElementById("ultima-atualizacao");
+    const elMensagem = document.getElementById("mensagem");
+    const botao = document.getElementById("botao-atualizar");
+
+    function formatar(iso) {
+      if (!iso) return "nunca";
+      return new Date(iso).toLocaleString("pt-BR");
+    }
+
+    async function carregarStatus() {
+      try {
+        const resposta = await fetch("/admin/status");
+        const corpo = await resposta.json();
+        elUltima.textContent = formatar(corpo.ultimaAtualizacao);
+        if (corpo.emAndamento) {
+          botao.disabled = true;
+          botao.textContent = "Atualizando…";
+        }
+      } catch {
+        elUltima.textContent = "indisponível";
+      }
+    }
+
+    botao.addEventListener("click", async () => {
+      botao.disabled = true;
+      botao.textContent = "Atualizando…";
+      elMensagem.textContent = "";
+      elMensagem.className = "mensagem";
+      try {
+        const resposta = await fetch("/admin/rebuild", { method: "POST" });
+        const corpo = await resposta.json();
+        if (!resposta.ok) throw new Error(corpo.erro || "Falha desconhecida.");
+        elUltima.textContent = formatar(corpo.ultimaAtualizacao);
+        elMensagem.textContent = "Conteúdo atualizado.";
+        elMensagem.className = "mensagem ok";
+      } catch (erro) {
+        elMensagem.textContent = erro.message;
+        elMensagem.className = "mensagem erro";
+      } finally {
+        botao.disabled = false;
+        botao.textContent = "Atualizar agora";
+      }
+    });
+
+    carregarStatus();
+  </script>
+</body>
+</html>
