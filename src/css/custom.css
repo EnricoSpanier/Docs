@@ -5,3 +5,14 @@
     width: 9rem !important;
   }
 }
+
+/* Página Testes > Resultados: tabelas largas (15-18 colunas) — usa a largura toda e fonte menor. */
+html[class*="docs-doc-id-testes/resultados/index"] .docItemCol { max-width: 100% !important; }
+html[class*="docs-doc-id-testes/resultados/index"] .col--3 { display: none; }
+html[class*="docs-doc-id-testes/resultados/index"] .markdown table { font-size: 0.78rem; display: table; width: 100%; }
+html[class*="docs-doc-id-testes/resultados/index"] .markdown table th,
+html[class*="docs-doc-id-testes/resultados/index"] .markdown table td { padding: 0.3rem 0.4rem; }
+html[class*="docs-doc-id-testes/resultados/index"] .markdown { overflow-x: auto; }
+html[class*="docs-doc-id-testes/resultados/index"] [class*="docItemCol"],
+html[class*="docs-doc-id-testes/resultados/index"] [class*="docItemContainer"],
+html[class*="docs-doc-id-testes/resultados/index"] main > .container { max-width: none !important; flex: 1 1 100% !important; }
