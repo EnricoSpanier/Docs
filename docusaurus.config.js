@@ -65,6 +65,11 @@ const config = {
             position: "left",
           },
           {
+            to: "/testes/testes-manuais/",
+            label: "Testes",
+            position: "left",
+          },
+          {
             to: "/decisoes-arquitetura/visao-geral",
             label: "Decisões de Arquitetura",
             position: "left",

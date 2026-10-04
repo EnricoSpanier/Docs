@@ -3,4 +3,6 @@ build/
 .docusaurus/
 docs/gerenciador-eventos/
 docs/decisoes-arquitetura/
+docs/testes/
 .claude/
+.playwright/
