@@ -2,7 +2,7 @@
 // gerado, nunca editado à mão, nunca versionado (ver .gitignore). Roda como parte de
 // `docs:build`/`docs:start` (nunca precisa ser chamado sozinho em uso normal).
 
-import { existsSync, mkdirSync, rmSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
+import { existsSync, mkdirSync, rmSync, readFileSync, writeFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -13,6 +13,9 @@ const VAULT_ROOT = "D:\\Claude\\Brain\\01-Projects\\Event-Management-System";
 const DEST_A = path.join(RAIZ, "docs", "gerenciador-eventos");
 const DEST_B = path.join(RAIZ, "docs", "decisoes-arquitetura");
 const DEST_C = path.join(RAIZ, "docs", "testes");
+
+const DOCS_DIR = path.join(RAIZ, "docs");
+const ALTERACOES_JSON = path.join(RAIZ, "static", "alteracoes.json");
 
 const RESULTADOS_SRC = path.join(TCC_ROOT, "docs", "carga", "harness", "resultados");
 const RESULTADOS_STATIC = path.join(RAIZ, "static", "resultados-testes");
@@ -47,7 +50,26 @@ function escaparChavesForaDeCodigo(texto) {
   });
 }
 
+// Histórico da home: data = mtime da FONTE (o destino é recriado a cada build). O tipo
+// (novo/atualizado) é decidido no cliente a partir de `criado`, junto com o filtro de 7 dias.
+const alteracoes = [];
+
+function registrar(origem, destino) {
+  const { mtime, birthtime } = statSync(origem);
+  const titulo = readFileSync(origem, "utf8").match(/^#\s+(.+)$/m)?.[1].replace(/[`*]/g, "").trim() ?? path.basename(origem, ".md");
+  const partes = path.relative(DOCS_DIR, destino).replace(/\.md$/, "").split(path.sep).map((p) => p.replace(/^\d+[-_.]\s*/, ""));
+  if (/^(index|readme)$/i.test(partes.at(-1))) partes.pop();
+  alteracoes.push({ titulo, link: `/${partes.join("/")}`, data: mtime.toISOString(), criado: birthtime.toISOString() });
+}
+
+function gravarAlteracoes() {
+  const recentes = alteracoes.sort((a, b) => b.data.localeCompare(a.data)).slice(0, 10);
+  writeFileSync(ALTERACOES_JSON, JSON.stringify(recentes, null, 2));
+  console.log(`[sync-docs] Histórico: ${recentes.length} alteração(ões) recente(s) registrada(s).`);
+}
+
 function copiarArquivo(origem, destino) {
+  registrar(origem, destino);
   mkdirSync(path.dirname(destino), { recursive: true });
   const conteudo = escaparChavesForaDeCodigo(readFileSync(origem, "utf8"));
   writeFileSync(destino, conteudo);
@@ -225,6 +247,7 @@ function sincronizarFonteB() {
     const sidebarLabel = ROTULOS_B.get(slug);
     const conteudoFinal = `${montarFrontmatterNovo(dados, sidebarPosition, sidebarLabel)}${corpoReescrito}${rodape}`;
     writeFileSync(path.join(DEST_B, `${slug}.md`), conteudoFinal);
+    registrar(path.join(VAULT_ROOT, `${nome}.md`), path.join(DEST_B, `${slug}.md`));
   }
 
   console.log(`[sync-docs] Fonte B (decisoes-arquitetura): ${notas.length} nota(s) sincronizada(s).`);
@@ -437,9 +460,12 @@ function sincronizarResultados() {
     JSON.stringify({ label: "Resultados", position: 3, collapsible: true, collapsed: false }, null, 2),
   );
   writeFileSync(path.join(resultadosDir, "index.md"), escaparChavesForaDeCodigo(linhas.join("\n")));
+  const notaVault = path.join(VAULT_ROOT, `${NOTA_RESULTADOS}.md`);
+  if (existsSync(notaVault)) registrar(notaVault, path.join(resultadosDir, "index.md"));
   const analise = path.join(TCC_ROOT, "Projeto", "carga", "results", "ANALISE.md");
   if (existsSync(analise)) {
     const corpo = readFileSync(analise, "utf8").replace(/^﻿/, "");
+    registrar(analise, path.join(resultadosDir, "analise.md"));
     writeFileSync(path.join(resultadosDir, "analise.md"), escaparChavesForaDeCodigo(`---\nsidebar_label: "Análise dos Resultados"\nsidebar_position: 11\n---\n\n${corpo}`));
   }
   console.log(`[sync-docs] Fonte C (resultados): ${contagem} run(s) consolidado(s).`);
@@ -449,3 +475,4 @@ sincronizarFonteA();
 sincronizarFonteB();
 sincronizarFonteC();
 sincronizarResultados();
+gravarAlteracoes();

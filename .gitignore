@@ -6,3 +6,4 @@ docs/decisoes-arquitetura/
 docs/testes/
 .claude/
 .playwright/
+static/alteracoes.json

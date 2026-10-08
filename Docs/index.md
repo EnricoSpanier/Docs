@@ -15,3 +15,8 @@ si:
   do vault, sincronizadas automaticamente.
 
 Todo o conteúdo abaixo é gerado por `scripts/sync-docs.mjs` a cada build — nunca editado à mão.
+
+
+import AlteracoesSemana from "@site/src/components/AlteracoesSemana";
+
+<AlteracoesSemana />
