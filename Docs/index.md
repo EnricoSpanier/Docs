@@ -10,6 +10,8 @@ si:
 
 - **[Gerenciador de Eventos](./gerenciador-eventos/CLAUDE)** — documentação do repositório
   `GerenciadorEventos` (código e backlog).
+- **[Fluxo de Dados](./fluxos)** — diagrama animado do fluxo hoje, no fim do projeto e sob
+  alta demanda.
 - **[Testes](./testes/testes-manuais/)** — testes manuais e de carga do mesmo repositório.
 - **[Decisões de Arquitetura](./decisoes-arquitetura/visao-geral)** — ADRs e notas de arquitetura
   do vault, sincronizadas automaticamente.

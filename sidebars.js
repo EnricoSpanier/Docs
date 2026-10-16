@@ -4,6 +4,7 @@
 const sidebars = {
   docsSidebar: [
     "index",
+    "fluxos",
     {
       type: "category",
       label: "Gerenciador de Eventos",
