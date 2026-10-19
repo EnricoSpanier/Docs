@@ -7,7 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const RAIZ = fileURLToPath(new URL("..", import.meta.url));
-const TCC_ROOT = "E:\\TCC\\GerenciadorEventos";
+const TCC_ROOT = process.env.TCC_ROOT || "E:\\TCC\\GerenciadorEventos";
 const VAULT_ROOT = "D:\\Claude\\Brain\\01-Projects\\Event-Management-System";
 
 const DEST_A = path.join(RAIZ, "docs", "gerenciador-eventos");
@@ -32,6 +32,8 @@ const WHITELIST_A = [
   "Projeto/Backend/CLAUDE.md",
   "Projeto/Backend/db/CLAUDE.md",
   "Projeto/frontend/CLAUDE.md",
+  "Projeto/supabase/README.md",
+  "docs/arquitetura/fase6-cqrs-es.md",
 ];
 
 function limparDestino(dir) {
@@ -101,7 +103,14 @@ function sincronizarFonteA() {
       console.warn(`[sync-docs] Fonte A: arquivo esperado não encontrado, pulando: ${relativo}`);
       continue;
     }
-    copiarArquivo(origem, path.join(DEST_A, relativo));
+    const destino = path.join(DEST_A, relativo);
+    copiarArquivo(origem, destino);
+    // docs/adr/** não é publicado daqui (vem da Fonte B): link para ADR vira a página da Fonte B; link para
+    // docs/arquitetura/ vira a rota absoluta (o Docusaurus não resolve o .md relativo dentro de uma pasta "docs").
+    const texto = readFileSync(destino, "utf8");
+    const reescrito = texto.replace(/\]\((?:\.\.\/)+adr\/([^)\s]+?)\.md\)/g, "](/decisoes-arquitetura/$1)")
+      .replace(/\]\((?:\.\.\/)*docs\/arquitetura\/([^)\s]+?)\.md\)/g, "](/gerenciador-eventos/docs/arquitetura/$1)");
+    if (reescrito !== texto) writeFileSync(destino, reescrito);
     contagem += 1;
   }
 
@@ -114,7 +123,8 @@ function sincronizarFonteC() {
   limparDestino(DEST_C);
   const contagem =
     copiarMdRecursivo(path.join(TCC_ROOT, "docs", "testes-manuais"), path.join(DEST_C, "testes-manuais")) +
-    copiarMdRecursivo(path.join(TCC_ROOT, "docs", "carga"), path.join(DEST_C, "carga"));
+    copiarMdRecursivo(path.join(TCC_ROOT, "docs", "carga"), path.join(DEST_C, "carga")) +
+    copiarMdRecursivo(path.join(TCC_ROOT, "docs", "artigo"), path.join(DEST_C, "artigo"));
   console.log(`[sync-docs] Fonte C (testes): ${contagem} arquivo(s) copiado(s).`);
 }
 
@@ -352,35 +362,50 @@ function tabelasPorBraco(out, tipo, linhas, cabecalho, mapa) {
   }
 }
 
-function dadosBrutosCarga() {
-  const dir = path.join(TCC_ROOT, "Projeto", "carga", "results");
-  if (!existsSync(dir)) return "";
-  const out = ["### Dados completos por rodada", "", "Fonte: `Projeto/carga/results/` (`resultados*.csv`, `verificacoes.log`, `baseline-*.txt`). Datas em dia/mês hora, 04/10/2026.", ""];
+// Projeto/carga/results/ é organizado em pastas por etapa (NN-etapa/, cada uma com README.md); a raiz
+// é só a área de trabalho da rodada corrente. Os arquivos são procurados na raiz e em cada etapa,
+// na ordem das etapas (o primeiro achado vence).
+const RESULTS_DIR = path.join(TCC_ROOT, "Projeto", "carga", "results");
+function pastasResultados() {
+  if (!existsSync(RESULTS_DIR)) return [];
+  const etapas = readdirSync(RESULTS_DIR, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && /^\d\d-/.test(e.name)).map((e) => path.join(RESULTS_DIR, e.name)).sort();
+  return [RESULTS_DIR, ...etapas];
+}
+function acharResultado(nome) {
+  for (const d of pastasResultados()) if (existsSync(path.join(d, nome))) return path.join(d, nome);
+  return path.join(RESULTS_DIR, nome);
+}
 
-  const base = readdirSync(dir).find((f) => f.startsWith("baseline-"));
+function dadosBrutosCarga() {
+  if (!existsSync(RESULTS_DIR)) return "";
+  const out = ["### Dados completos por rodada", "", "Fonte: `Projeto/carga/results/<etapa>/` (`resultados*.csv`, `verificacoes.log`, `baseline-*.txt`). Datas em dia/mês hora, 04/10/2026.", ""];
+
+  const dirBase = pastasResultados().find((d) => readdirSync(d).some((f) => f.startsWith("baseline-")));
+  const base = dirBase && readdirSync(dirBase).find((f) => f.startsWith("baseline-"));
   if (base) {
-    out.push("#### Ambiente (baseline de rede)", "", ...readFileSync(path.join(dir, base), "utf8").replace(/^﻿/, "").trim().split(/\r?\n/).map((l) => `- ${l.replace("<HOST_IP>", "host").replace(/<([^>]*)>/g, "`$1`")}`), "");
+    out.push("#### Ambiente (baseline de rede)", "", ...readFileSync(path.join(dirBase, base), "utf8").replace(/^﻿/, "").trim().split(/\r?\n/).map((l) => `- ${l.replace("<HOST_IP>", "host").replace(/<([^>]*)>/g, "`$1`")}`), "");
   }
 
-  const disputa = lerCsv(path.join(dir, "resultados.csv"));
+  const disputa = lerCsv(acharResultado("resultados.csv"));
   tabelasPorBraco(out, "Disputa", disputa,
     ["Data", "Evento", "Clientes", "Vagas", "Aceitas", "Lotado", "Outros", "Overselling", "p50 ms", "p95 ms", "p99 ms", "Máx ms", "Duração s", "Vazão/s", "Confirma", "Confirma p95 ms"],
     (r) => [dataBr(r.data), r.event_id, r.clientes, r.capacidade, r.aceitas, r.lotado, r.outros, r.overselling_cliente, num(r.p50_ms), num(r.p95_ms), num(r.p99_ms), num(r.max_ms), num(r.duracao_s), num(r.reservas_por_s), confirma(r), num(r.confirma_p95_ms)],
   );
 
-  const rpm = lerCsv(path.join(dir, "resultados-rpm.csv"));
+  const rpm = lerCsv(acharResultado("resultados-rpm.csv"));
   tabelasPorBraco(out, "RPM", rpm,
     ["Rodada", "Data", "max_conn", "RPM alvo", "RPM real", "Duração s", "Eventos", "Aceitas", "Lotado", "5xx", "Descartadas", "p50 ms", "p95 ms", "p99 ms", "Máx ms", "Confirma", "Confirma p95 ms"],
     (r) => [`\`${r.prefixo}\``, dataBr(r.data), r.max_connections, num(r.rpm_alvo), num(r.rpm_real), num(r.duracao_s), r.eventos, num(r.aceitas), num(r.lotado), num(r.erros_5xx), num(r.descartadas), num(r.p50_ms), num(r.p95_ms), num(r.p99_ms), num(r.max_ms), confirma(r), num(r.confirma_p95_ms)],
   );
 
-  const ale = lerCsv(path.join(dir, "resultados-aleatorio.csv"));
+  const ale = lerCsv(acharResultado("resultados-aleatorio.csv"));
   tabelasPorBraco(out, "Aleatório", ale,
     ["Rodada", "Data", "Semente", "RPM mín–máx", "RPM médio", "Duração s", "Eventos", "Aceitas", "Lotado", "5xx", "Leituras ok", "Leituras outras", "Descartadas", "VUs máx", "Reserva p50/p95/p99 ms", "Leitura p50/p95/p99 ms", "Máx ms", "Confirma"],
     (r) => [`\`${r.prefixo}\``, dataBr(r.data), r.semente, `${num(r.rpm_min)}–${num(r.rpm_max)}`, num(r.rpm_medio), num(r.duracao_s), num(r.eventos), num(r.aceitas), num(r.lotado), num(r.erros_5xx), num(r.leituras_ok), num(r.leituras_outros), num(r.descartadas), r.vus_max, `${num(r.reserva_p50_ms)} / ${num(r.reserva_p95_ms)} / ${num(r.reserva_p99_ms)}`, `${num(r.leitura_p50_ms)} / ${num(r.leitura_p95_ms)} / ${num(r.leitura_p99_ms)}`, num(r.max_ms), confirma(r)],
   );
 
-  const ver = verificacoesBanco(path.join(dir, "verificacoes.log"));
+  const ver = verificacoesBanco(acharResultado("verificacoes.log"));
   out.push("#### Verificação do banco - Disputa (cas e naive)", "", "Overselling = reservas ativas acima da capacidade, medido direto no Postgres após cada rodada. `eventcap` é o contador oficial de vagas (o `naive` nunca o decrementa).", "", ...tabelaMd(
     ["Data", "Evento", "Braço", "Capacidade", "Vagas restantes (eventcap)", "Reservas ativas", "Overselling", "Status no banco"],
     ver.filter((v) => v.disputa).map((v) => [v.quando, `\`${v.alvo}\``, v.braco, num(v.cap), num(v.vagas), num(v.ativas), num(v.over), v.status]),
@@ -390,6 +415,23 @@ function dadosBrutosCarga() {
     ver.filter((v) => !v.disputa).map((v) => [v.quando, `\`${v.alvo}\``, v.braco, v.eventos, num(v.ativas), num(v.cap), v.evOver, num(v.over), v.status]),
   ), "");
   return out.join("\n");
+}
+
+// Os READMEs das etapas usam links relativos ao repo; no site viram rotas das páginas geradas
+// (o Docusaurus tira o prefixo numérico "NN-" do slug) ou, fora do site, o GitHub.
+const GITHUB_BLOB = "https://github.com/endydragonn/GerenciadorEventos/blob/main/";
+function linksEtapa(texto, ehIndice) {
+  return texto.replace(/\]\(([^)\s]+)\)/g, (m, alvo) => {
+    if (/^(https?:|#|\/)/.test(alvo)) return m;
+    let t = alvo.replace(/^(\.\.\/)+docs\//, "docs/");
+    if (t.startsWith("docs/carga/")) return `](/testes/carga/${t.slice("docs/carga/".length).replace(/\.md$/, "")})`;
+    if (t.startsWith("docs/artigo/")) return `](/testes/artigo/${t.slice("docs/artigo/".length).replace(/\.md$/, "")})`;
+    if (t.startsWith("docs/")) return `](${GITHUB_BLOB}${t})`;
+    if (/(^|\/)ANALISE\.md$/.test(t)) return "](/testes/resultados/analise)";
+    const etapa = t.match(/^(?:\.\.\/)?\d\d-([^/]+)\/?$/);
+    if (etapa) return `](/testes/resultados/etapas/${etapa[1]})`;
+    return m;
+  });
 }
 
 function sincronizarResultados() {
@@ -462,13 +504,28 @@ function sincronizarResultados() {
   writeFileSync(path.join(resultadosDir, "index.md"), escaparChavesForaDeCodigo(linhas.join("\n")));
   const notaVault = path.join(VAULT_ROOT, `${NOTA_RESULTADOS}.md`);
   if (existsSync(notaVault)) registrar(notaVault, path.join(resultadosDir, "index.md"));
-  const analise = path.join(TCC_ROOT, "Projeto", "carga", "results", "ANALISE.md");
+  const analise = acharResultado("ANALISE.md");
   if (existsSync(analise)) {
     const corpo = readFileSync(analise, "utf8").replace(/^﻿/, "");
     registrar(analise, path.join(resultadosDir, "analise.md"));
     writeFileSync(path.join(resultadosDir, "analise.md"), escaparChavesForaDeCodigo(`---\nsidebar_label: "Análise dos Resultados"\nsidebar_position: 11\n---\n\n${corpo}`));
   }
-  console.log(`[sync-docs] Fonte C (resultados): ${contagem} run(s) consolidado(s).`);
+  // Uma página por etapa (README.md de cada NN-etapa/ + o índice da raiz de results/).
+  const etapasDir = path.join(resultadosDir, "etapas");
+  mkdirSync(etapasDir, { recursive: true });
+  writeFileSync(path.join(etapasDir, "_category_.json"),
+    JSON.stringify({ label: "Resultados por etapa", position: 12, collapsible: true, collapsed: false }, null, 2));
+  let nEtapas = 0;
+  for (const d of pastasResultados()) {
+    const readme = path.join(d, "README.md");
+    if (!existsSync(readme)) continue;
+    const nome = d === RESULTS_DIR ? "index" : path.basename(d);
+    const destino = path.join(etapasDir, `${nome}.md`);
+    registrar(readme, destino);
+    writeFileSync(destino, escaparChavesForaDeCodigo(linksEtapa(readFileSync(readme, "utf8").replace(/^﻿/, ""), d === RESULTS_DIR)));
+    nEtapas++;
+  }
+  console.log(`[sync-docs] Fonte C (resultados): ${contagem} run(s) consolidado(s), ${nEtapas} página(s) de etapa.`);
 }
 
 sincronizarFonteA();
