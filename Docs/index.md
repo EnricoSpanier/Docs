@@ -12,7 +12,7 @@ si:
   `GerenciadorEventos` (código e backlog).
 - **[Fluxo de Dados](./fluxos)** — diagrama animado do fluxo hoje, no fim do projeto e sob
   alta demanda.
-- **[Testes](./testes/testes-manuais/)** — testes manuais e de carga do mesmo repositório.
+- **[Testes](./testes/index.md)** — testes de carga separados por ponto da série (1, 2 e 3), método e testes manuais.
 - **[Decisões de Arquitetura](./decisoes-arquitetura/visao-geral)** — ADRs e notas de arquitetura
   do vault, sincronizadas automaticamente.
 

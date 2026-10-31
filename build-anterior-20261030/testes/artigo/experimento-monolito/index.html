@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="pt-BR" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-testes/artigo/experimento-monolito" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.10.2">
+<title data-rh="true">Experimento de reserva concorrente no monólito: reserva por CAS × caminho ingênuo | Docs</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://docs.enricospanier.com.br/testes/artigo/experimento-monolito"><meta data-rh="true" property="og:locale" content="pt_BR"><meta data-rh="true" name="docusaurus_locale" content="pt-BR"><meta data-rh="true" name="docsearch:language" content="pt-BR"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Experimento de reserva concorrente no monólito: reserva por CAS × caminho ingênuo | Docs"><meta data-rh="true" name="description" content="Status: rascunho de seção do artigo (issue #15). Os resultados das rodadas 1a e 1b e da escada de"><meta data-rh="true" property="og:description" content="Status: rascunho de seção do artigo (issue #15). Os resultados das rodadas 1a e 1b e da escada de"><link data-rh="true" rel="canonical" href="https://docs.enricospanier.com.br/testes/artigo/experimento-monolito"><link data-rh="true" rel="alternate" href="https://docs.enricospanier.com.br/testes/artigo/experimento-monolito" hreflang="pt-BR"><link data-rh="true" rel="alternate" href="https://docs.enricospanier.com.br/testes/artigo/experimento-monolito" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Experimento de reserva concorrente no monólito: reserva por CAS × caminho ingênuo","item":"https://docs.enricospanier.com.br/testes/artigo/experimento-monolito"}]}</script><link rel="stylesheet" href="/assets/css/styles.a3250200.css">
+<script src="/assets/js/runtime~main.3672d3fa.js" defer="defer"></script>
+<script src="/assets/js/main.f5a7271d.js" defer="defer"></script>
+</head>
+<body>
+<svg style="display: none;"><defs>
+<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
+</defs></svg>
+<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||"dark"),document.documentElement.setAttribute("data-theme-choice",t||"dark")}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Pular para o conteúdo principal"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Pular para o conteúdo principal</a></div><nav aria-label="Navegação principal" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Alternar painel de navegação" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/"><b class="navbar__title text--truncate">Docs</b></a><a class="navbar__item navbar__link" href="/gerenciador-eventos/">Gerenciador de Eventos</a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/testes/">Testes</a><a class="navbar__item navbar__link" href="/decisoes-arquitetura/visao-geral">Decisões de Arquitetura</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="modo do sistema" aria-label="Mudar entre modo claro e escuro (modo do sistema está ativo)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div><div class="navbarSearchContainer_Bca1"><div class="navbar__search searchBarContainer_NW3z" dir="ltr"><svg aria-hidden="true" class="searchIcon_T3tP" focusable="false" viewBox="0 0 16 16"><path fill="currentColor" d="M6.02945 10.20327a4.17382 4.17382 0 1 1 4.17382-4.17382 4.15609 4.15609 0 0 1-4.17382 4.17382Zm9.69195 4.2199-4.8225-4.82338A5.88021 5.88021 0 0 0 12.058 6.02856 6.00467 6.00467 0 1 0 9.59979 10.8989l4.82338 4.82338a.89729.89729 0 0 0 1.29912 0 .89749.89749 0 0 0-.00087-1.29909Z"></path></svg><input placeholder="Search" aria-label="Search" class="navbar__search-input searchInput_YFbd" value=""><div class="loadingRing_RJI3 searchBarLoadingRing_YnHq"><div></div><div></div><div></div><div></div></div></div></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class="docsWrapper_hBAB"><button aria-label="Voltar para o topo" class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type="button"></button><div class="docRoot_UBD9"><aside class="theme-doc-sidebar-container docSidebarContainer_YfHR"><div class="sidebarViewport_aRkj"><div class="sidebar_njMd"><nav aria-label="Painel lateral de documentos" class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/"><span class="linkLabel_WmDU">Documentação</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/fluxos"><span class="linkLabel_WmDU">Fluxo de Dados</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/batch2"><span class="linkLabel_WmDU">Tempo restante do Batch 2</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/gerenciador-eventos/BACKLOG"><span class="categoryLinkLabel_W154">Gerenciador de Eventos</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" href="/testes/"><span class="categoryLinkLabel_W154">Testes</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/testes/"><span class="linkLabel_WmDU">Visão geral</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist" tabindex="0" href="/testes/pre-serie/"><span class="categoryLinkLabel_W154">Referência pré-série</span></a><button aria-label="Recolher a categoria &#x27;Referência pré-série&#x27;" aria-expanded="true" type="button" class="clean-btn menu__caret"></button></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/testes/pre-serie/sem-pool"><span class="linkLabel_WmDU">Etapa 01: monólito sem pool de conexões</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/testes/pre-serie/hikari"><span class="linkLabel_WmDU">Etapa 02: monólito + HikariCP, Postgres direto</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/testes/pre-serie/resultados-escada-2026-10-16"><span class="linkLabel_WmDU">Escada de degraus: resultados de 2026-10-16</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/testes/pre-serie/resultados-matriz-2026-10-16"><span class="linkLabel_WmDU">Matriz CAS × ingênuo: resultados de 2026-10-16</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/testes/pre-serie/resultados-de-carga"><span class="linkLabel_WmDU">Resultados de Carga</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/testes/pre-serie/analise"><span class="linkLabel_WmDU">Análise dos Resultados</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist" tabindex="0" href="/testes/ponto-1/"><span class="categoryLinkLabel_W154">Ponto 1: monólito CRUD</span></a><button aria-label="Recolher a categoria &#x27;Ponto 1: monólito CRUD&#x27;" aria-expanded="true" type="button" class="clean-btn menu__caret"></button></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/testes/ponto-1/supabase-pooler"><span class="linkLabel_WmDU">Etapa 03: Supabase Postgres + Supavisor</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/testes/ponto-1/resultados-matriz-pospooler-2026-10-16"><span class="linkLabel_WmDU">Matriz CAS × ingênuo depois do pooler: resultados de 2026-10-16</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/testes/ponto-1/resultados-isolamento-escada-pospooler-2026-10-17"><span class="linkLabel_WmDU">Isolamento do pooler e escada X pelo pooler: resultados de 2026-10-17</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist" tabindex="0" href="/testes/ponto-2/"><span class="categoryLinkLabel_W154">Ponto 2: monólito CQRS + ES</span></a><button aria-label="Recolher a categoria &#x27;Ponto 2: monólito CQRS + ES&#x27;" aria-expanded="true" type="button" class="clean-btn menu__caret"></button></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/testes/ponto-2/fase6-es"><span class="linkLabel_WmDU">Etapa 04: Fase 6 (CQRS + Event Sourcing) — Rodada 2 (#31)</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/testes/ponto-2/04b-fase6-es-cabo"><span class="linkLabel_WmDU">Etapa 04b: ponto 2 refeito no cabo (controle da Rodada 3)</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist" tabindex="0" href="/testes/ponto-3/"><span class="categoryLinkLabel_W154">Ponto 3: distribuído</span></a><button aria-label="Recolher a categoria &#x27;Ponto 3: distribuído&#x27;" aria-expanded="true" type="button" class="clean-btn menu__caret"></button></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/testes/ponto-3/distribuido"><span class="linkLabel_WmDU">Etapa 05: Fase 7 (serviços separados) — Rodada 3 (#34, ponto 3)</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/testes/ponto-3/batch1-final"><span class="linkLabel_WmDU">Etapa 06: Batch 1, configuração final distribuída — Rodada R</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist" tabindex="0" href="/testes/rodada-4/"><span class="categoryLinkLabel_W154">Rodada 4: admission</span></a><button aria-label="Recolher a categoria &#x27;Rodada 4: admission&#x27;" aria-expanded="true" type="button" class="clean-btn menu__caret"></button></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/testes/rodada-4/rodada4-admission"><span class="linkLabel_WmDU">Etapa 07: Rodada 4, admission acima do X, com e sem autoescala (issue #179)</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist" tabindex="0" href="/testes/rodada-5/"><span class="categoryLinkLabel_W154">Rodada 5: saga</span></a><button aria-label="Recolher a categoria &#x27;Rodada 5: saga&#x27;" aria-expanded="true" type="button" class="clean-btn menu__caret"></button></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/testes/rodada-5/rodada5-saga"><span class="linkLabel_WmDU">Etapa 08: Rodada 5, saga stock + wallet sobre a configuração da R4 (issue #180)</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" tabindex="0" href="/testes/metodo/tipos-de-teste"><span class="categoryLinkLabel_W154">Método e ferramentas</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" tabindex="0" href="/testes/artigo/experimento-monolito"><span class="categoryLinkLabel_W154">Artigo</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/testes/artigo/experimento-monolito"><span class="linkLabel_WmDU">Experimento de reserva concorrente no monólito: reserva por CAS × caminho ingênuo</span></a></li></ul></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/testes/etapas"><span class="linkLabel_WmDU">Índice das etapas</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/decisoes-arquitetura/visao-geral"><span class="categoryLinkLabel_W154">Decisões de Arquitetura</span></a></div></li></ul></nav></div></div></aside><main class="docMainContainer_TBSr"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_VOVn"><div class="docItemContainer_Djhp"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_Z_bl" aria-label="Trilha"><ul class="breadcrumbs"><li class="breadcrumbs__item"><a aria-label="Página Inicial" class="breadcrumbs__link" href="/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_YNFT"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">Testes</span></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">Artigo</span></li><li class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link">Experimento de reserva concorrente no monólito: reserva por CAS × caminho ingênuo</span></li></ul></nav><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_ITEo"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">Nesta página</button></div><div class="theme-doc-markdown markdown"><header><h1>Experimento de reserva concorrente no monólito: reserva por CAS × caminho ingênuo</h1></header>
+<blockquote>
+<p><strong>Status: rascunho de seção do artigo (issue #15).</strong> Os resultados das rodadas 1a e 1b e da escada de
+carga (issues #12, #13 e #14) foram preenchidos com as rodadas de 2026-10-16. O <strong>ponto 1 da série</strong> (monólito
+CRUD + pooler) foi medido depois, com as rodadas 1a e 1b repetidas com o Supavisor (issue #22). Em 2026-10-17 vieram
+as rodadas de isolamento do pooler e a escada X pelo pooler. O <strong>ponto 2 da série</strong> (monólito com CQRS + ES, issue #31)
+foi medido em 2026-10-19, com o braço ingênuo lendo a projeção assíncrona real. O <strong>limiar X definitivo, por evento</strong>
+(issue #40), veio da Rodada R de 2026-10-28, na configuração final distribuída (subseção &quot;Limiar X definitivo&quot;).
+Revisão com o orientador pendente. Caminhos de arquivo são relativos à raiz do repositório (nos comandos
+<code>make</code>, relativos a <code>Projeto/carga</code>); os termos seguem o glossário de <code>CONTEXT.md</code>.</p>
+<p><strong>Escopo dos números.</strong> Há três conjuntos, que <strong>não se misturam</strong>:</p>
+<ul>
+<li class=""><strong>Ponto 1 (pós-pooler, &quot;monólito CRUD + pooler&quot;).</strong> As rodadas 1a e 1b repetidas em 2026-10-16 com o
+Supabase Postgres 17 e o Supavisor (issue #22). É a linha de base oficial da série de 3 pontos (<code>CONTEXT.md</code>,
+&quot;Ponto da série&quot;): subseção &quot;Ponto 1 (pós-pooler)&quot; dos Resultados. A escada X pelo pooler (X ≈ 78k RPM) e as
+rodadas de isolamento foram feitas em 2026-10-17 (subseções &quot;Isolamento do pooler&quot; e &quot;Limiar X pelo pooler&quot;).</li>
+<li class=""><strong>Ponto 2 (CQRS + ES no monólito, Rodada 2).</strong> A matriz CAS × ingênuo, as escadas X e o aleatório de 45 min repetidos
+em 2026-10-19 (issue #31) com <code>catalog</code> e <code>reservation</code> em event sourcing, relay e consumer no Redpanda, e o braço
+ingênuo lendo a projeção assíncrona: subseção &quot;Ponto 2 (CQRS + ES no monólito, Rodada 2, 2026-10-19)&quot; dos
+Resultados. Compara-se com o ponto 1, não com o pré-pooler. O lag é medido, não configurado.</li>
+<li class=""><strong>Pré-pooler (referência, &quot;monólito + HikariCP&quot;).</strong> A matriz 1a/1b anterior e a escada de carga (limiar X),
+com o backend direto no PG 16 (pool e <code>max_connections</code> informados no Setup). Ficam como histórico e como
+comparação. O X pré-pooler (97k) é a referência do X pelo pooler.</li>
+</ul>
+<p>A subseção &quot;Comparação das 3 configurações&quot; (issue #39) <strong>junta esses conjuntos de propósito</strong>, lado a lado, com tabela e
+gráficos e com as ressalvas dela (rede, disco e código diferentes entre os pontos; o X intercalado da Rodada R não é comparável
+com os X sequenciais).</p>
+</blockquote>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="hipótese">Hipótese<a href="#hipótese" class="hash-link" aria-label="Link direto para Hipótese" title="Link direto para Hipótese" translate="no">​</a></h2>
+<p>O experimento compara dois <strong>braços</strong>, isto é, duas formas de checar a capacidade (<code>capacity</code>) de um evento
+numa reserva (<code>walletevent</code>):</p>
+<ul>
+<li class=""><strong>Reserva por CAS</strong> (caminho <code>cas</code>, o padrão): dentro de uma única transação, um <code>UPDATE</code> condicional
+atômico em <code>eventcap</code> (<code>quant = quant - 1 ... AND quant &gt;= 1</code>; zero linhas afetadas significa &quot;lotado&quot;)
+e, só então, a gravação da reserva como <code>pending</code>. O design proposto.</li>
+<li class=""><strong>Caminho ingênuo</strong> (<code>naive</code>): lê o read model defasado <code>event_availability</code> e depois insere a reserva,
+sem CAS e sem tocar <code>eventcap</code>. O read model é recalculado por um job periódico (<code>ReadModelRefreshService</code>)
+cujo intervalo é o <strong>lag</strong> (<code>READMODEL_AVAILABILITY_REFRESH_MS</code>). O braço de controle.</li>
+</ul>
+<p>A fundamentação está em <code>docs/adr/Architecture-Decision-Stock-Isolation.md</code>: ler a quantidade e só depois
+decidir a escrita abre uma condição de corrida, e a correção é transformar &quot;checar e reservar&quot; numa única
+operação atômica na fonte de verdade; checar a capacidade por uma projeção eventualmente consistente
+reintroduz o overselling. O experimento é o diferencial do trabalho (<code>docs/adr/Architecture-Decision-Microservices-Split.md</code>):
+roda primeiro contra o monólito, com um read model sintético (tabela desnormalizada, refresh por timer e
+caminho de leitura atrás de feature flag), e é repetido a cada marco de arquitetura, formando a série de
+3 pontos. Esta seção cobre a Fase 2, o monólito CRUD com read model sintético.</p>
+<p>Hipóteses testáveis:</p>
+<ul>
+<li class=""><strong>H1 (CAS).</strong> O braço CAS tem overselling zero em toda <strong>disputa</strong>, para todo N testado, nas duas
+métricas (primária e secundária), com tolerância 0. Uma única execução do braço CAS com
+<code>confirmed &gt; capacity</code> ou <code>pending + confirmed &gt; capacity</code> refuta H1 e seria um defeito do CAS, não ruído
+de medição.</li>
+<li class=""><strong>H2 (ingênuo).</strong> O caminho ingênuo oversella, e o overselling cresce com o lag, pois um refresh mais
+espaçado deixa a leitura de vagas mais desatualizada por mais tempo (<code>Projeto/Backend/CLAUDE.md</code>:
+&quot;Oversella proporcional ao lag do read model&quot;; <code>Projeto/carga/README.md</code>: &quot;overselling proporcional ao
+lag&quot;). Por construção, cada cliente tenta uma vez, então o overselling de uma disputa é limitado por
+N − capacidade (80 para N = 100; 180 para N = 200): um patamar nesse teto para lags grandes é compatível com
+H2. H2 é enfraquecida se o overselling for zero, ou se não crescer com o lag antes de atingir o teto. O
+resultado é reportado como medido, sem repetir rodadas nem descartar lags para &quot;achar&quot; a tendência
+(<code>Projeto/carga/README.md</code>, rodada 1b).</li>
+<li class=""><strong>Limiar X.</strong> Não é uma hipótese sobre um valor, e sim uma medição: o primeiro degrau de carga em que o
+fluxo síncrono degrada. Pode não existir dentro da escada (&quot;X acima do último degrau&quot;) ou valer só como
+limite inferior, se o gerador saturar antes do host.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="setup">Setup<a href="#setup" class="hash-link" aria-label="Link direto para Setup" title="Link direto para Setup" translate="no">​</a></h2>
+<p><strong>Topologia.</strong> Duas máquinas na mesma rede (<code>docs/carga/setup.md</code>): o <strong>host</strong> (alvo do teste: stack Docker
+com backend em <code>:8081</code> e Postgres em <code>:5433</code>) e o <strong>gerador</strong> (roda o k6). O k6 nunca roda no host, pois
+competiria por CPU e rede com o backend e invalidaria as latências. O link do gerador é de 1 Gbps; do lado do
+host só está registrado &quot;Ethernet, mesma rede do gerador&quot;. A matriz também consulta o Postgres do host pelo
+gerador, por <code>psql</code> remoto na <code>:5433</code>, porta aberta apenas para o IP do gerador (<code>Projeto/carga/README.md</code>).</p>
+<table><thead><tr><th>Item</th><th>Host (alvo)</th><th>Gerador</th></tr></thead><tbody><tr><td>CPU / RAM / disco</td><td>AMD Ryzen 7 7700X (8 núcleos / 16 threads), 63 GB de RAM (31 GB e 16 CPUs para a VM do Docker), SSD NVMe</td><td>AMD Ryzen 5 7600 (6 núcleos / 6 threads, SMT desligado), 15,2 GB de RAM (DDR5-5200), SSD NVMe</td></tr><tr><td>SO</td><td>Windows 11 Home (build 26300)</td><td>Windows 11 Pro (build 26200), plano de energia &quot;Alto desempenho&quot;</td></tr><tr><td>Rede</td><td>Ethernet a 1 Gbps, por cabo, mesma rede do gerador</td><td>Ethernet a 1 Gbps, por cabo</td></tr><tr><td>Ferramentas</td><td>Docker Desktop (engine 29.8.2)</td><td>k6 v2.2.0 (go1.26.5, windows/amd64); <code>psql</code> 16.15</td></tr></tbody></table>
+<p>Configuração levantada em 2026-10-16, dia das escadas da #14. Fontes: <code>docs/carga/setup.md</code> (seção 5),
+<code>Projeto/carga/results/01-sem-pool/baseline-20261004-122632.txt</code> e <code>Projeto/carga/results/02-hikari/smoke-20261016/baseline-20261016-162438.txt</code>.</p>
+<p><strong>Versões e configuração do backend e do banco (pré-pooler, referência).</strong></p>
+<table><thead><tr><th>Componente</th><th>Valor</th></tr></thead><tbody><tr><td>PostgreSQL</td><td>16.15 (imagem <code>postgres:16-alpine</code>, <code>Projeto/Backend/db/Dockerfile</code>)</td></tr><tr><td>Backend</td><td>Spring Boot 3.5.7, Java 21 na compilação e <code>temurin:25-jre</code> na execução (<code>Projeto/Backend/CLAUDE.md</code>)</td></tr><tr><td>HikariCP</td><td>6.3.3 (gerenciada pelo Spring Boot; lida do jar do backend); <code>maximum-pool-size</code> padrão 1000 e <code>minimum-idle</code> 5 (o pool cresce sob demanda)</td></tr><tr><td><code>max_connections</code> do Postgres</td><td>Escadas da #14: <strong>100</strong> até a <code>degraus-959190</code> (o <code>make setup-host</code> sobe o Postgres com o padrão) e <strong>1000</strong> nas <code>degraus-959765</code>, <code>-962591</code> e <code>-963487</code> (<code>make host-rpm MAX_CONN=1000</code>), valores lidos no host com <code>SHOW max_connections</code>. A coluna <code>max_connections</code> dos CSVs é só um rótulo passado ao gerador e diz 300 nas escadas com 100: vale o valor medido no host. <code>pool_hikari</code> = 1000 em todas. O <code>matriz.csv</code> não grava esses campos: nas rodadas 1a e 1b o host rodou com <strong>300</strong> (<code>make host-rpm MAX_CONN=300</code>, conferido com <code>SHOW max_connections</code>) e Tomcat com 200 threads (padrão).</td></tr><tr><td>Braço e lag</td><td><code>RESERVATION_READPATH</code> (<code>cas</code> | <code>naive</code>) e <code>READMODEL_AVAILABILITY_REFRESH_MS</code>, lidos no startup do backend (<code>Projeto/carga/docker-compose.carga.yml</code>); log de SQL desligado no host de carga para não distorcer a latência</td></tr><tr><td>Commit testado</td><td>coluna <code>commit</code> dos CSVs (checkout do gerador); host e gerador no mesmo commit: <code>5120412</code> em todas as escadas da #14 (a <code>degraus-963487</code> rodou com o <code>.js</code> editado localmente, ver &quot;Limiar X&quot;); <code>569d1be</code> nas 50 linhas da matriz (rodadas 1a e 1b), sem mudança de código em relaç ão ao <code>5120412</code></td></tr></tbody></table>
+<p><strong>Condições do ponto 1 (pós-pooler).</strong> Mesmas máquinas e mesmo protocolo da matriz; mudaram o banco, o pooler
+e o estado do banco. Rodadas de 2026-10-16, por volta de 21:38 a 21:49 (horário do gerador).</p>
+<table><thead><tr><th>Componente</th><th>Valor</th></tr></thead><tbody><tr><td>Commit</td><td><code>8ba01b4</code> (<code>Fase_4</code> com as issues #17, #18, #19 e #21; branch <code>Issue-22</code>), host e gerador</td></tr><tr><td>PostgreSQL</td><td>17.6 (imagem <code>supabase/postgres:17.6.1.136</code>, locale <code>en_US</code> ICU); antes, 16.15 (<code>postgres:16-alpine</code>, <code>pt_BR</code>)</td></tr><tr><td>Pooler</td><td>Supavisor 2.9.13 em transaction mode; o backend conecta em <code>supabase-pooler:6543</code> com <code>prepareThreshold=0</code></td></tr><tr><td>Conexões</td><td><code>max_connections</code> 300 (<code>subir-host-rpm.ps1 -MaxConnections 300</code>); pool do Supavisor no Postgres <strong>245</strong> (<code>max_connections − 55</code>); <code>POOLER_MAX_CLIENT_CONN</code> 1500; HikariCP <code>maximum-pool-size</code> 1000 e <code>minimum-idle</code> 5 (só enfileira no pooler)</td></tr><tr><td>Threads do Tomcat</td><td><strong>200</strong> (padrão do Spring Boot): o ponto 1 foi medido assim; a partir do ponto 2 o backend usa <strong>300</strong> (issue #124; no teste de 2026-10-17 pelo pooler, mesmo teto de vazão, menor p95)</td></tr><tr><td>Role do app</td><td><code>admin</code>, sem superuser</td></tr><tr><td>Estado do banco</td><td><strong>limpo</strong> (volume novo) no começo da rodada 1a</td></tr><tr><td>Braço e lag</td><td>por lag, o host foi reiniciado em <code>naive</code> e conferido com <code>printenv RESERVATION_READPATH READMODEL_AVAILABILITY_REFRESH_MS</code></td></tr><tr><td>Ferramentas do gerador</td><td>k6 v2.2.0; <code>psql</code> 16.15</td></tr></tbody></table>
+<p>Fonte: <code>Projeto/carga/results/03-supabase-pooler/README.md</code>. O CSV não grava essas colunas.</p>
+<p><strong>Condições do ponto 2 (Rodada 2, CQRS + ES).</strong> Mesmas máquinas e mesmo protocolo; mudaram o código, a rede e o estado
+do banco. Rodadas de 2026-10-19. Fonte: <code>Projeto/carga/results/04-fase6-es/README.md</code> e
+<code>baseline-20261019-074604.txt</code>.</p>
+<table><thead><tr><th>Componente</th><th>Valor</th></tr></thead><tbody><tr><td>Commit</td><td><code>1ee6fbe</code> (<code>main</code> com o merge do PR #145, Fase 6), host e gerador. No bloco 5 o backend rodou uma imagem local <code>:146</code>, montada com as classes da branch <code>Issue-146</code>; a coluna <code>commit</code> dos CSVs continua <code>1ee6fbe</code></td></tr><tr><td>Conexões e Tomcat</td><td><code>max_connections</code> 300; pool do Supavisor 245; HikariCP 1000; Tomcat com <strong>300</strong> threads (o ponto 1 usou 200)</td></tr><tr><td>Event backbone</td><td>Redpanda em modo dev-container (sem fsync), só na rede <code>gerenciador-net</code>; relay e consumer ligados no backend; no bloco 5, consumer em lote (até 500 mensagens por transação) e, no 3b, consumer desligado (<code>EVENTS_CONSUMER_ENABLED=false</code>, override local não versionado)</td></tr><tr><td>Rede</td><td><strong>Wi-Fi</strong>, com IPs novos (o host trocou de IP durante a sessão). Baseline: HTTP p50 26,6 / p95 42,9 ms (n = 30), ping médio 18,55 ms (máx. 180 ms, 0 de 100 perdidos); nas rodadas anteriores, no cabo, ~14,9 / 19 ms</td></tr><tr><td>Estado do banco</td><td><strong>Acumulado</strong> nos blocos 1 a 3b (matrizes ingênuo e CAS, escadas com e sem consumer, sem limpeza entre eles); <strong>limpo antes de cada teste</strong> do bloco 4 em diante (TRUNCATE em todas as tabelas, tópicos e consumer group do Redpanda apagados, backend reiniciado)</td></tr><tr><td>Braço e lag</td><td><code>RESERVATION_READPATH</code> <code>naive</code> (bloco 1) e <code>cas</code> (demais); <code>lag_ms</code> = 0 (não há mais timer)</td></tr><tr><td>Ferramentas do gerador</td><td>AMD Ryzen 5 7600, k6 v2.2.0, <code>psql</code> 16.15, plano de energia &quot;Alto desempenho&quot; ativado à mão, portas dinâmicas TCP <code>start=10000 num=55535</code></td></tr></tbody></table>
+<p><strong>Latência base HTTP (não comparável; não subtraída).</strong> O <code>setup-gerador.ps1</code> mediu, em 2026-10-04, 30
+requisições <code>GET /actuator/health</code> cronometradas com <code>Stopwatch</code> em torno de <code>Invoke-WebRequest</code> (PowerShell):
+p50 14,9 / p95 19,0 / máx 21,1 ms, numa única medição (<code>docs/carga/setup.md</code>, seção 5). Esse valor vem de
+outro cliente que não o k6 e de um endpoint que consulta o Postgres; portanto não é a latência de rede (RTT) e
+não é comparável ao tempo de requisição do k6 (excede, por exemplo, a latência de reserva medida pelo k6 nas
+rodadas preliminares). Por isso <strong>não é subtraído</strong>: as latências do k6 são reportadas como medidas, com o RTT
+embutido e não isolado. Nessas rodadas (até o ponto 1) o ICMP não respondeu (100 pacotes sem retorno), então não há
+ping nem perda de pacotes; no ponto 2 o ping respondeu (ver &quot;Condições do ponto 2&quot;, acima). Nova medição em 2026-10-16, antes das escadas da #14, pelo mesmo método: p50 14,7 / p95 18,2 / máx
+20,1 ms (n = 30; <code>Projeto/carga/results/02-hikari/smoke-20261016/baseline-20261016-162438.txt</code>); de novo maior que a
+latência de reserva do k6 nos degraus baixos (p95 de 7,7 a 10,9 ms na <code>degraus-953959</code>).</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="workload">Workload<a href="#workload" class="hash-link" aria-label="Link direto para Workload" title="Link direto para Workload" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="disputa-rodadas-1a-e-1b-matriz">Disputa (rodadas 1a e 1b, matriz)<a href="#disputa-rodadas-1a-e-1b-matriz" class="hash-link" aria-label="Link direto para Disputa (rodadas 1a e 1b, matriz)" title="Link direto para Disputa (rodadas 1a e 1b, matriz)" translate="no">​</a></h3>
+<p>A unidade de execução do experimento de corretude é a <strong>disputa</strong>: N clientes concorrentes, cada um com
+usuário próprio, tentam reservar o mesmo evento de <code>capacity</code> 20. Cada cliente faz uma tentativa
+(<code>POST /bff/event-wallets</code>) e toda reserva aceita (201) é confirmada na mesma iteração
+(<code>POST /bff/event-wallets/confirm</code>, <code>PCT_CONFIRMA=100</code>). No k6, é um cenário <code>shared-iterations</code> com um VU
+por cliente; o login dos usuários (bcrypt) acontece no <code>setup()</code>, antes da rajada e fora da medição
+(<code>Projeto/carga/carga.js</code>).</p>
+<p>Cada chamada do runner (<code>Projeto/carga/rodar-matriz.ps1</code>) faz, nesta ordem:</p>
+<ol>
+<li class="">um aquecimento descartado, uma vez por chamada e antes do seed do primeiro N (rajada pequena, evento
+próprio, sem linha no CSV);</li>
+<li class="">por N, o seed: N usuários e um evento novo por repetição, todos com a mesma capacidade;</li>
+<li class="">por repetição (um evento novo cada), espera o read model ter a linha do evento e depois um tempo aleatório
+em <code>[0, lag)</code>, de modo que a rajada caia numa fase pseudoaleatória do job de refresh, sem se sincronizar
+com ele;</li>
+<li class="">dispara a rajada e, enquanto ela roda, amostra o lag no Postgres do host;</li>
+<li class="">lê <code>confirmed</code> e <code>pending</code> do evento no Postgres e grava uma linha em <code>Projeto/carga/results/matriz.csv</code> (a área de trabalho da rodada corrente; ao fechar a etapa o
+CSV vai para <code>results/NN-etapa/</code>, ver Resultados).</li>
+</ol>
+<table><thead><tr><th>Rodada</th><th>Braço</th><th>N</th><th>Lag (ms)</th><th>Repetições</th><th>Linhas</th></tr></thead><tbody><tr><td>1a (#12)</td><td><code>cas</code></td><td>{100, 200}</td><td>5000 (só rotula a coluna: o CAS não lê o read model)</td><td>5</td><td>10</td></tr><tr><td>1b (#13)</td><td><code>naive</code></td><td>{100, 200}</td><td>{500, 2000, 5000, 10000}</td><td>5</td><td>40</td></tr></tbody></table>
+<p>O total é de 50 linhas no mesmo CSV, nas duas matrizes (pré-pooler e ponto 1). O lag e o braço são lidos no startup do backend e não mudam em
+runtime, então a rodada 1b reinicia a stack do host uma vez por lag (<code>make host-rpm</code>), e o valor passado ao
+gerador apenas rotula as colunas <code>braco</code> e <code>lag_ms</code>: ele precisa bater com o que o host roda, o que se confere
+com <code>docker exec gerenciador-backend printenv RESERVATION_READPATH READMODEL_AVAILABILITY_REFRESH_MS</code>.</p>
+<p>Uma repetição só vira linha do CSV se for <strong>válida</strong>: k6 com código 0, resumo com <code>disparo_ms</code> (alguma
+iteração rodou), nenhum usuário sem login, nenhuma resposta inesperada ou 5xx e toda reserva aceita
+confirmada. Repetição inválida é descartada, contada e
+listada no fim, e o runner sai com código 2 (matriz incompleta, refazer). Já o overselling no braço CAS não
+invalida nada: é um resultado, entra no CSV e o runner sai com código 3.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="escada-de-carga-limiar-x-14">Escada de carga (limiar X, #14)<a href="#escada-de-carga-limiar-x-14" class="hash-link" aria-label="Link direto para Escada de carga (limiar X, #14)" title="Link direto para Escada de carga (limiar X, #14)" translate="no">​</a></h3>
+<p>Uma única execução do k6, com um cenário <code>constant-arrival-rate</code> por degrau (seed e login uma vez só), que
+estende o teste de taxa fixa (<code>Projeto/carga/README.md</code>, &quot;Limiar X preliminar&quot;, e
+<code>Projeto/carga/degraus/carga-degraus.js</code>):</p>
+<ul>
+<li class="">degraus a partir de 12k RPM (<code>DEG_INICIO</code>), de 4k em 4k (<code>DEG_PASSO</code>), até <code>DEG_MAX</code> (padrão 40k; no máximo
+40 degraus), 60 s por degrau (<code>DEG_DURACAO</code>, no mínimo 60 e múltiplo de 30);</li>
+<li class="">braço CAS (<code>READPATH=cas</code>) nos comandos do protocolo, 200 usuários, <code>MAX_VUS</code> 2000 (todos pré-alocados) e
+<code>PCT_CONFIRMA=100</code>;</li>
+<li class="">cada reserva é um par (usuário, evento) único, em sequência (usuário <code>i % U</code>, evento <code>floor(i / U)</code>), com
+capacidade por evento igual à metade dos usuários (padrão de <code>Projeto/carga/degraus/rodar-degraus.ps1</code>;
+100 com 200 usuários);</li>
+<li class="">só <code>POST</code> de reserva e de confirmação, sem leituras;</li>
+<li class="">no padrão (12k a 40k): 8 degraus, 208.008 pares, 1.093 eventos e cerca de 11,6 min de k6, com 31 s ociosos
+entre degraus;</li>
+<li class="">a escada vai até o máximo, mesmo depois de o host degradar.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="métricas">Métricas<a href="#métricas" class="hash-link" aria-label="Link direto para Métricas" title="Link direto para Métricas" translate="no">​</a></h2>
+<p>As definições seguem <code>CONTEXT.md</code>. A tabela diz como cada uma é coletada.</p>
+<table><thead><tr><th>Métrica</th><th>Definição</th><th>Coleta</th></tr></thead><tbody><tr><td><strong>Overselling primário</strong></td><td>Evento com <code>confirmed</code> maior que <code>capacity</code>. Coluna <code>oversell</code> = <code>max(0, confirmed − capacity)</code>, a magnitude.</td><td><code>psql</code> remoto no Postgres do host (fonte de verdade), depois da rajada.</td></tr><tr><td><strong>Overselling secundário</strong></td><td><code>pending + confirmed</code> maior que <code>capacity</code>. Derivável das colunas <code>pending</code> e <code>confirmed</code>.</td><td>Mesma leitura.</td></tr><tr><td><strong>Tolerância no braço CAS</strong></td><td>0 nas duas métricas: igual a <code>capacity</code> passa; maior falha (código 3 do runner).</td><td>Verificada pelo runner a cada execução.</td></tr><tr><td><strong>Lag</strong></td><td>Intervalo de refresh do read model (<code>READMODEL_AVAILABILITY_REFRESH_MS</code>); coluna <code>lag_ms</code>. É a variável independente do braço ingênuo <strong>no ponto 1</strong>; no ponto 2 não há timer, <code>lag_ms</code> vale 0 e o lag é medido (<code>Lag observado</code>). O job usa <code>fixedDelay</code>, então o período efetivo é o lag mais a duração de cada refresh.</td><td>Configurado no host; rotulado no CSV.</td></tr><tr><td><strong>Lag observado</strong></td><td><code>lag_obs_disparo</code> (última amostra antes do disparo) e <code>lag_obs_max</code> (maior valor entre essa amostra e as da rajada); <code>-1</code> = sem leitura.</td><td>Ponto 1: <code>now() − refreshed_at</code> do evento (relógio do Postgres). <strong>Ponto 2:</strong> <code>applied_at − last_occurred_at</code> da linha do evento em <code>event_availability</code>, isto é, a idade do último evento aplicado pelo consumer; a linha só nasce com a 1ª reserva, então <code>lag_obs_disparo</code> vale -1 sempre e só <code>lag_obs_max</code> traz leitura, como limite inferior (ameaça 20). Nos dois, amostrado a cada ~250 ms (<code>-PollMs</code>) pelo gerador por <code>psql</code> remoto; o instante da amostra é o do relógio do gerador, o mesmo do k6.</td></tr><tr><td><strong>Latência da reserva</strong></td><td>p50, p95 e p99 de <code>POST /bff/event-wallets</code>, em ms.</td><td>k6 no gerador; reportada como medida, sem subtrair a latência base HTTP (ver Setup: não é comparável).</td></tr><tr><td><strong>Vazão</strong></td><td>Matriz: tentativas por segundo na janela da rajada (1ª iteração iniciada até a última terminada), sem os logins do <code>setup()</code>. Escada: reservas por segundo respondidas sem 5xx.</td><td>k6 (resumo da execução).</td></tr><tr><td><strong>Taxa de 5xx</strong></td><td><code>erros_5xx / reservas</code> (só os 5xx da reserva, sobre as reservas do degrau), como fração. Os 5xx da confirmação ficam em <code>erros_5xx_confirma</code>, informativos, fora do X. Respostas inesperadas (4xx fora de &quot;lotado&quot;, timeout, conexão recusada) vão para <code>outros</code> e não entram em X.</td><td>k6, por degrau.</td></tr><tr><td><strong>p95 por janela de 30 s</strong></td><td><code>p95_max_janela_30s</code>: maior p95 da reserva entre as janelas de 30 s do degrau.</td><td>k6: cada reserva é marcada pela janela do instante de <strong>envio</strong>; janelas fixas alinhadas ao início do degrau.</td></tr><tr><td><strong>Limiar X</strong></td><td>Primeiro degrau da escada com 5xx acima de 1% das reservas ou p95 acima de 1 s por 30 s.</td><td>Regra aplicada só pelo report (<code>docs/carga/harness/report-degraus.sh</code>), sobre o CSV.</td></tr></tbody></table>
+<p>Detalhes de coleta que afetam a leitura:</p>
+<ul>
+<li class="">Os dois limites do X são estritos (<code>taxa_5xx</code> &gt; 1%; <code>p95_max_janela_30s</code> &gt; 1000 ms).</li>
+<li class="">A taxa de 5xx do X é só da reserva (5xx das reservas / reservas do degrau): o X marca o ponto em que a reserva
+passaria a ir para a fila, e os 5xx da confirmação não entram, mas ficam registrados em <code>erros_5xx_confirma</code>.</li>
+<li class="">O gerador é considerado <strong>saturado</strong> num degrau se <code>iteracoes_descartadas &gt; 0</code> ou se <code>rpm_efetivo</code> ficar abaixo
+de 95% do alvo. Se ele saturou estritamente antes do primeiro degrau que degradou, X vira <strong>limite inferior</strong>
+(X maior que o último degrau sem saturação). Se degradou e saturou no mesmo degrau, X é firme, com aviso.</li>
+<li class="">O overselling é medido no banco, não pela contagem de respostas do cliente, que é só indicativa.</li>
+<li class="">O lag observado tem a resolução do intervalo de amostragem e a rajada é curta, então <code>lag_obs_max</code> costuma
+igualar <code>lag_obs_disparo</code>.</li>
+<li class="">Agregação (<code>docs/carga/harness/report-matriz.sh</code>): por (N, capacidade), média, ±1 desvio amostral e mín–máx
+das repetições em cada lag, eixo x linear em ms; o braço CAS, que não depende do lag, entra como linha de
+referência (média de todas as suas execuções).</li>
+<li class=""><strong>Ponto da série</strong>: medição do experimento em um marco da arquitetura (monólito CRUD, monólito ES,
+distribuído). O ponto 1 é o &quot;monólito CRUD + pooler&quot; (subseção &quot;Ponto 1 (pós-pooler)&quot;); os números de
+&quot;monólito + HikariCP&quot; são a referência pré-pooler, não o ponto 1.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="resultados">Resultados<a href="#resultados" class="hash-link" aria-label="Link direto para Resultados" title="Link direto para Resultados" translate="no">​</a></h2>
+<p>Mapa das fontes: a rodada 1a (#12) e a rodada 1b (#13) alimentam o mesmo <code>matriz.csv</code> (linhas <code>braco=cas</code> e
+<code>braco=naive</code>). O runner grava em <code>Projeto/carga/results/matriz.csv</code> e, ao fechar a etapa, o arquivo é movido para a
+pasta dela: o <strong>ponto 1</strong> está em <code>Projeto/carga/results/03-supabase-pooler/matriz.csv</code> (50 linhas, commit
+<code>12fc154</code>) e a matriz <strong>pré-pooler</strong> em <code>Projeto/carga/results/02-hikari/matriz-prepooler-20261016.csv</code> (50 linhas,
+versionado em <code>1fbe12b</code> como <code>matriz.csv</code>). O gráfico de cada etapa sai de <code>report-matriz.sh</code> sobre o CSV dela
+(HTML regenerável, fora do git; <code>Projeto/carga/README.md</code>, &quot;Resultados&quot;). A escada (#14) gera
+<code>Projeto/carga/results/02-hikari/degraus-&lt;id&gt;.csv</code> e <code>summary-degraus-&lt;id&gt;.json</code> (a escada pelo pooler, em <code>03-supabase-pooler/</code>); o gráfico sai de
+<code>make report-degraus</code>. Resultado como medido: lags e execuções não são descartados nem repetidos para
+melhorar a curva (só as repetições inválidas são refeitas, pelas regras do runner). O <strong>ponto 2</strong> (Rodada 2,
+<code>Projeto/carga/results/04-fase6-es/</code>) vem depois do &quot;Limiar X pelo pooler&quot;, na subseção &quot;Ponto 2 (CQRS + ES no monólito,
+Rodada 2, 2026-10-19)&quot;.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="ponto-1-pós-pooler-overselling--lag-e-latência">Ponto 1 (pós-pooler): overselling × lag e latência<a href="#ponto-1-pós-pooler-overselling--lag-e-latência" class="hash-link" aria-label="Link direto para Ponto 1 (pós-pooler): overselling × lag e latência" title="Link direto para Ponto 1 (pós-pooler): overselling × lag e latência" translate="no">​</a></h3>
+<p>Rodadas de 2026-10-16 com o Supabase Postgres 17 e o Supavisor (condições no Setup), capacidade 20, 100% de
+confirmação, commit <code>8ba01b4</code>. Fonte: <code>Projeto/carga/results/03-supabase-pooler/matriz.csv</code> (50 linhas, commit
+<code>12fc154</code>); detalhe e tabelas completas em <code>docs/carga/resultados-matriz-pospooler-2026-10-16.md</code>. Nenhuma
+repetição foi descartada. Os agregados foram recalculados do CSV.</p>
+<p><strong>Braço CAS (rodada 1a, #12).</strong> <code>oversell = 0</code> nas 10 linhas, com <code>confirmed = 20</code> e <code>pending = 0</code> em todas: <strong>H1
+se sustenta</strong> no ponto 1. Latência e vazão, com a comparação com o pré-pooler (média de 5 repetições; p95 com
+mín–máx):</p>
+<table><thead><tr><th>N</th><th>p50 pré → pós (ms)</th><th>p95 pré → pós (ms)</th><th>p99 pré → pós (ms)</th><th>Vazão pré → pós (tentativas/s)</th></tr></thead><tbody><tr><td>100</td><td>44,3 → 84,0</td><td>53,7 (46,9–66,3) → 103,9 (84,6–117,6)</td><td>55,4 → 107,2</td><td>1632,7 → 870,9 (−46,7%)</td></tr><tr><td>200</td><td>59,2 → 115,8</td><td>77,1 (64,5–86,2) → 155,3 (125,5–203,7)</td><td>81,1 → 160,8</td><td>2075,5 → 1178,5 (−43,2%)</td></tr></tbody></table>
+<p>A latência do CAS <strong>piorou</strong> cerca de 2× e a vazão caiu 43% a 47%; os intervalos de p95 entre repetições não se
+sobrepõem. Esse resultado mistura <strong>três mudanças simultâneas</strong> (a fila do pooler em transaction mode; PG 16 → 17
+com outro locale; teto real de conexões de ~300 para 245) e também o estado do banco (limpo agora, inchado antes).
+<strong>Não se atribui o aumento ao pooler.</strong> Os efeitos foram separados em rodadas de isolamento no dia seguinte (subseção &quot;Isolamento do pooler&quot;, abaixo; ameaça 14).</p>
+<p><strong>Braço ingênuo (rodada 1b, #13).</strong></p>
+<table><thead><tr><th>Lag (ms)</th><th>N</th><th><code>oversell</code> média ± desvio</th><th><code>oversell</code> mín–máx</th><th>Execuções no teto</th><th><code>lag_obs_disparo</code> médio (ms)</th><th>p95 da reserva, média (mín–máx) (ms)</th><th>Vazão média (tentativas/s)</th></tr></thead><tbody><tr><td>500</td><td>100</td><td>77,6 ± 5,4</td><td>68–80</td><td>4 de 5</td><td>241</td><td>116,8 (87,0–146,0)</td><td>746,5</td></tr><tr><td>500</td><td>200</td><td>116,0 ± 87,7</td><td>15–180</td><td>3 de 5</td><td>309</td><td>137,5 (90,1–175,9)</td><td>1219,0</td></tr><tr><td>2000</td><td>100</td><td>80 ± 0</td><td>80–80</td><td>5 de 5</td><td>1084</td><td>116,4 (83,9–156,0)</td><td>780,1</td></tr><tr><td>2000</td><td>200</td><td>180 ± 0</td><td>180–180</td><td>5 de 5</td><td>1370</td><td>144,7 (118,0–170,3)</td><td>1079,8</td></tr><tr><td>5000</td><td>100</td><td>76,8 ± 7,2</td><td>64–80</td><td>4 de 5</td><td>2729</td><td>137,0 (90,8–197,6)</td><td>673,4</td></tr><tr><td>5000</td><td>200</td><td>180 ± 0</td><td>180–180</td><td>5 de 5</td><td>2762</td><td>159,0 (139,8–190,7)</td><td>1027,7</td></tr><tr><td>10000</td><td>100</td><td>80 ± 0</td><td>80–80</td><td>5 de 5</td><td>6211</td><td>117,8 (96,9–141,5)</td><td>720,8</td></tr><tr><td>10000</td><td>200</td><td>180 ± 0</td><td>180–180</td><td>5 de 5</td><td>4211</td><td>161,3 (148,8–179,2)</td><td>981,5</td></tr></tbody></table>
+<p><img decoding="async" loading="lazy" alt="Overselling médio por lag no ponto 1 (pós-pooler), capacity 20, duas faixas de N. CAS: 0 em todas as execuções (medido só no lag de 5000 ms; a linha tracejada o repete nos demais). Ingênuo, N = 100: 77,6 (lag 500 ms), 80 (2000), 76,8 (5000) e 80 (10000); N = 200: 116 (500, desvio 87,7, mínimo 15 e máximo 180) e 180 nos demais lags." src="/assets/images/matriz-pooler-76bc59fb346e9af16dd3a3e8828d52fb.svg" width="880" height="442" class="img_ev3q"></p>
+<p><em>Figura: overselling × lag, ponto 1 (média das 5 repetições; barra = ±1 desvio, que pode passar do teto N − capacity, linha fina = mín–máx). Regenerável com <code>graficos/gera-graficos-fase2.sh</code>.</em></p>
+<p><strong>O lag observado passou a respeitar o configurado.</strong> Com o banco limpo, no lag de 500 ms o <code>lag_obs_disparo</code> ficou
+entre 151 e 428 ms (média de 275; <code>lag_obs_max</code> até 503), contra 851–2095 ms (média de 1592) na matriz
+pré-pooler. Nos demais lags, a média do <code>lag_obs_disparo</code> (1227, 2746 e 5211 ms) fica perto de metade do lag, como se
+espera de um disparo em fase aleatória do ciclo.</p>
+<p><strong>O overselling deixou de estar sempre no teto.</strong> Em 36 das 40 repetições o overselling ficou no teto <code>N − capacidade</code>
+(80 e 180), como antes. Em 4 a rajada atravessou um refresh que &quot;fechou&quot; o evento no meio (<code>confirmed &lt; N</code>, isto é,
+parte dos clientes recebeu &quot;lotado&quot;):</p>
+<table><thead><tr><th>Lag (ms)</th><th>N</th><th>Rep</th><th><code>confirmed</code></th><th><code>oversell</code></th><th><code>lag_obs_disparo</code> / <code>lag_obs_max</code> (ms)</th></tr></thead><tbody><tr><td>500</td><td>100</td><td>5</td><td>88</td><td>68</td><td>295 / 295</td></tr><tr><td>500</td><td>200</td><td>2</td><td>35</td><td>15</td><td>193 / 503</td></tr><tr><td>500</td><td>200</td><td>3</td><td>45</td><td>25</td><td>192 / 495</td></tr><tr><td>5000</td><td>100</td><td>5</td><td>84</td><td>64</td><td>4677 / 5014</td></tr></tbody></table>
+<p>O braço de controle continua com overselling em todos os lags, e a dependência da fase do refresh, que a hipótese
+previa, antes ficava escondida pelo lag inflado. A leitura é qualitativa: com 5 repetições por configuração e
+desvio de até 87,7 (lag 500, N = 200), a amostra não permite ajustar uma curva nem estimar a probabilidade de a
+rajada cruzar um refresh. Dentro desse limite, o resultado é compatível com H2 para N = 200 (116,0 no lag de 500
+ms e 180 a partir de 2000 ms), mas não mostra tendência monotônica para N = 100 (77,6, 80, 76,8 e 80), e uma
+repetição do lag de 5000 ms também ficou abaixo do teto.</p>
+<p><strong>Comparação do ingênuo com o pré-pooler.</strong> O p95 da reserva subiu nas 8 configurações (de 14% a 48%) e a vazão caiu em 7
+de 8 (a exceção, lag 500 com N = 200, é puxada pelas duas repetições com rejeição, que respondem mais rápido). As
+mesmas três mudanças simultâneas e o banco limpo valem para essa comparação.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="isolamento-do-pooler-2026-10-17">Isolamento do pooler (2026-10-17)<a href="#isolamento-do-pooler-2026-10-17" class="hash-link" aria-label="Link direto para Isolamento do pooler (2026-10-17)" title="Link direto para Isolamento do pooler (2026-10-17)" translate="no">​</a></h3>
+<p>Duas matrizes CAS extras, com o mesmo protocolo (capacidade 20, N ∈ {100, 200}, 5 repetições), host na <code>main</code> <code>a8fc86a</code>,
+HikariCP 1000, banco novo em cada bloco e Studio, meta e kong parados durante a carga. <strong>(a) Pooler com pool de 300</strong>
+(<code>max_connections</code> 355): muda só o teto de conexões. <strong>(b) PG 17 sem pooler</strong>: o backend direto em <code>db:5432</code> (override
+local do compose, não versionado, descrito no doc de resultados), <code>max_connections</code> 300: tira o Supavisor. Fonte:
+<code>Projeto/carga/results/03-supabase-pooler/matriz-isola-pool300.csv</code> e <code>matriz-isola-sem-pooler.csv</code>; tabelas completas em
+<code>docs/carga/resultados-isolamento-escada-pospooler-2026-10-17.md</code>. Média de 5 repetições, p95 com mín–máx; recalculado dos CSVs:</p>
+<table><thead><tr><th>Bloco</th><th>N</th><th>p95 (ms)</th><th>Vazão (tentativas/s)</th></tr></thead><tbody><tr><td>Pré-pooler (PG 16 direto)</td><td>100</td><td>53,7 (46,9–66,3)</td><td>1632,7</td></tr><tr><td></td><td>200</td><td>77,1 (64,5–86,2)</td><td>2075,5</td></tr><tr><td>Ponto 1 (pooler 245)</td><td>100</td><td>103,9 (84,6–117,6)</td><td>870,9</td></tr><tr><td></td><td>200</td><td>155,3 (125,5–203,7)</td><td>1178,5</td></tr><tr><td>(a) pooler 300</td><td>100</td><td>96,0 (82,1–103,9)</td><td>965,1</td></tr><tr><td></td><td>200</td><td>119,9 (102,0–140,5)</td><td>1462,6</td></tr><tr><td>(b) PG 17 sem pooler</td><td>100</td><td>67,4 (58,1–79,7)</td><td>1333,1</td></tr><tr><td></td><td>200</td><td>77,1 (64,3–91,5)</td><td>2140,7</td></tr></tbody></table>
+<p><code>oversell</code> = 0 nas 20 execuções de isolamento (H1 se sustenta). Leitura:</p>
+<ul>
+<li class=""><strong>O Supavisor responde pela maior parte da piora.</strong> Sem ele, o p95 fica próximo do pré-pooler: igual com N = 200 e
+~14 ms acima com N = 100. Os intervalos de (b) não se sobrepõem aos do ponto 1. O resíduo é o PG 17 junto com o banco
+limpo, <strong>sem separar os dois</strong>.</li>
+<li class=""><strong>O teto de conexões explica uma parte menor.</strong> De 245 para 300, o p95 com N = 200 cai de 155 para 120 ms, mas os
+intervalos se sobrepõem em parte; com N = 100 quase não muda. (a) continua longe de (b).</li>
+<li class="">São 5 repetições por bloco e os intervalos se sobrepõem em parte; a ordem de grandeza (o pooler) é firme, a divisão
+fina do resto não.</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="overselling--lag-pré-pooler-referência-monólito--hikaricp">Overselling × lag, pré-pooler (referência: monólito + HikariCP)<a href="#overselling--lag-pré-pooler-referência-monólito--hikaricp" class="hash-link" aria-label="Link direto para Overselling × lag, pré-pooler (referência: monólito + HikariCP)" title="Link direto para Overselling × lag, pré-pooler (referência: monólito + HikariCP)" translate="no">​</a></h3>
+<p>Rodadas de 2026-10-16 (anteriores ao pooler), capacidade 20, 100% de confirmação, <code>max_connections</code> 300, commit
+<code>569d1be</code>. Fonte: <code>Projeto/carga/results/02-hikari/matriz-prepooler-20261016.csv</code> (50 linhas; versionado em
+<code>1fbe12b</code> como <code>matriz.csv</code>); gráfico regenerável com <code>report-matriz.sh</code> sobre esse CSV.
+Nenhuma repetição foi descartada nos dois braços.</p>
+<p><strong>Braço CAS (rodada 1a, #12).</strong> <code>oversell = 0</code> nas 10 linhas (N ∈ {100, 200} × 5 repetições), com
+<code>confirmed = 20</code> e <code>pending = 0</code> em todas: exatamente a capacidade, nenhuma a mais. Sem <code>[FALHA CAS]</code> (código
+de saída 0). p95 da reserva: média de 53,7 ms (46,9–66,3) com N = 100 e 77,1 ms (64,5–86,2) com N = 200.</p>
+<p><strong>Braço ingênuo (rodada 1b, #13).</strong></p>
+<table><thead><tr><th>Lag (ms)</th><th>N</th><th><code>oversell</code> média ± desvio</th><th><code>oversell</code> mín–máx</th><th><code>lag_obs_disparo</code> médio (ms)</th><th>p95 da reserva, média (mín–máx) (ms)</th></tr></thead><tbody><tr><td>500</td><td>100</td><td>80 ± 0</td><td>80–80</td><td>1714</td><td>102,8 (77,3–135,2)</td></tr><tr><td>500</td><td>200</td><td>180 ± 0</td><td>180–180</td><td>1470</td><td>118,1 (113,3–127,7)</td></tr><tr><td>2000</td><td>100</td><td>80 ± 0</td><td>80–80</td><td>2408</td><td>95,2 (61,5–170,6)</td></tr><tr><td>2000</td><td>200</td><td>180 ± 0</td><td>180–180</td><td>2678</td><td>111,3 (99,4–133,5)</td></tr><tr><td>5000</td><td>100</td><td>80 ± 0</td><td>80–80</td><td>3620</td><td>92,3 (68,1–140,4)</td></tr><tr><td>5000</td><td>200</td><td>180 ± 0</td><td>180–180</td><td>3344</td><td>121,3 (104,4–139,4)</td></tr><tr><td>10000</td><td>100</td><td>80 ± 0</td><td>80–80</td><td>5541</td><td>95,9 (74,6–139,3)</td></tr><tr><td>10000</td><td>200</td><td>180 ± 0</td><td>180–180</td><td>6337</td><td>115,7 (98,9–145,1)</td></tr></tbody></table>
+<p><img decoding="async" loading="lazy" alt="Overselling médio por lag na matriz pré-pooler (monólito + HikariCP), capacity 20. CAS: 0 em todas as execuções (medido só no lag de 5000 ms; a linha tracejada o repete nos demais). Ingênuo: 80 com N = 100 e 180 com N = 200 nos quatro lags (500, 2000, 5000 e 10000 ms), sem variação com o lag." src="/assets/images/matriz-prepooler-657744af314e87c396024a3266f52812.svg" width="880" height="442" class="img_ev3q"></p>
+<p><em>Figura: overselling × lag, pré-pooler (média das 5 repetições; desvio zero em todos os pontos). Regenerável com <code>graficos/gera-graficos-fase2.sh</code>.</em></p>
+<p><strong>Forma observada: patamar no teto N − capacidade, sem variação com o lag.</strong> Em todas as 40 execuções todos
+os N clientes foram aceitos e confirmaram (<code>confirmed = N</code>), então o overselling é sempre o máximo possível
+(80 e 180) e o desvio é zero. A hipótese de que o overselling cresce com o lag <strong>não foi observada</strong> nesta
+faixa: a rajada dura de ~0,1 a 0,2 s (N ÷ vazão, com vazão de 518 a 1449 tentativas por segundo), menos que o menor período
+efetivo de refresh, então o read model nunca reflete a lotação durante a rajada, em nenhum lag. Para ver a
+curva subir seria preciso um lag menor que a duração da rajada ou rajadas espalhadas no tempo (não testado).</p>
+<p><strong>Lag observado acima do configurado.</strong> No lag de 500 ms, o <code>lag_obs_disparo</code> médio ficou em ~1,5–1,7 s; nos
+lags maiores, em ~metade do lag, como se espera de um disparo em fase aleatória do ciclo. O período efetivo é o
+lag mais a duração do refresh (<code>fixedDelay</code>), e o refresh recalcula a disponibilidade de <strong>todos</strong> os eventos.
+No dia das rodadas, o banco do host acumulava ~35 mil eventos e ~2 milhões de linhas em <code>walletevent</code> das
+escadas da #14, o que alonga cada refresh. O lag de 500 ms, portanto, não foi atingido de fato. O resultado
+não muda (o teto já é atingido), mas a coluna <code>lag_ms</code> deve ser lida junto com <code>lag_obs_disparo</code>. No ponto 1, com o
+banco limpo, o lag observado voltou a acompanhar o configurado e o teto deixou de ser universal (acima).</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="limiar-x-escada-de-carga-pré-pooler-referência">Limiar X (escada de carga, pré-pooler: referência)<a href="#limiar-x-escada-de-carga-pré-pooler-referência" class="hash-link" aria-label="Link direto para Limiar X (escada de carga, pré-pooler: referência)" title="Link direto para Limiar X (escada de carga, pré-pooler: referência)" translate="no">​</a></h3>
+<p>Escadas de 2026-10-16, braço CAS, 200 usuários, <strong>antes do pooler</strong> (HikariCP direto no PG 16; referência: a escada pelo pooler vem na subseção seguinte). Fonte: <code>Projeto/carga/results/02-hikari/degraus-&lt;id&gt;.csv</code> e
+<code>summary-degraus-&lt;id&gt;.json</code> (commit <code>5caac91</code>); veredito de <code>make report-degraus</code>. Em <strong>todas</strong> as escadas:
+<code>taxa_5xx = 0</code> e <code>erros_5xx_confirma = 0</code>. O host nunca respondeu 5xx: quando satura, ele fica lento e o critério
+que dispara é o p95 por janela de 30 s.</p>
+<p><strong>Escada do protocolo (<code>degraus-953959</code>, 12k → 40k, 2000 VUs, <code>max_connections</code> 100).</strong> Nenhum degrau
+degradou: <strong>X &gt; 40.000 RPM (acima do último degrau)</strong>. p95 de 7,7 a 10,9 ms, 0 descartes, gerador sem
+saturação. Como o protocolo não achou o X, as escadas seguintes estenderam a faixa. Essa extensão foi
+decidida depois de ver o resultado, então está <strong>fora do pré-registro</strong>.</p>
+<p><strong>Escadas estendidas (fora do pré-registro).</strong></p>
+<table><thead><tr><th>Escada</th><th>Faixa (RPM)</th><th>VUs</th><th><code>max_connections</code> (host)</th><th>Veredito</th><th>Observação</th></tr></thead><tbody><tr><td><code>degraus-954833</code></td><td>50k → 120k</td><td>2000</td><td>100</td><td>X &gt; 100k, <strong>limite inferior</strong></td><td>gerador esgotou as portas efêmeras do Windows a partir de 60k (<code>outros</code> = erros de cliente); descartado como medida do host</td></tr><tr><td><code>degraus-956799</code></td><td>60k → 130k</td><td>3000</td><td>100</td><td><strong>X = 100.000</strong></td><td>p95 de janela de 1339,8 ms; rpm efetivo estaciona em 97–99,8k</td></tr><tr><td><code>degraus-958305</code></td><td>95k → 100k, passo 1k</td><td>3000</td><td>100</td><td><strong>X = 97.000</strong>; último degrau limpo 96.000</td><td>97k teve pico isolado (p95 de janela de 4254,3 ms); 98k–100k estáveis em ~1,3 s</td></tr><tr><td><code>degraus-959190</code></td><td>96k → 97k, <strong>60% de confirmação</strong></td><td>3000</td><td>100</td><td>X &gt; 97.000</td><td>p95 de 205,8 / 216,2 ms: com 40% menos confirmações o host passa no X</td></tr><tr><td><code>degraus-959765</code></td><td>60k → 130k</td><td>3000</td><td>1000</td><td><strong>X = 100.000</strong></td><td>rpm efetivo de 94–95k; mais conexões não subiram o teto</td></tr><tr><td><code>degraus-962591</code></td><td>95k (diagnóstico)</td><td>3000</td><td>1000</td><td>—</td><td>Tomcat com 400 threads (override local): p95 de 582,2 ms contra 242,5 ms com 200 threads e 100 conexões</td></tr><tr><td><code>degraus-963487</code></td><td>100k → 160k, passo 20k</td><td>3000</td><td>1000</td><td>120k e 140k limpos</td><td>mapeamento <strong>intercalado</strong> (ver abaixo); em 160k o gerador saturou (portas, VUs, CPU de 99%)</td></tr></tbody></table>
+<p>Degraus da escada que define o X (<code>degraus-956799</code>), em ms:</p>
+<table><thead><tr><th><code>rpm_alvo</code></th><th><code>rpm_efetivo</code></th><th><code>taxa_5xx</code></th><th><code>p95</code></th><th><code>p95_max_janela_30s</code></th><th><code>throughput</code> (reservas/s)</th><th><code>iteracoes_descartadas</code></th></tr></thead><tbody><tr><td>60.000</td><td>60.001</td><td>0</td><td>105,6</td><td>126,0</td><td>1000,0</td><td>0</td></tr><tr><td>70.000</td><td>70.001</td><td>0</td><td>122,4</td><td>125,0</td><td>1166,7</td><td>0</td></tr><tr><td>80.000</td><td>80.001</td><td>0</td><td>177,7</td><td>178,2</td><td>1333,4</td><td>0</td></tr><tr><td>90.000</td><td>90.001</td><td>0</td><td>221,6</td><td>235,5</td><td>1500,0</td><td>0</td></tr><tr><td>100.000</td><td>99.033</td><td>0</td><td>1315,9</td><td>1339,8</td><td>1650,6</td><td>967</td></tr><tr><td>110.000</td><td>99.784</td><td>0</td><td>1351,8</td><td>1369,8</td><td>1663,1</td><td>10.218</td></tr><tr><td>120.000</td><td>97.156</td><td>0</td><td>1405,7</td><td>1406,6</td><td>1619,3</td><td>22.845</td></tr><tr><td>130.000</td><td>98.139</td><td>0</td><td>1396,5</td><td>1422,1</td><td>1635,7</td><td>31.862</td></tr></tbody></table>
+<p><img decoding="async" loading="lazy" alt="Escada de 60k a 130k RPM pré-pooler (degraus-956799): o p95 da pior janela de 30 s fica entre 125,0 e 235,5 ms até 90k e passa a 1339,8 ms em 100k (X = 100.000, traço vertical), 1369,8, 1406,6 e 1422,1 ms em 110k, 120k e 130k; o throughput estaciona em ~1650 reservas/s (1650,6 em 100k) e a taxa de 5xx é 0 em todos os degraus." src="/assets/images/escada-prepooler-956799-05fe361bc341605a3acb9fa6ab22af3b.svg" width="880" height="750" class="img_ev3q"></p>
+<p><em>Figura: escada larga pré-pooler (<code>degraus-956799</code>), a mesma tabela acima.</em></p>
+<p><img decoding="async" loading="lazy" alt="Escada fina de 95k a 100k RPM pré-pooler (degraus-958305), passo de 1k: o p95 da pior janela de 30 s é 259,1 ms em 95k e 494,4 ms em 96k, salta para 4254,3 ms em 97k (X = 97.000, traço vertical, com 10.459 descartes e RPM efetivo de 86.542) e fica em 1391,7, 1361,3 e 1315,9 ms em 98k, 99k e 100k; taxa de 5xx 0 em todos os degraus." src="/assets/images/escada-prepooler-958305-20e65438724e345051cd102dac13aee6.svg" width="880" height="750" class="img_ev3q"></p>
+<p><em>Figura: escada fina pré-pooler (<code>degraus-958305</code>), a que localiza o X = 97.000 usado na comparação das 3 configurações. Regenerável com <code>graficos/gera-graficos-fase2.sh</code>.</em></p>
+<p>Os descartes a partir de 100k vêm da latência do host: com os VUs pré-alocados, só há descarte quando a
+iteração passa de <code>MAX_VUS ÷ (RPM/60)</code> s. O gerador ficou com CPU de no máximo 66% e mais de 4 GB livres. O
+report marca X como firme, com aviso de descartes no mesmo degrau.</p>
+<p><strong>Causa do teto: contenção na linha do <code>eventcap</code>.</strong> Nem conexões (100 → 1000) nem threads do Tomcat
+(200 → 400) subiram o teto; as duas mudanças só aumentaram a latência na saturação. O container do backend
+não tem limite de CPU (a JVM enxerga 16 CPUs) e ficou em ~420–470%. Durante a <code>degraus-962591</code>, o Postgres
+tinha 162 sessões em <code>LWLock:LockManager</code>, 119 em <code>Lock:transactionid</code> e 90 em <code>Lock:tuple</code> (amostra de
+<code>pg_stat_activity</code> no host). O motivo está no mapeamento da escada: a iteração <code>i</code> usa o evento <code>floor(i / U)</code>,
+então 200 reservas seguidas fazem o <code>UPDATE</code> condicional (CAS) na <strong>mesma linha</strong> de <code>eventcap</code>, e essas
+atualizações se serializam. Com o mapeamento intercalado (evento <code>i % E</code>, <code>.js</code> editado só localmente para o
+diagnóstico e revertido; a coluna <code>commit</code> não reflete a edição), as esperas por lock de linha somem (só
+sobra <code>LWLock:WALWrite</code>) e o host sustenta <strong>120k e 140k RPM</strong> com p95 de 317,1 e 262,7 ms.</p>
+<p><strong>Leitura.</strong> O X medido, ≈ 97–100k RPM (~1650 reservas/s), é a vazão de <strong>um evento disputado</strong> no CAS
+(todas as reservas no mesmo <code>eventcap</code>), não a capacidade do host. Com a carga espalhada entre eventos, o
+host passa de 140k RPM, e esse teto não é mensurável com um único gerador. Como o gargalo é uma linha do banco,
+adicionar réplicas do backend não deve subir o X de um evento disputado (hipótese, não medida). A opção de
+mapeamento na escada é a issue #113.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="limiar-x-pelo-pooler-2026-10-17">Limiar X pelo pooler (2026-10-17)<a href="#limiar-x-pelo-pooler-2026-10-17" class="hash-link" aria-label="Link direto para Limiar X pelo pooler (2026-10-17)" title="Link direto para Limiar X pelo pooler (2026-10-17)" translate="no">​</a></h3>
+<p>Três escadas do braço CAS, 200 usuários, <code>MAX_VUS</code> 3000, mapeamento sequencial (a mesma linha quente do <code>eventcap</code>),
+pooler com pool 245 e <code>max_connections</code> 300, host na <code>main</code> <code>a8fc86a</code>, banco novo em cada escada, Studio, meta e kong
+parados. Fonte: <code>Projeto/carga/results/03-supabase-pooler/degraus-&lt;id&gt;.csv</code> e <code>summary-degraus-&lt;id&gt;.json</code>; um degrau por
+tabela em <code>docs/carga/resultados-isolamento-escada-pospooler-2026-10-17.md</code>. Nenhum 5xx (reserva ou confirmação) em
+nenhum degrau.</p>
+<table><thead><tr><th>Escada</th><th>Faixa (RPM)</th><th>Resultado</th></tr></thead><tbody><tr><td><code>degraus-28082</code></td><td>20k → 55k, passo 5k, sem <code>netsh</code></td><td>20k–50k limpos; p95 de janela de 5–8 ms até 35k, depois 36 ms (40k), 62 ms (45k) e 98 ms (50k). O degrau de 55k está <strong>contaminado</strong> por 2021 erros de porta do cliente</td></tr><tr><td><code>degraus-32105</code></td><td>50k → 130k, passo 10k, com <code>netsh</code></td><td>limpo até 70k (janelas de 366, 192 e 392 ms). Satura em 80k (efetivo 75,3k, p95 de janela de 1865 ms, 5,8% de descartes) e de 80k a 130k o efetivo estaciona em ~74,6–77,3k, p95 de ~1,8–1,9 s</td></tr><tr><td><code>degraus-33459</code></td><td>70k → 80k, passo 1k</td><td>70k degradou (janela de 1982 ms, 514 descartes): aquecimento depois do seed, pois na <code>32105</code> o mesmo 70k ficou limpo. De 71k a 77k sem descartes e janela entre 368 e 1170 ms (71k e 75k passam de 1 s por pouco). De 78k em diante, saturação sustentada: efetivo de ~72,9–75,5k, descartes de 3% a 8%, janela de ~1,9 s</td></tr></tbody></table>
+<p><img decoding="async" loading="lazy" alt="Escada fina de 70k a 80k RPM pelo pooler (degraus-33459), passo de 1k: o p95 da pior janela de 30 s é 1981,9 ms em 70k (aquecimento: o veredito automático do report, X = 70.000, esmaecido na figura e rotulado &amp;quot;não usado&amp;quot;, não vale), cai para 368,3 ms em 73k, fica entre 368,3 e 1170,3 ms de 71k a 77k (1002,9 em 71k e 1170,3 em 75k acima de 1 s) e sobe para 1906,8, 1939,9 e 1869,0 ms em 78k, 79k e 80k, com RPM efetivo de 75.501, 72.905 e 74.599 e descartes de 2500, 6096 e 5401; taxa de 5xx 0 em todos os degraus. O X adotado, 78.000, tem traço sólido rotulado &amp;quot;X adotado&amp;quot; nos três painéis." src="/assets/images/escada-pooler-33459-291ab1d997e3562aadd5b76c828efed9.svg" width="880" height="750" class="img_ev3q"></p>
+<p><em>Figura: escada fina pelo pooler (<code>degraus-33459</code>). O traço sólido marca o X adotado, ≈ 78.000, o primeiro degrau de saturação sustentada; o traço esmaecido (70k) é o veredito automático do report, contaminado pelo aquecimento e não usado. Regenerável com <code>graficos/gera-graficos-fase2.sh</code>.</em></p>
+<p><strong>X pelo pooler ≈ 78.000 RPM</strong> (~1300 reservas/s): primeiro degrau de saturação sustentada (último degrau sem descartes:
+77k, janela de ~0,9 s; joelho entre 74k e 78k). É o mesmo critério de leitura do X pré-pooler, ≈ 97.000 (referência, com
+pico pontual em 97k), e dá cerca de <strong>−20%</strong> no teto da linha quente de um evento. O veredito automático do runner na
+<code>33459</code> (&quot;X = 70k&quot;) está contaminado pelo aquecimento e não é usado; pela regra estrita da <code>32105</code>, X seria 80k.</p>
+<p>Ruídos: o aquecimento no 1º degrau; o p95 de 50k maior que o de 60k na <code>32105</code> (e, no mesmo 50k, 98 ms na <code>28082</code>, ~4×
+menor); o degrau de 55k da <code>28082</code>. O gerador não saturou (CPU ≤ 73%, RAM livre ≥ 4,5 GB, observação do operador): os
+descartes vêm do teto de 3000 VUs com iterações de ~1,8 s, isto é, da latência do host.</p>
+<p>Como no pré-pooler, o X é o <strong>da linha quente de um evento</strong> (mapeamento sequencial), não a capacidade agregada do host
+(#113). <strong>Impacto:</strong> as regras de autoescala 50/80 (#111 e #112), que usam o X, passam a ter como base ≈ 78k pelo pooler,
+não 97k (as issues não foram alteradas).</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="ponto-2-cqrs--es-no-monólito-rodada-2-2026-10-19">Ponto 2 (CQRS + ES no monólito, Rodada 2, 2026-10-19)<a href="#ponto-2-cqrs--es-no-monólito-rodada-2-2026-10-19" class="hash-link" aria-label="Link direto para Ponto 2 (CQRS + ES no monólito, Rodada 2, 2026-10-19)" title="Link direto para Ponto 2 (CQRS + ES no monólito, Rodada 2, 2026-10-19)" translate="no">​</a></h3>
+<p>Rodada 2 do experimento (issue #31), contra a <code>main</code> em <code>1ee6fbe</code> (merge do PR #145, Fase 6), capacidade 20 e 100% de
+confirmação. As condições estão em &quot;Condições do ponto 2&quot; (Setup). Fonte: <code>Projeto/carga/results/04-fase6-es/</code> (o
+<code>README.md</code> da etapa descreve os 6 blocos; <code>matriz-naive.csv</code>, <code>matriz-cas.csv</code>, <code>degraus-*.csv</code>,
+<code>resultados-aleatorio.csv</code> e as amostras de lag do host em <code>host-lag/</code>). Nenhuma repetição foi descartada. Os agregados
+foram recalculados dos CSVs. As ressalvas da rodada (Wi-Fi, banco acumulado em parte dos blocos, imagem local da #146)
+estão nas ameaças 16 a 21 e valem para toda a subseção. Compara-se com o ponto 1 (subseções anteriores), com o
+pré-pooler só como referência do X.</p>
+<p><strong>O que mudou em relação ao ponto 1.</strong></p>
+<ul>
+<li class=""><code>catalog</code> e o lado wallet de <code>reservation</code> passaram a event sourcing: cada command grava o evento no <code>event_store</code> e
+no <code>event_outbox</code> na mesma transação do estado (<code>docs/arquitetura/fase6-cqrs-es.md</code>). O <code>eventcap</code> e o CAS continuam
+relacionais e síncronos.</li>
+<li class="">O <strong>relay</strong> (outbox → Redpanda) e o <strong>consumer</strong> (tópico → projeção) rodam no processo do backend. O broker é um
+Redpanda em modo dev-container, só na rede interna do compose.</li>
+<li class="">O braço <code>naive</code> deixou de ler um read model recalculado por timer: lê a projeção assíncrona <code>event_availability</code>,
+alimentada pelo consumer do tópico. O <code>ReadModelRefreshService</code> saiu.</li>
+<li class="">O <strong>lag virou variável medida</strong>, não controlada (<code>docs/adr/Architecture-Decision-Event-Backbone-Event-Store.md</code>,
+seção 4). A coluna <code>lag_ms</code> vale sempre 0; o <code>lag_obs_*</code> é a idade do último evento aplicado na linha do evento
+(<code>applied_at − last_occurred_at</code>), amostrada pelo gerador durante a rajada (definição em Métricas). A variável
+independente passa a ser a carga (N concorrentes na matriz).</li>
+<li class="">O braço <code>cas</code> não mudou. O runner da matriz espera o pipeline ficar ocioso (<code>Wait-Estavel</code>) antes de cada repetição.</li>
+</ul>
+<p><strong>Overselling × lag.</strong> Matrizes de N ∈ {100, 200}, 5 repetições cada, nos dois braços (20 linhas):</p>
+<table><thead><tr><th>Braço</th><th>N</th><th><code>confirmed</code></th><th><code>oversell</code></th><th><code>lag_obs_max</code> com leitura (ms)</th></tr></thead><tbody><tr><td><code>naive</code></td><td>100</td><td>100 em todas</td><td>80 em todas (teto)</td><td>19 a 171 (4 de 5 repetições)</td></tr><tr><td><code>naive</code></td><td>200</td><td>200 em todas</td><td>180 em todas (teto)</td><td>53 a 280 (3 de 5)</td></tr><tr><td><code>cas</code></td><td>100</td><td>20 em todas</td><td>0 em todas</td><td>61 a 112 (4 de 5)</td></tr><tr><td><code>cas</code></td><td>200</td><td>20 em todas</td><td>0 em todas</td><td>110 a 116 (2 de 5)</td></tr></tbody></table>
+<ul>
+<li class=""><strong>CAS: <code>oversell = 0</code> nas 10 linhas</strong>, com <code>confirmed = 20</code> e <code>pending = 0</code> em todas (80 e 180 clientes recusados como
+lotado). H1 se sustenta no ponto 2. 0 erros 5xx nos dois braços.</li>
+<li class=""><strong>Ingênuo: overselling máximo nas 10 repetições</strong> (80 com N = 100; 180 com N = 200), com todos os N clientes aceitos e
+confirmados. No ponto 1 o ingênuo oversellou nas 40 repetições, mas ficou no teto em 36 de 40 (quatro rajadas
+atravessaram um refresh); no pré-pooler, no teto em 40 de 40. Com a projeção real, o teto voltou a ser universal.</li>
+<li class=""><strong>A hipótese H2 (overselling cresce com o lag) não pode mais ser testada pelo lag</strong>, porque o lag deixou de ser
+configurado. O que a rodada mostra é o outro lado: com o lag que o pipeline de fato tem (append → relay → Redpanda →
+consumer), a janela basta para o overselling ser total, isto é, no teto em 10 de 10 repetições. O <code>lag_obs</code> de 19 a
+280 ms que acompanha esse resultado é um limite inferior (ameaça 20).</li>
+<li class=""><strong>Lag observado.</strong> Das 20 linhas, 13 têm <code>lag_obs_max</code> com leitura, entre 19 e 280 ms (média de 116,5 ms; 129,4 no
+ingênuo e 101,3 no CAS). <code>lag_obs_disparo</code> vale -1 nas 20, e isso é <strong>estrutural, não um achado</strong>: a linha do evento
+na projeção só nasce com a primeira reserva, e o disparo usa a última amostra anterior à rajada (<code>rodar-matriz.ps1</code>,
+comentário acima de <code>Wait-Evento</code>; <code>lib-matriz.ps1</code>, <code>Get-LagRajada</code>). Em 7 linhas (3 do ingênuo, 4 do CAS) nem
+<code>lag_obs_max</code> teve leitura, isto é, a linha do evento não apareceu na projeção durante a amostragem. <strong>O <code>lag_obs</code> é
+um limite inferior</strong> do atraso da projeção: mede a idade do último evento já aplicado, não quanto a projeção está
+atrás do &quot;agora&quot;, e só existe depois do primeiro evento aplicado.</li>
+<li class=""><strong>Lag de consumer do host.</strong> Na amostra <code>host-lag/lag-poll-cas-*</code> (80 amostras em cerca de 2 min, nomeada para a matriz
+CAS; a cobertura completa da matriz não foi conferida), o offset lag do grupo chegou a no máximo 21 mensagens e o
+<code>event_outbox</code> a no máximo 3. Para o ingênuo não há amostra do host.</li>
+</ul>
+<p><strong>Latência e vazão das matrizes.</strong> Média de 5 repetições, comparada com o ponto 1 (<code>03-supabase-pooler/matriz.csv</code>,
+Tomcat 200, banco limpo, cabo). Para o ingênuo, o ponto 1 é a média das 20 repetições (4 lags × 5), pois o lag não
+tem efeito mensurável sobre p50, p95 e vazão no ponto 1. O p95 do ponto 2 vem com mín–máx:</p>
+<table><thead><tr><th>Braço</th><th>N</th><th>p50 ponto 1 → 2 (ms)</th><th>p95 ponto 1 → 2 (ms)</th><th>Vazão ponto 1 → 2 (tentativas/s)</th></tr></thead><tbody><tr><td><code>cas</code></td><td>100</td><td>84,0 → 107,6</td><td>103,9 → 130,9 (118,9–147,2)</td><td>870,9 → 555,8 (−36,2%)</td></tr><tr><td><code>cas</code></td><td>200</td><td>115,8 → 132,6</td><td>155,3 → 166,1 (139,3–216,1)</td><td>1178,5 → 813,2 (−31,0%)</td></tr><tr><td><code>naive</code></td><td>100</td><td>74,0 → 65,2</td><td>122,0 → 112,8 (70,3–150,2)</td><td>730,2 → 547,6 (−25,0%)</td></tr><tr><td><code>naive</code></td><td>200</td><td>86,7 → 99,5</td><td>150,6 → 184,3 (164,5–223,8)</td><td>1077,0 → 707,9 (−34,3%)</td></tr></tbody></table>
+<ul>
+<li class=""><strong>CAS:</strong> o p95 sobe 26% com N = 100 e 7% com N = 200; neste último os intervalos de p95 entre repetições se
+sobrepõem (125,5–203,7 no ponto 1; 139,3–216,1 no ponto 2), então a diferença não é firme. A vazão cai de 31% a 36%.</li>
+<li class=""><strong>Ingênuo:</strong> o p95 muda −8% com N = 100 (intervalos sobrepostos) e +22% com N = 200; a vazão cai de 25% a 34%.</li>
+<li class=""><strong>A comparação certa do CAS é com o Tomcat 300.</strong> O ponto 1 foi medido com 200 threads, e o ponto 2 com 300. A matriz
+CAS do ponto 1 refeita com 300 threads (<code>03-supabase-pooler/matriz-tomcat300.csv</code>, 2026-10-17) deu p50 de 75,3 e
+92,6 ms, p95 de 91,9 e 114,4 ms e vazão de 1006,3 e 1514,7 tentativas/s (N = 100 e 200). Contra essa linha, o CAS do
+ponto 2 tem p95 cerca de 42% (N = 100) e 45% (N = 200) maior, e a vazão com N = 200 é 46% menor.</li>
+<li class=""><strong>O que não se atribui ao ES:</strong> a queda de vazão e o aumento de latência vêm junto de três fatores que mudaram ao
+mesmo tempo: o append do evento no caminho quente, a rede em Wi-Fi (baseline de HTTP de 26,6 / 42,9 ms, contra
+~15 / 19 ms no cabo) e o banco acumulado dos blocos 1 e 2 (ameaças 16 e 17). Os dados não separam os três. O
+overselling, ao contrário, está no teto (ingênuo) ou em zero (CAS) em qualquer um desses cenários.</li>
+</ul>
+<p><strong>Limiar X: o custo por camada.</strong> Escada do braço CAS, 200 usuários, <code>MAX_VUS</code> 3000, mapeamento sequencial (a mesma
+linha quente do <code>eventcap</code> de todas as escadas anteriores), degraus de 60 s, 0 erros 5xx em todos os degraus de todas
+as escadas. O X segue o critério do resto do artigo, o <strong>primeiro degrau de saturação sustentada</strong>: um pico isolado
+(um degrau acima de 1 s entre degraus abaixo de 1 s) não conta, como os 71k e 75k do pós-pooler. As camadas <strong>não diferem só
+pelo que foi ligado no host</strong>: ver o bullet &quot;O que não se atribui ao ES&quot;.</p>
+<table><thead><tr><th>Camada</th><th>X (RPM)</th><th>Escada(s)</th><th>Queda em relação ao pós-pooler</th><th>Backlog máximo do consumer</th></tr></thead><tbody><tr><td>Pré-pooler (PG 16, HikariCP direto)</td><td>~97k</td><td><code>degraus-958305</code></td><td>—</td><td>—</td></tr><tr><td>Pós-pooler (ponto 1, sem ES)</td><td>~78k</td><td><code>degraus-33459</code></td><td>—</td><td>—</td></tr><tr><td>ES: append + relay, sem consumer (bloco 3b)</td><td>~61k</td><td><code>degraus-188193</code>, <code>-188802</code></td><td>~17k</td><td>consumer desligado</td></tr><tr><td>ES com consumer, 1 evento por transação (bloco 3)</td><td>~56k</td><td><code>degraus-181953</code>, <code>-183194</code></td><td>~22k</td><td>362.342 na grossa; 578.674 no refino (187.917 herdados)</td></tr><tr><td>ES com consumer em lote, #146 (bloco 5)</td><td>~58k</td><td><code>degraus-193515</code>, <code>-194168</code></td><td>~20k</td><td>66.333 na grossa; 118.606 no refino</td></tr></tbody></table>
+<p>O backlog é o máximo do offset lag do grupo nas amostras de 1 s do host, em cada escada (<code>host-lag/</code>). A escada grossa
+e o refino de cada bloco estão no <code>README.md</code> da etapa; os pontos de corte:</p>
+<ul>
+<li class=""><strong>ES com consumer (bloco 3).</strong> Grossa de 40k a 120k: 60k já satura (p95 de janela 1,28 s, 877 timeouts de leitura,
+277 descartes) e de 70k a 120k o efetivo fica em ~62–63k RPM (68k só em 80k) com p95 de janela de ~2,2–2,4 s. Refino
+de 50k a 60k: <strong>X = 56k</strong> (p95 de janela 1,84 s), e a degradação se sustenta (57k, 58k e 59k também acima de 1 s),
+com 0 descartes e 0 outros em todos os degraus. O 1º degrau é aquecimento.</li>
+<li class=""><strong>ES sem consumer (bloco 3b).</strong> Grossa de 40k a 80k: 60k limpo (p95 de janela 590 ms); 70k satura (efetivo ~59k, p95
+de 2,56 s, 10.612 descartes). Refino de 60k a 70k: o report marca X = 60k (1005 ms, no limite), mas é o degrau de
+aquecimento, e o mesmo degrau deu 590 ms na grossa; descontado, <strong>X ≈ 61k</strong> (1,64 s, 0 descartes).</li>
+<li class=""><strong>ES com consumer em lote (bloco 5).</strong> Grossa de 40k a 80k: 50k limpo (351 ms), 60k já com 1,76 s, acima de 70k o
+efetivo trava em ~58–59k. Refino de 50k a 60k: o degrau de 55k deu 1077 ms, mas é um <strong>pico isolado</strong> (56k e 57k
+voltam a ficar abaixo de 1 s, com 991 e 990 ms), e a degradação sustentada começa em 58k (1,81 s; 59k e 60k também
+acima de 1 s). Pelo critério do artigo, <strong>X = 58k</strong>; a regra estrita do report marca 55k. Só o degrau de 60k teve
+descartes (302).</li>
+<li class=""><strong>O que não se atribui ao ES.</strong> O ponto 1 (78k) foi medido no cabo, em banco limpo e com o host na <code>main</code> <code>a8fc86a</code>.
+Os blocos 3 e 3b rodaram no Wi-Fi, em banco <strong>acumulado</strong>, e o 3b depois do 3 (herdando o volume e o backlog dele). O
+bloco 5 rodou em banco limpo. O Tomcat não explica a queda: com 300 threads o teto do ponto 1 foi o mesmo
+(<code>03-supabase-pooler/degraus-39710.csv</code>: efetivo de 74.064 a 75.412 RPM de 80k a 100k, contra <code>degraus-32105</code>, com 200
+threads). Logo, os ~17k do append e os ~20–22k do total <strong>incluem o Wi-Fi e o estado do banco</strong>, que os dados não
+separam; é uma escada por camada.</li>
+</ul>
+<p><strong>Leitura.</strong></p>
+<ul>
+<li class=""><strong>O append no caminho quente custa até ~17k RPM.</strong> De ~78k (pós-pooler, sem ES) para ~61k (append + relay, sem
+consumer), com o <code>event_store</code> e o <code>event_outbox</code> gravados na mesma transação da reserva e o relay ligado. A ressalva
+do bullet acima vale: parte desses 17k pode ser rede e estado do banco.</li>
+<li class=""><strong>O consumer custa de ~2k a ~5k RPM, conforme o critério.</strong> Pelo X, ~61k (3b) contra ~56k com o consumer de 1 evento
+por transação (~5k) e contra ~58k com o consumer em lote (~3k). Pelo início dos descartes, ≈60k no bloco 3 (277
+descartes em 60k) contra ≈62k no 3b (1570 em 62k), ~2k; o degrau de 60k do 3b é aquecimento e não entra. Uma escada por
+camada, resolução de 1k. O
+consumer e a reserva disputam o mesmo Postgres.</li>
+<li class=""><strong>O consumer em lote empata em vazão com o atual.</strong> X de ~58k contra ~56k, dentro da resolução de 1k e com uma
+escada por camada; a queda total em relação ao pós-pooler passa a ser de ~20k.</li>
+<li class=""><strong>O consumer em lote mantém a projeção mais em dia.</strong> Com janelas iguais: no degrau de 80k, o backlog máximo foi de
+179.634 mensagens no bloco 3 e de 66.333 no bloco 5 (≈ 2,7×); no refino, o backlog do bloco 3 cresceu 390.757
+(578.674 menos os 187.917 herdados da grossa) e o do bloco 5 chegou a 118.606 (≈ 3,3×). De 40k a 80k, o backlog
+cresceu até 179.634 em 5 degraus (pico do degrau de 80k, a partir de 0) no bloco 3 (~36 mil por degrau) e 66.333 no bloco 5 (~13 mil por degrau). Na drenagem com
+a carga parada, o lote caiu de 66.333 para 45.586 em 28 s (741 msg/s) e o consumer atual de 362.342 para 187.917 em
+382 s (457 msg/s). O zero que aparece no bloco 5 em seguida (de 42.463 para 0 em 1 s) é o <strong>reset do banco</strong> entre as
+escadas (TRUNCATE, tópicos e grupo apagados), não drenagem: não se lê como &quot;o lote zerou&quot; nem como &quot;o atual não
+zerou&quot;. Os dois blocos também diferem no estado do banco (acumulado no 3, limpo no 5).</li>
+<li class=""><strong>O p95 em 60k não melhorou com o lote, e a causa é uma hipótese.</strong> Na grossa, o degrau de 60k teve p95 de janela de
+1,76 s no lote e de 1,28 s no consumer atual. A hipótese é que o consumer em lote faz o trabalho de banco durante o
+teste e disputa mais com a reserva: uma troca entre projeção fresca e vazão de escrita num banco compartilhado. Mas o
+degrau de 60k do bloco 3 teve 877 <code>outros</code> e 277 descartes fora do p95 (p99 de 4816 ms), e o do bloco 5, 0 e 0 (p99
+de 1813 ms), e o banco estava acumulado no 3 e limpo no 5. A hipótese não está isolada.</li>
+<li class=""><strong>Motivação para a Fase 7, não conclusão.</strong> Se a troca existe, ela motiva <strong>separar o banco de leitura</strong> do que
+recebe as escritas; os dados desta rodada não medem esse ganho.</li>
+<li class="">Como nas escadas anteriores, o X é o da <strong>linha quente de um evento</strong> (ameaça 10), não a capacidade agregada.
+Os 5xx ficam em 0: quando satura, o host fica lento e dispara o p95 de janela, não 5xx.</li>
+<li class="">As regras de autoescala 50/80 (#111 e #112) usam o X como base; com o ES no caminho da reserva, ela seria ~56k a
+~58k, não ~78k (as issues não foram alteradas).</li>
+</ul>
+<p><strong>Carga aleatória de 45 min (<code>Ale-190276</code>) × <code>Ale-29057</code> (#109).</strong> Mesmo perfil (semente 617706, 1k–12k RPM, passo de
+30 s, 30% de leitura, 200 usuários, <code>PCT_CONFIRMA=100</code>), braço <code>cas</code>, banco <strong>limpo</strong> nos dois, o novo com o ES e o
+consumer ligados. Fontes: <code>04-fase6-es/resultados-aleatorio.csv</code> e <code>summary-ale-190276.json</code>;
+<code>03-supabase-pooler/resultados-aleatorio-109.csv</code>. Os deltas são do p50 e do p95, em ms:</p>
+<table><thead><tr><th>Endpoint</th><th>p50 / p95 / p99 <code>Ale-29057</code> (ms)</th><th>p50 / p95 / p99 <code>Ale-190276</code> (ms)</th><th>Δ p50 / Δ p95 (ms)</th><th>p95 (×)</th></tr></thead><tbody><tr><td>Reserva</td><td>3,9 / 5,7 / 10,7</td><td>10,8 / 36,2 / 62,0</td><td>+6,9 / +30,5</td><td>6,3</td></tr><tr><td>Confirma</td><td>2,1 / 5,0 / 8,8</td><td>8,7 / 29,7 / 56,0</td><td>+6,6 / +24,7</td><td>5,9</td></tr><tr><td>Evento</td><td>1,9 / 3,4 / 6,2</td><td>7,9 / 32,7 / 58,1</td><td>+6,0 / +29,3</td><td>9,6</td></tr><tr><td>Carteira</td><td>3,2 / 12,6 / 25,0</td><td>16,6 / 56,9 / 105,1</td><td>+13,4 / +44,3</td><td>4,5</td></tr><tr><td>Busca</td><td>11,4 / 15,0 / 21,8</td><td>58,8 / 128,3 / 222,4</td><td>+47,4 / +113,3</td><td>8,6</td></tr><tr><td>Leitura agregada</td><td>2,6 / 12,9 / 19,9</td><td>13,6 / 82,6 / 142,7</td><td>+11,0 / +69,7</td><td>6,4</td></tr></tbody></table>
+<ul>
+<li class=""><strong>Mesma correção, 0 erros.</strong> 146.400 aceitas (1464 eventos × 100 vagas), todas confirmadas; 48.617 recusadas como
+lotado (48.612 na <code>Ale-29057</code>); 0 erros 5xx, 0 outros, 0 descartes, 0 leituras com erro. Overselling 0.</li>
+<li class=""><strong>O p95 ficou de 4,5× a 9,6× maior</strong> (6,3× na reserva), e o p50 de 2,8× a 5,2×. O p95 de reserva de 36,2 ms ainda é
+baixo em termos absolutos; as razões exageram porque a base da <code>Ale-29057</code> é muito baixa.</li>
+<li class=""><strong>O backlog do consumer não é a causa.</strong> Na amostra de 1 s do host durante o aleatório (2.625 amostras, na janela do
+teste: do horário de término menos a duração de 2702 s até o término), o lag do consumer ficou em média em 2,9
+mensagens, com máximo de 49 e mediana 0: o consumer acompanhou a carga. Não houve aleatório com o consumer desligado,
+então isso não diz que o consumer não custa nada, só que não havia fila.</li>
+<li class=""><strong>A origem do aumento é uma hipótese: ES no banco e Wi-Fi, sem separar os dois.</strong> O delta do p95 da baseline de HTTP
+entre o Wi-Fi e o cabo foi de ~+24 ms, e o do p50, de ~+12 ms (ordem de grandeza: é outro cliente). A reserva
+(+30,5 ms), a confirmação (+24,7) e o evento (+29,3) ficam na mesma faixa, e o evento, que é só leitura de uma
+projeção inline, subiu tanto quanto a reserva, o que é compatível com o jitter do Wi-Fi. No p50, os deltas de +6 a +7
+ms dos três ficam abaixo dos ~+12 ms da baseline. <strong>Só a busca (+113 ms no p95) e a carteira (+44 ms) excedem a
+rede com clareza</strong>; é nelas que o custo do ES (ou outro efeito) fica visível. Separar as parcelas pede uma repetição
+no cabo.</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="ponto-3-serviços-separados-rodada-3-2026-10-24">Ponto 3 (serviços separados, Rodada 3, 2026-10-24)<a href="#ponto-3-serviços-separados-rodada-3-2026-10-24" class="hash-link" aria-label="Link direto para Ponto 3 (serviços separados, Rodada 3, 2026-10-24)" title="Link direto para Ponto 3 (serviços separados, Rodada 3, 2026-10-24)" translate="no">​</a></h3>
+<p>Rodada 3 do experimento (issue #34), contra a <code>Fase_7</code> em <code>20aae4e</code> (código das #32 e #33, ainda não mergeado na <code>main</code>
+quando a rodada rodou), capacidade 20 e 100% de confirmação. Fonte: <code>Projeto/carga/results/05-distribuido/</code> (README da
+etapa, <code>matriz-naive.csv</code>, <code>matriz-cas.csv</code>, <code>degraus-*.csv</code>, <code>resultados-aleatorio.csv</code>). O <strong>controle do ponto 2 no cabo</strong>
+está em <code>04b-fase6-es-cabo/</code>. Rede cabeada (baseline HTTP p50 15,8 ms / p95 18,0 ms), host com Docker em SSD, banco limpo
+antes de cada bloco. Nenhuma repetição foi descartada.</p>
+<p><strong>O que mudou em relação ao ponto 2.</strong> <code>reservation</code> virou serviço (schema, event store e relay próprios); o <code>gateway</code> o
+chama por HTTP interno autenticado: o braço <code>cas</code> em 1 chamada, o <code>naive</code> em 2 (a janela check-then-act inclui a rede). Junto
+com a arquitetura mudaram o Hikari do monólito (1000 → 350), o pool HTTP de 400, o timeout de 10 s e o token interno.</p>
+<ul>
+<li class=""><strong>Overselling.</strong> CAS: <strong>0 em 20 de 20 repetições</strong>, 0 erros 5xx. Naive: no teto em 19 de 20 (80 em N=100, 10/10; 180 em
+N=200, 9/10; 168 na rep 1, em que a projeção refletiu parte da lotação). Igual ao ponto 2.</li>
+<li class=""><strong>Matrizes (p95 por requisição).</strong> Naive 97–345 ms (N=100) e 189–274 ms (N=200); CAS 106–176 ms e 156–205 ms. No cabo e
+em SSD, o ponto 2 refeito (04b) deu naive 87–187 ms e 127–186 ms: o p95 subiu na faixa de dezenas de ms, o que é a ordem
+de grandeza do salto HTTP, mas a rodada mudou junto outras variáveis (acima) e não as isola.</li>
+<li class=""><strong>Limiar X ≈ 58k RPM.</strong> Grossa: 50k limpo (243 ms), 60k satura (1,78 s), efetivo ~60–61k acima de 70k. Refino sobre banco
+limpo: 51k–57k entre 260 e 482 ms; <strong>58k é o primeiro degrau saturado</strong> (1,94 s). 0 erros 5xx, 0 outros, 0 descartes até
+58k. Contra o ponto 2: ≈ 56k no Wi-Fi (04) e ≥ 60k no cabo (04b, refino inconclusivo por banco sujo): o distribuído fica
+~3% abaixo do ponto 2 na mesma rede, com o mesmo teto de vazão (~61k req/min).</li>
+<li class=""><strong>Aleatório de 45 min</strong> (mesma semente 617706): 146.400 aceitas, todas confirmadas, 0 erros, 0 descartes; p95 de reserva
+6,6 ms, confirma 4,5, busca 19,9, evento 3,7, carteira 10,1. Está na faixa da #109 (pós-pooler, sem ES) e muito abaixo do
+ponto 2 no Wi-Fi (reserva 36,2 ms). Como o ponto 3 também grava no event store, o aumento de p95 do ponto 2 vinha em boa
+parte do Wi-Fi, não do ES; a confirmação direta (aleatório do código do ponto 2 no cabo) não foi feita.</li>
+<li class=""><strong>Os 5xx.</strong> Não houve nenhum, e <code>backend</code> e <code>reservation</code> terminaram sem <code>WARN</code>/<code>ERROR</code>: o timeout de 10 s e o pool HTTP
+de 400 não foram atingidos até 58k.</li>
+</ul>
+<p><strong>Ameaças a este ponto.</strong> (i) Mudaram juntas a arquitetura, o Hikari (350), o pool HTTP, o timeout e o token: o delta de
+X e de p95 não se atribui só ao salto de rede. (ii) Resolução de 1k RPM no X e uma escada por configuração; o 04b tem
+refino inconclusivo, então o X do ponto 2 no cabo é um piso (≥ 60k). (iii) A 1ª tentativa do 04b rodou com os dados do
+Docker em HDD (<code>fsync</code> ≈ 30 ms) e foi descartada; as medidas válidas são as de SSD. (iv) A matriz naive tem <code>lag_obs_*</code>
+quase sempre -1 (a projeção ficou mais rápida que o polling), então o lag não aparece como variável. (v) O PR da <code>Fase_7</code>
+não estava mergeado: o código medido é o que vai para a <code>main</code>.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="limiar-x-definitivo-rodada-r-2026-10-28-issue-40">Limiar X definitivo (Rodada R, 2026-10-28; issue #40)<a href="#limiar-x-definitivo-rodada-r-2026-10-28-issue-40" class="hash-link" aria-label="Link direto para Limiar X definitivo (Rodada R, 2026-10-28; issue #40)" title="Link direto para Limiar X definitivo (Rodada R, 2026-10-28; issue #40)" translate="no">​</a></h3>
+<p>Rodada R, contra a <code>Batch_1</code> em <code>b072346</code> (Fase 7 completa: <code>notification</code>, <code>reservation</code>, <code>catalog</code> e <code>identity</code> como
+serviços; ainda não mergeada na <code>main</code> quando a rodada rodou, então o código medido é o que vai para ela). Fonte:
+<code>Projeto/carga/results/06-batch1-final/</code> (README da etapa e <code>degraus-*.csv</code>). Braço <code>cas</code>, 200 usuários, 60 s por degrau,
+host com Docker em SSD NVMe, rede cabeada, banco limpo antes de cada bloco, Tomcat 300 e Hikari 1000 no <code>reservation</code>,
+pool do Supavisor 245. O X desta subseção é o que a arquitetura de admissão usa (<code>docs/adr/Architecture-Decision-Async-Checkout-Queue.md</code>).</p>
+<p><strong>X definitivo = 56.000 RPM por evento</strong> (≈ 930 tentativas de reserva/s numa única linha do <code>eventcap</code>), da escada <strong>sequencial</strong>
+(evento disputado), refino 6b (<code>degraus-938039</code>), resolução de 2k:</p>
+<table><thead><tr><th><code>rpm_alvo</code></th><th><code>rpm_efetivo</code></th><th>p50 (ms)</th><th>p95 de janela de 30 s (ms)</th><th>Descartes</th></tr></thead><tbody><tr><td>38k (aquecimento)</td><td>38.000</td><td>49,6</td><td>1.397,0</td><td>0</td></tr><tr><td>52k</td><td>52.001</td><td>137,4</td><td>318,6</td><td>0</td></tr><tr><td>54k</td><td>54.001</td><td>164,6</td><td>356,8</td><td>0</td></tr><tr><td><strong>56k</strong></td><td>56.000</td><td>215,3</td><td><strong>1.669,1</strong></td><td>0</td></tr><tr><td>58k</td><td>42.408</td><td>3.069,4</td><td>3.483,2</td><td>15.593</td></tr><tr><td>60k</td><td>42.027</td><td>3.096,2</td><td>3.426,6</td><td>17.974</td></tr></tbody></table>
+<ul>
+<li class=""><strong>Por que 56k.</strong> É o primeiro degrau que cumpre a regra do X (p95 de janela acima de 1 s) fora do aquecimento, e é
+seguido de colapso (como o &quot;58k é o primeiro degrau saturado&quot; do ponto 3): a cauda passa de 1 s (janela de 1,67 s) ainda
+sem descarte, e nos dois degraus seguintes a vazão <strong>cai</strong> para ~42k efetivos (colapso por fila, p50 ~3,1 s). O último degrau limpo é <strong>54k</strong> (janela de 357 ms, p50
+165 ms). 0 erros 5xx e 0 outros em todos os degraus da tabela.</li>
+<li class=""><strong>Aquecimento descartado.</strong> O degrau de 38k do <code>degraus-938039</code> é a partida a frio do refino (janela de 1,4 s) e não é
+degradação: os degraus de 40k a 54k, na sequência, ficam limpos (169 → 357 ms). O <code>report-degraus</code> aplica a regra do X
+ao CSV inteiro e marcaria o X nesse 38k; a leitura acima o descarta. O refino 6 (<code>degraus-936649</code>, 18k–40k) está todo
+limpo (janela de 6 a 160 ms). Aquecimento análogo no 1º degrau de cada refino intercalado (janela de 2,1 s nos dois).</li>
+<li class=""><strong>Anomalia fora do X.</strong> A escada grossa sequencial (<code>degraus-931618</code>) começou a frio em 40k e colapsou já no 1º degrau
+(efetivo 39–44k, janela de 3,3–3,9 s); os degraus de cima herdaram o host atolado. Fica registrada como medida, não
+como X.</li>
+<li class=""><strong>Causa.</strong> Vem do diagnóstico ao vivo (README da etapa), não do refino 6b e não dos CSVs versionados: o <code>pg_stat_statements</code>
+acumulado desde o início da escada sequencial a frio até o fim do <code>Rpm-932720</code> deu média de 344 ms no <code>UPDATE</code> do CAS
+e, durante o <code>Rpm-932720</code>, havia 186 sessões esperando lock de transação e as 300
+threads do Tomcat do <code>reservation</code> ficaram esperando o banco. É a contenção na linha do <code>eventcap</code> do evento disputado.</li>
+</ul>
+<p><strong>Por que é &quot;por evento&quot;.</strong> No mapeamento <code>sequencial</code> a iteração <code>i</code> vai ao evento <code>⌊i/U⌋</code> (U = 200), de modo que, em cada
+instante, as chegadas novas caem num único evento: a taxa na linha quente do <code>eventcap</code> é a taxa agregada do degrau (≈ 930
+req/s a 56k). O que é fixo por evento é a <strong>contagem</strong> (200 tentativas, numa rajada de 200 · 60 / RPM s ≈ 0,2 s a 56k, ameaça
+10), não a taxa. Logo, a escada sequencial mede o RPM <strong>de um
+evento</strong>, e o <code>RPM(evento)</code> da ADR é comparável a ele.</p>
+<p><strong>Teto do host (intercalado).</strong> O mapeamento <code>intercalado</code> espalha a carga pelos eventos e chega a <strong>≈ 86k RPM</strong> (refino
+<code>degraus-933734</code> e <code>degraus-935110</code>): 84k é o último limpo (janela de 62 ms, p50 11,8 ms), 86k degrada (efetivo 85.700,
+janela de 1.120 ms, p50 228 ms, 301 descartes) e de 88k a 92k o efetivo se segura em ~80–82k (7.050 a 12.234 descartes). É o
+teto do host somado entre eventos, não o X por evento: a linha quente de um evento custa ~35% dele (56k contra 86k).</p>
+<p><strong>Contra os pontos anteriores</strong> (todos sequenciais, mesma linha quente): ≈ 97k pré-pooler (referência), ≈ 78k pelo pooler
+(ponto 1), ≈ 56k–61k no ponto 2 e ≈ 58k no ponto 3 (Rodada 3, <code>20aae4e</code>). 56k contra 58k é cerca de um passo de
+resolução, e o código mudou entre as duas (saíram o <code>catalog</code>, #35, e o <code>identity</code>, #36, do processo do <code>gateway</code>, e mudou
+o contrato da reserva, #57): <strong>não se lê como regressão.</strong></p>
+<p><strong>Limiares derivados</strong> (regra 50/80/70 de <code>docs/adr/Architecture-Decision-Async-Checkout-Queue.md</code>, com 1 réplica do <code>reservation</code>, uso = <code>RPM(evento)</code> ÷ (X × réplicas)):</p>
+<table><thead><tr><th>Gatilho</th><th>Uso</th><th>RPM por evento</th></tr></thead><tbody><tr><td>Fila entra</td><td>≥ 80%</td><td>0,8 × 56k = <strong>44,8k</strong></td></tr><tr><td>Volta ao síncrono (com fila vazia)</td><td>&lt; 70%</td><td>0,7 × 56k = <strong>39,2k</strong></td></tr><tr><td>Réplica em stand-by (#111)</td><td>&gt; 50%</td><td>0,5 × 56k = <strong>28k</strong></td></tr></tbody></table>
+<p>A faixa de 44,8k fica dentro do trecho limpo da escada (44k: janela de 230 ms), com margem de 11,2k RPM para o X.</p>
+<p><strong>Consequências para a implementação (fora desta medição).</strong></p>
+<ul>
+<li class=""><strong>Janela do sinal.</strong> X é uma <strong>taxa</strong> (≈ 930 tentativas/s), e a rajada por evento dura ~0,2 s. Um contador de janela de 60 s leria
+~200 numa rajada dessas e nunca chegaria a 44,8k; a janela do sinal em Redis (e como ela converte a contagem em RPM) é
+decisão da implementação do <code>admission</code> (#41 e #43), não desta medição.</li>
+<li class=""><strong>Réplicas.</strong> A Rodada R mediu <strong>uma</strong> réplica. O limite é a linha do <code>eventcap</code>, que réplicas extras também disputariam
+(e o mesmo host sem a linha quente chega a 86k contra 56k): insumo para a #111, fórmula <code>X × réplicas</code> inalterada.</li>
+</ul>
+<p><strong>Ameaças a este X.</strong> (i) Uma escada por configuração e resolução de 2k RPM: o X vale 56k ± um passo (o degrau limpo anterior é
+54k). (ii) A causa vem do diagnóstico a frio (estado já colapsado), não de uma medição no joelho do refino: o
+<code>pg_stat_statements</code> salvo não está alinhado à escada do 6b, então o joelho não tem diagnóstico de banco próprio (a coleta do
+6b, <code>coleta-host-r-refino-seq2-*</code>, só traz um pico de 237 sessões em <code>pg_espera_lock</code>, sem alinhamento por degrau). (iii) Partida
+a frio: o aquecimento do 6b e dos refinos intercalados estoura a cauda (o refino 6 começou limpo) e é descartado por
+julgamento, não pela regra automática do report. (iv) O X é uma taxa de chegada na linha quente com rajada de
+~0,2 s por evento, não um evento sustentado a 56k RPM por 60 s (um evento real esgota a capacidade antes); vale como limiar
+de contenção do <code>eventcap</code>. (v) Uma réplica do <code>reservation</code>, um host, uma rede; o código medido é o da <code>Batch_1</code>.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="comparação-das-3-configurações-issue-39">Comparação das 3 configurações (issue #39)<a href="#comparação-das-3-configurações-issue-39" class="hash-link" aria-label="Link direto para Comparação das 3 configurações (issue #39)" title="Link direto para Comparação das 3 configurações (issue #39)" translate="no">​</a></h3>
+<p>Resultado consolidado da série: <strong>monólito CRUD + pooler</strong> (ponto 1), <strong>monólito com CQRS + ES</strong> (ponto 2) e <strong>distribuído com ES</strong>
+(ponto 3: a etapa 05 como intermediária e a Rodada R, etapa 06, como configuração final). Esta subseção <strong>junta de propósito os
+conjuntos</strong> que o &quot;Escopo dos números&quot; do topo manda não misturar, lado a lado e com as ressalvas abaixo. Nenhum número é recalculado:
+todos vêm dos README das etapas (<code>Projeto/carga/results/&lt;etapa&gt;/README.md</code>) e das subseções anteriores, e os valores e a fonte de cada
+um estão em <a href="/assets/files/comparacao-3-configuracoes-12c1553fe8b6735ae5b6809f61829365.csv" target="_blank" class=""><code>graficos/comparacao-3-configuracoes.csv</code></a>. Os gráficos saem de
+<a href="/assets/files/gera-graficos-e1d0dcbfd5c9c2859eaca6f3ffc05321.sh" target="_blank" class=""><code>graficos/gera-graficos.sh</code></a> (bash + awk, sem lib). Compara-se sequencial com sequencial (escada do X) e o
+aleatório de 45 min com a mesma semente 617706 (latência); o X <strong>intercalado</strong> da Rodada R não entra na comparação (ver abaixo).</p>
+<table><thead><tr><th></th><th>Ponto 1: monólito CRUD + pooler (03)</th><th>Ponto 2: monólito ES (04 Wi-Fi; 04b cabo)</th><th>Ponto 3 intermediário: distribuído (05)</th><th>Distribuído final, Rodada R (06)</th></tr></thead><tbody><tr><td>Commit / rede</td><td>matriz <code>8ba01b4</code> (código a partir de <code>66a46b4</code>), escada na <code>main</code> <code>a8fc86a</code>; cabo</td><td><code>main</code> <code>1ee6fbe</code>; 04 em Wi-Fi (baseline HTTP p50 26,6 / p95 42,9 ms); 04b: + #146, no cabo, SSD</td><td><code>20aae4e</code>; cabo, SSD</td><td><code>b072346</code>; cabo, SSD (baseline HTTP p50 13,9 / p95 15,6 ms)</td></tr><tr><td>Overselling, braço CAS</td><td>0 em 10/10</td><td>04: 0 em 10/10; 04b: não medido</td><td>0 em 20/20</td><td>0 em 20/20 e 0 no aleatório</td></tr><tr><td>Overselling, braço ingênuo</td><td>teto em 36/40 (15 a 180)</td><td>04: teto em 10/10 (80/180); 04b: teto em 10/10 (80/180)</td><td>teto em 19/20 (168 na rep 1 de N=200)</td><td>teto em 20/20 (80/180)</td></tr><tr><td><strong>X sequencial</strong> (throughput, RPM por evento)</td><td>78k (referência pré-pooler: 97k)</td><td>04: 56k (Wi-Fi); 04b: ≥ 60k (só limite inferior)</td><td>58k</td><td>56k (último degrau limpo 54k)</td></tr><tr><td>Teto do host, intercalado (não comparável com o X)</td><td>n/d</td><td>n/d</td><td>n/d</td><td>86k (último limpo 84k)</td></tr><tr><td>Reserva p50 / p95 / p99 (ms, aleatório 45 min)</td><td>3,9 / 5,7 / 10,7 (Ale-29057)</td><td>10,8 / 36,2 / 62,0 (Ale-190276, Wi-Fi); 04b sem aleatório</td><td>4,8 / 6,6 / 9,3 (Ale-644172)</td><td>4,7 / 6,7 / 8,0 (Ale-939580)</td></tr><tr><td>Confirmação p50 / p95 / p99 (ms, aleatório 45 min)</td><td>2,1 / 5,0 / 8,8</td><td>8,7 / 29,7 / 56,0 (Wi-Fi)</td><td>3,1 / 4,5 / 6,9</td><td>3,1 / 5,5 / 8,1</td></tr><tr><td>Leitura p95 (ms): busca / evento / carteira</td><td>15,0 / 3,4 / 12,6</td><td>128,3 / 32,7 / 56,9 (Wi-Fi)</td><td>19,9 / 3,7 / 10,1</td><td>32 / 5 / 8</td></tr><tr><td>Lag (a definição muda por ponto)</td><td>timer <strong>configurado</strong> de 500 a 10000 ms; <code>lag_obs_disparo</code> médio de 241 a 6211 ms</td><td>04: <code>lag_obs_max</code> de 19 a 280 ms (13 de 20 linhas) e, no aleatório, offset lag do consumer médio de 2,9 e máximo de 49 mensagens; 04b: <code>lag_obs_max</code> = -1 em 9 de 10 linhas (projeção mais rápida que o polling de 250 ms)</td><td><code>lag_obs_*</code> = -1 quase sempre (projeção mais rápida que o polling)</td><td><code>lag_obs_max</code> lido em poucas linhas (máx. 79 a 158 ms); nas outras a projeção foi mais rápida que o polling de 250 ms</td></tr><tr><td>Aceitas, 5xx e descartes no aleatório</td><td>146.400 aceitas, 0 erros 5xx, 0 descartes</td><td>04: 146.400 aceitas, 0 erros 5xx, 0 descartes</td><td>146.400 aceitas, 0 erros 5xx, 0 descartes</td><td>146.400 aceitas, 0 erros 5xx, 0 descartes</td></tr></tbody></table>
+<p>O <strong>lag</strong> não tem uma coluna comparável: no ponto 1 é a variável independente (um timer de refresh), do ponto 2 em diante é medido no
+pipeline real (<code>lag_obs_*</code> em ms ou offset lag em mensagens), e <code>-1</code> significa que a projeção foi mais rápida que o polling. Por isso o
+lag fica na tabela e não vira gráfico; o overselling também (é uma contagem por repetição, sem escala a comparar). Como o SVG é uma
+imagem estática, a tabela acima é a &quot;table view&quot; dos gráficos.</p>
+<p><img decoding="async" loading="lazy" alt="Limiar X sequencial por configuração: pré-pooler 97k (referência), ponto 1 78k, ponto 2 56k no Wi-Fi e no mínimo 60k no cabo, ponto 3 intermediário 58k e final 56k; o teto do host intercalado (86k) fica fora da série." src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNDcwIiB3aWR0aD0iMTAwJSIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsPSJMaW1pYXIgWCBkYSBlc2NhZGEgc2VxdWVuY2lhbCBwb3IgY29uZmlndXJhw6fDo28sIGVtIHJlc2VydmFzIHBvciBtaW51dG8gcG9yIGV2ZW50bzogcHLDqS1wb29sZXIgOTdrLCBwb250byAxIDc4aywgcG9udG8gMiBubyBXaS1GaSA1NmssIHBvbnRvIDIgbm8gY2FibyBubyBtw61uaW1vIDYwaywgcG9udG8gMyBpbnRlcm1lZGnDoXJpbyA1OGssIHJvZGFkYSBmaW5hbCA1NmsiPg0KPHRpdGxlPkxpbWlhciBYIGRhIGVzY2FkYSBzZXF1ZW5jaWFsIHBvciBjb25maWd1cmHDp8OjbzwvdGl0bGU+DQo8ZGVzYz5CYXJyYXMgaG9yaXpvbnRhaXMsIHVtYSBzw6lyaWUsIGVtIHJlc2VydmFzIHBvciBtaW51dG8gcG9yIGV2ZW50by4gTyBwb250byAyIG5vIGNhYm8gw6kgc8OzIGxpbWl0ZSBpbmZlcmlvci4gTyB0ZXRvIGRvIGhvc3QgaW50ZXJjYWxhZG8gZGEgcm9kYWRhIGZpbmFsIGZpY2EgZm9yYSBkYSBzw6lyaWUuPC9kZXNjPg0KPHN0eWxlPg0KICA6cm9vdCB7IC0tc3VyZmFjZS0xOiNmY2ZjZmI7IC0tdGV4dC1wcmltYXJ5OiMwYjBiMGI7IC0tdGV4dC1zZWNvbmRhcnk6IzUyNTE0ZTsgLS10ZXh0LW11dGVkOiM4OTg3ODE7IC0tZ3JpZDojZTFlMGQ5OyAtLWJhc2VsaW5lOiNjM2MyYjc7IC0tc2VyaWVzLTE6IzJhNzhkNjsgLS1zZXJpZXMtMjojZWI2ODM0OyAtLXNlcmllcy0zOiMxYmFmN2E7IH0NCiAgQG1lZGlhIChwcmVmZXJzLWNvbG9yLXNjaGVtZTogZGFyaykgew0KICAgIDpyb290IHsgLS1zdXJmYWNlLTE6IzFhMWExOTsgLS10ZXh0LXByaW1hcnk6I2ZmZmZmZjsgLS10ZXh0LXNlY29uZGFyeTojYzNjMmI3OyAtLWdyaWQ6IzJjMmMyYTsgLS1iYXNlbGluZTojMzgzODM1OyAtLXNlcmllcy0xOiMzOTg3ZTU7IC0tc2VyaWVzLTI6I2Q5NTkyNjsgLS1zZXJpZXMtMzojMTk5ZTcwOyB9DQogIH0NCiAgdGV4dCB7IGZvbnQtZmFtaWx5OiBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sICJTZWdvZSBVSSIsIHNhbnMtc2VyaWY7IGZvbnQtdmFyaWFudC1udW1lcmljOiB0YWJ1bGFyLW51bXM7IH0NCiAgLmJnIHsgZmlsbDogdmFyKC0tc3VyZmFjZS0xKTsgfQ0KICAudGl0dWxvIHsgZmlsbDogdmFyKC0tdGV4dC1wcmltYXJ5KTsgZm9udC1zaXplOiAxNnB4OyBmb250LXdlaWdodDogNjAwOyB9DQogIC5zdWIgeyBmaWxsOiB2YXIoLS10ZXh0LXNlY29uZGFyeSk7IGZvbnQtc2l6ZTogMTJweDsgfQ0KICAudHAgeyBmaWxsOiB2YXIoLS10ZXh0LXByaW1hcnkpOyBmb250LXNpemU6IDEzcHg7IH0NCiAgLnRzIHsgZmlsbDogdmFyKC0tdGV4dC1zZWNvbmRhcnkpOyBmb250LXNpemU6IDEycHg7IH0NCiAgLnRtIHsgZmlsbDogdmFyKC0tdGV4dC1tdXRlZCk7IGZvbnQtc2l6ZTogMTFweDsgfQ0KICAudmFsIHsgZmlsbDogdmFyKC0tdGV4dC1wcmltYXJ5KTsgZm9udC1zaXplOiAxM3B4OyBmb250LXdlaWdodDogNjAwOyB9DQogIC5ncmlkIHsgc3Ryb2tlOiB2YXIoLS1ncmlkKTsgc3Ryb2tlLXdpZHRoOiAxOyB9DQogIC5iYXNlIHsgc3Ryb2tlOiB2YXIoLS1iYXNlbGluZSk7IHN0cm9rZS13aWR0aDogMTsgfQ0KICAuczEgeyBmaWxsOiB2YXIoLS1zZXJpZXMtMSk7IH0gLnMyIHsgZmlsbDogdmFyKC0tc2VyaWVzLTIpOyB9IC5zMyB7IGZpbGw6IHZhcigtLXNlcmllcy0zKTsgfQ0KICAub2NvIHsgZmlsbDogbm9uZTsgc3Ryb2tlOiB2YXIoLS1zZXJpZXMtMSk7IHN0cm9rZS13aWR0aDogMjsgc3Ryb2tlLWRhc2hhcnJheTogNSAzOyB9DQogIC5zZXRhIHsgZmlsbDogbm9uZTsgc3Ryb2tlOiB2YXIoLS1zZXJpZXMtMSk7IHN0cm9rZS13aWR0aDogMjsgc3Ryb2tlLWxpbmVjYXA6IHJvdW5kOyBzdHJva2UtbGluZWpvaW46IHJvdW5kOyB9DQogIC50ZXRvIHsgZmlsbDogbm9uZTsgc3Ryb2tlOiB2YXIoLS10ZXh0LXNlY29uZGFyeSk7IHN0cm9rZS13aWR0aDogMjsgfQ0KICAuZGl2IHsgc3Ryb2tlOiB2YXIoLS1iYXNlbGluZSk7IHN0cm9rZS13aWR0aDogMTsgc3Ryb2tlLWRhc2hhcnJheTogMyA0OyB9DQogIC5oaXQgeyBmaWxsOiB0cmFuc3BhcmVudDsgcG9pbnRlci1ldmVudHM6IGFsbDsgfQ0KPC9zdHlsZT4NCjxyZWN0IGNsYXNzPSJiZyIgd2lkdGg9IjkwMCIgaGVpZ2h0PSI0NzAiLz4NCjx0ZXh0IGNsYXNzPSJ0aXR1bG8iIHg9IjE2IiB5PSIyNiI+TGltaWFyIFggcG9yIGNvbmZpZ3VyYcOnw6NvIChlc2NhZGEgc2VxdWVuY2lhbCk8L3RleHQ+DQo8dGV4dCBjbGFzcz0ic3ViIiB4PSIxNiIgeT0iNDUiPlJlc2VydmFzIHBvciBtaW51dG8gbnVtYSDDum5pY2EgbGluaGEgZG8gZXZlbnRjYXAsIGJyYcOnbyBDQVMuIFVtYSBlc2NhZGEgcG9yIGNvbmZpZ3VyYcOnw6NvLjwvdGV4dD4NCjxsaW5lIGNsYXNzPSJiYXNlIiB4MT0iMjUwLjAiIHkxPSI2NiIgeDI9IjI1MC4wIiB5Mj0iNDAwIi8+DQo8dGV4dCBjbGFzcz0idG0iIHg9IjI1MC4wIiB5PSI0MTYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjA8L3RleHQ+DQo8bGluZSBjbGFzcz0iZ3JpZCIgeDE9IjMzNC4wIiB5MT0iNjYiIHgyPSIzMzQuMCIgeTI9IjQwMCIvPg0KPHRleHQgY2xhc3M9InRtIiB4PSIzMzQuMCIgeT0iNDE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj4yMGs8L3RleHQ+DQo8bGluZSBjbGFzcz0iZ3JpZCIgeDE9IjQxOC4wIiB5MT0iNjYiIHgyPSI0MTguMCIgeTI9IjQwMCIvPg0KPHRleHQgY2xhc3M9InRtIiB4PSI0MTguMCIgeT0iNDE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj40MGs8L3RleHQ+DQo8bGluZSBjbGFzcz0iZ3JpZCIgeDE9IjUwMi4wIiB5MT0iNjYiIHgyPSI1MDIuMCIgeTI9IjQwMCIvPg0KPHRleHQgY2xhc3M9InRtIiB4PSI1MDIuMCIgeT0iNDE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj42MGs8L3RleHQ+DQo8bGluZSBjbGFzcz0iZ3JpZCIgeDE9IjU4Ni4wIiB5MT0iNjYiIHgyPSI1ODYuMCIgeTI9IjQwMCIvPg0KPHRleHQgY2xhc3M9InRtIiB4PSI1ODYuMCIgeT0iNDE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj44MGs8L3RleHQ+DQo8bGluZSBjbGFzcz0iZ3JpZCIgeDE9IjY3MC4wIiB5MT0iNjYiIHgyPSI2NzAuMCIgeTI9IjQwMCIvPg0KPHRleHQgY2xhc3M9InRtIiB4PSI2NzAuMCIgeT0iNDE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj4xMDBrPC90ZXh0Pg0KPHRleHQgY2xhc3M9InRtIiB4PSI0NjAuMCIgeT0iNDM2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5SUE0gcG9yIGV2ZW50byAocmVzZXJ2YXMvbWluKSDCtyBlc2NhbGEgbGluZWFyPC90ZXh0Pg0KPGc+PHRpdGxlPlByw6ktcG9vbGVyICgwMikgwrcgbW9uw7NsaXRvICsgSGlrYXJpQ1AgwrcgcmVmZXLDqm5jaWE6IFggOTdrIFJQTSDCtyBmb250ZTogZG9jcy9hcnRpZ28vZXhwZXJpbWVudG8tbW9ub2xpdG8ubWQ8L3RpdGxlPjxyZWN0IGNsYXNzPSJoaXQiIHg9IjAiIHk9IjYwLjAiIHdpZHRoPSI5MDAiIGhlaWdodD0iNDQiLz4NCjx0ZXh0IGNsYXNzPSJ0cCIgeD0iMTYiIHk9IjgwLjAiPlByw6ktcG9vbGVyICgwMik8L3RleHQ+PHRleHQgY2xhc3M9InRtIiB4PSIxNiIgeT0iOTUuMCI+bW9uw7NsaXRvICsgSGlrYXJpQ1AgwrcgcmVmZXLDqm5jaWE8L3RleHQ+DQo8cGF0aCBjbGFzcz0iczEiIGQ9Ik0yNTAuMCA3My4wIEg2NTMuNCBhNCA0IDAgMCAxIDQgNCBWODcuMCBhNCA0IDAgMCAxIC00IDQgSDI1MC4wIFoiLz4NCjx0ZXh0IGNsYXNzPSJ2YWwiIHg9IjY2NS40IiB5PSI4Ny4wIj45N2s8dHNwYW4gY2xhc3M9InRzIiBmb250LXdlaWdodD0iNDAwIj48L3RzcGFuPjwvdGV4dD4NCjwvZz4NCjxnPjx0aXRsZT5Qb250byAxICgwMykgwrcgbW9uw7NsaXRvIENSVUQgKyBwb29sZXI6IFggNzhrIFJQTSDCtyBmb250ZTogUHJvamV0by9jYXJnYS9yZXN1bHRzLzAzLXN1cGFiYXNlLXBvb2xlci9SRUFETUUubWQ8L3RpdGxlPjxyZWN0IGNsYXNzPSJoaXQiIHg9IjAiIHk9IjEwNi4wIiB3aWR0aD0iOTAwIiBoZWlnaHQ9IjQ0Ii8+DQo8dGV4dCBjbGFzcz0idHAiIHg9IjE2IiB5PSIxMjYuMCI+UG9udG8gMSAoMDMpPC90ZXh0Pjx0ZXh0IGNsYXNzPSJ0bSIgeD0iMTYiIHk9IjE0MS4wIj5tb27Ds2xpdG8gQ1JVRCArIHBvb2xlcjwvdGV4dD4NCjxwYXRoIGNsYXNzPSJzMSIgZD0iTTI1MC4wIDExOS4wIEg1NzMuNiBhNCA0IDAgMCAxIDQgNCBWMTMzLjAgYTQgNCAwIDAgMSAtNCA0IEgyNTAuMCBaIi8+DQo8dGV4dCBjbGFzcz0idmFsIiB4PSI1ODUuNiIgeT0iMTMzLjAiPjc4azx0c3BhbiBjbGFzcz0idHMiIGZvbnQtd2VpZ2h0PSI0MDAiPjwvdHNwYW4+PC90ZXh0Pg0KPC9nPg0KPGc+PHRpdGxlPlBvbnRvIDIgKDA0KSDCtyBtb27Ds2xpdG8gRVMgwrcgV2ktRmk6IFggNTZrIFJQTSDCtyBmb250ZTogUHJvamV0by9jYXJnYS9yZXN1bHRzLzA0LWZhc2U2LWVzL1JFQURNRS5tZDwvdGl0bGU+PHJlY3QgY2xhc3M9ImhpdCIgeD0iMCIgeT0iMTUyLjAiIHdpZHRoPSI5MDAiIGhlaWdodD0iNDQiLz4NCjx0ZXh0IGNsYXNzPSJ0cCIgeD0iMTYiIHk9IjE3Mi4wIj5Qb250byAyICgwNCk8L3RleHQ+PHRleHQgY2xhc3M9InRtIiB4PSIxNiIgeT0iMTg3LjAiPm1vbsOzbGl0byBFUyDCtyBXaS1GaTwvdGV4dD4NCjxwYXRoIGNsYXNzPSJzMSIgZD0iTTI1MC4wIDE2NS4wIEg0ODEuMiBhNCA0IDAgMCAxIDQgNCBWMTc5LjAgYTQgNCAwIDAgMSAtNCA0IEgyNTAuMCBaIi8+DQo8dGV4dCBjbGFzcz0idmFsIiB4PSI0OTMuMiIgeT0iMTc5LjAiPjU2azx0c3BhbiBjbGFzcz0idHMiIGZvbnQtd2VpZ2h0PSI0MDAiPiDCtyBXaS1GaTwvdHNwYW4+PC90ZXh0Pg0KPC9nPg0KPGc+PHRpdGxlPlBvbnRvIDIgKDA0YikgwrcgbW9uw7NsaXRvIEVTIMK3IGNhYm86IFgg4omlIDYwayBSUE0gwrcgZm9udGU6IFByb2pldG8vY2FyZ2EvcmVzdWx0cy8wNGItZmFzZTYtZXMtY2Fiby9SRUFETUUubWQ8L3RpdGxlPjxyZWN0IGNsYXNzPSJoaXQiIHg9IjAiIHk9IjE5OC4wIiB3aWR0aD0iOTAwIiBoZWlnaHQ9IjQ0Ii8+DQo8dGV4dCBjbGFzcz0idHAiIHg9IjE2IiB5PSIyMTguMCI+UG9udG8gMiAoMDRiKTwvdGV4dD48dGV4dCBjbGFzcz0idG0iIHg9IjE2IiB5PSIyMzMuMCI+bW9uw7NsaXRvIEVTIMK3IGNhYm88L3RleHQ+DQo8cmVjdCBjbGFzcz0ib2NvIiB4PSIyNTEuMCIgeT0iMjExLjAiIHdpZHRoPSIyNTEuMCIgaGVpZ2h0PSIxOCIgcng9IjQiLz4NCjxwYXRoIGNsYXNzPSJzZXRhIiBkPSJNNTA1LjAgMjIwLjAgSDUyNC4wIE01MTguMCAyMTUuMCBMNTI0LjAgMjIwLjAgTDUxOC4wIDIyNS4wIi8+DQo8dGV4dCBjbGFzcz0idmFsIiB4PSI1MzIuMCIgeT0iMjI1LjAiPuKJpSA2MGs8dHNwYW4gY2xhc3M9InRzIiBmb250LXdlaWdodD0iNDAwIj4gwrcgbGltaXRlIGluZmVyaW9yPC90c3Bhbj48L3RleHQ+DQo8L2c+DQo8Zz48dGl0bGU+UG9udG8gMyAoMDUpIMK3IGRpc3RyaWJ1w61kbyBpbnRlcm1lZGnDoXJpbzogWCA1OGsgUlBNIMK3IGZvbnRlOiBQcm9qZXRvL2NhcmdhL3Jlc3VsdHMvMDUtZGlzdHJpYnVpZG8vUkVBRE1FLm1kPC90aXRsZT48cmVjdCBjbGFzcz0iaGl0IiB4PSIwIiB5PSIyNDQuMCIgd2lkdGg9IjkwMCIgaGVpZ2h0PSI0NCIvPg0KPHRleHQgY2xhc3M9InRwIiB4PSIxNiIgeT0iMjY0LjAiPlBvbnRvIDMgKDA1KTwvdGV4dD48dGV4dCBjbGFzcz0idG0iIHg9IjE2IiB5PSIyNzkuMCI+ZGlzdHJpYnXDrWRvIGludGVybWVkacOhcmlvPC90ZXh0Pg0KPHBhdGggY2xhc3M9InMxIiBkPSJNMjUwLjAgMjU3LjAgSDQ4OS42IGE0IDQgMCAwIDEgNCA0IFYyNzEuMCBhNCA0IDAgMCAxIC00IDQgSDI1MC4wIFoiLz4NCjx0ZXh0IGNsYXNzPSJ2YWwiIHg9IjUwMS42IiB5PSIyNzEuMCI+NThrPHRzcGFuIGNsYXNzPSJ0cyIgZm9udC13ZWlnaHQ9IjQwMCI+PC90c3Bhbj48L3RleHQ+DQo8L2c+DQo8Zz48dGl0bGU+RmluYWwgKDA2KSDCtyBkaXN0cmlidcOtZG8gwrcgUm9kYWRhIFI6IFggNTZrIFJQTSDCtyBmb250ZTogUHJvamV0by9jYXJnYS9yZXN1bHRzLzA2LWJhdGNoMS1maW5hbC9SRUFETUUubWQgwrcgw7psdGltbyBkZWdyYXUgbGltcG8gNTRrPC90aXRsZT48cmVjdCBjbGFzcz0iaGl0IiB4PSIwIiB5PSIyOTAuMCIgd2lkdGg9IjkwMCIgaGVpZ2h0PSI0NCIvPg0KPHRleHQgY2xhc3M9InRwIiB4PSIxNiIgeT0iMzEwLjAiPkZpbmFsICgwNik8L3RleHQ+PHRleHQgY2xhc3M9InRtIiB4PSIxNiIgeT0iMzI1LjAiPmRpc3RyaWJ1w61kbyDCtyBSb2RhZGEgUjwvdGV4dD4NCjxwYXRoIGNsYXNzPSJzMSIgZD0iTTI1MC4wIDMwMy4wIEg0ODEuMiBhNCA0IDAgMCAxIDQgNCBWMzE3LjAgYTQgNCAwIDAgMSAtNCA0IEgyNTAuMCBaIi8+DQo8dGV4dCBjbGFzcz0idmFsIiB4PSI0OTMuMiIgeT0iMzE3LjAiPjU2azx0c3BhbiBjbGFzcz0idHMiIGZvbnQtd2VpZ2h0PSI0MDAiPiDCtyDDumx0aW1vIGxpbXBvIDU0azwvdHNwYW4+PC90ZXh0Pg0KPC9nPg0KPGxpbmUgY2xhc3M9ImRpdiIgeDE9IjE2IiB5MT0iMzUwIiB4Mj0iODg0IiB5Mj0iMzUwIi8+DQo8dGV4dCBjbGFzcz0idG0iIHg9IjE2IiB5PSIzNjYiPkZvcmEgZGEgc8OpcmllIMK3IG7Do28gY29tcGFyw6F2ZWwgY29tIG8gWCBzZXF1ZW5jaWFsPC90ZXh0Pg0KPGc+PHRpdGxlPkZpbmFsICgwNiksIG1hcGVhbWVudG8gaW50ZXJjYWxhZG86IDg2ayBSUE0gKHRldG8gZG8gaG9zdCBzb21hZG8gZW50cmUgZXZlbnRvcywgbsOjbyDDqSBYIHBvciBldmVudG87IG7Do28gY29tcGFyw6F2ZWwgY29tIG8gWCBzZXF1ZW5jaWFsKSDCtyDDumx0aW1vIGRlZ3JhdSBsaW1wbyA4NGsgwrcgZm9udGU6IFByb2pldG8vY2FyZ2EvcmVzdWx0cy8wNi1iYXRjaDEtZmluYWwvUkVBRE1FLm1kPC90aXRsZT48cmVjdCBjbGFzcz0iaGl0IiB4PSIwIiB5PSIzNzEuMCIgd2lkdGg9IjkwMCIgaGVpZ2h0PSIyNiIvPg0KPHRleHQgY2xhc3M9InRwIiB4PSIxNiIgeT0iMzg4LjAiPkZpbmFsICgwNikgwrcgaW50ZXJjYWxhZG88L3RleHQ+DQo8cGF0aCBjbGFzcz0idGV0byIgZD0iTTYxMS4yIDM3Ny4wIGw3IDcgbC03IDcgbC03IC03IFoiLz4NCjx0ZXh0IGNsYXNzPSJ2YWwiIHg9IjYyNS4yIiB5PSIzODkuMCI+ODZrPHRzcGFuIGNsYXNzPSJ0cyIgZm9udC13ZWlnaHQ9IjQwMCI+IMK3IHRldG8gZG8gaG9zdDwvdHNwYW4+PC90ZXh0Pg0KPC9nPg0KPC9zdmc+DQo=" width="900" height="470" class="img_ev3q"></p>
+<p>O primeiro gráfico mostra o X sequencial, uma barra por configuração. O ponto 2 no cabo (04b) é só um <strong>limite inferior</strong> (contorno
+tracejado com seta, não barra), porque o refino ficou inconclusivo por banco sujo.</p>
+<p><img decoding="async" loading="lazy" alt="Latência de reserva e de confirmação (p50, p95, p99) no aleatório de 45 min, mesma semente, em quatro configurações, em dois painéis de mesma escala." src="/assets/images/latencia-aleatorio-886a1f8e8d0caf5efa01518b1480264c.svg" width="880" height="400" class="img_ev3q"></p>
+<p>O segundo mostra a latência do aleatório de 45 min por configuração, em dois painéis de mesma escala (reserva e confirmação). O ponto 2
+é o do Wi-Fi (o 04b não tem aleatório).</p>
+<p><strong>Leitura.</strong></p>
+<ul>
+<li class=""><strong>Corretude.</strong> O braço CAS ficou em <strong>0 de overselling</strong> em todos os pontos em que foi medido (10/10, 10/10, 20/20 e 20/20, mais 0
+no aleatório da Rodada R), e o braço ingênuo ficou no teto (80 em N=100 e 180 em N=200) em quase todas as repetições, em todos os
+pontos: a corretude do CAS não mudou ao introduzir ES nem ao distribuir.</li>
+<li class=""><strong>Throughput.</strong> O X caiu de ≈ 78k RPM (ponto 1, sem ES) para ≈ 56k no ponto 2 (Wi-Fi) e ficou na mesma faixa ao distribuir: 58k
+(05) e 56k (06, com 54k como último degrau limpo). O 04b no cabo só dá um limite inferior (≥ 60k), então o ponto 2 refeito no cabo
+não fecha um X para comparar com 58k e 56k. A diferença entre 58k e 56k é cerca de um passo de resolução e o código mudou entre as
+duas (nota da #57 abaixo): não se lê como regressão.</li>
+<li class=""><strong>Teto do host.</strong> O X intercalado de ≈ 86k RPM só existe na Rodada R. É o teto do host somado entre eventos, não o X por evento, e
+por isso não é comparável com os X sequenciais acima.</li>
+<li class=""><strong>Latência.</strong> No aleatório, a reserva do distribuído (p95 de 6,6 ms no 05 e 6,7 ms no 06) ficou na faixa do ponto 1 (5,7 ms), e a
+confirmação também (4,5 e 5,5 contra 5,0 ms). O ponto 2 aparece mais alto (reserva 36,2 ms, confirmação 29,7 ms), mas foi medido no
+Wi-Fi e a latência dele inclui a rede: o 05, no cabo e também com ES, <strong>indica</strong> que boa parte do aumento vinha da rede (indício, não
+prova). A confirmação direta, com o aleatório do código do ponto 2 no cabo, não foi feita, então a parte desse aumento que vem do ES
+e a que vem da rede não estão isoladas.</li>
+</ul>
+<p><strong>Nota da #57 entre os pontos.</strong> Nos pontos 1 a 3 (até a etapa 05) o <code>userId</code> da reserva vinha do corpo da requisição. Na Rodada R a
+reserva é amarrada ao token (PR #167, issue #57): em <code>/bff/event-wallets/**</code> o <code>userId</code> informado fica opcional, o ausente vale o do
+token e o <strong>divergente devolve 403</strong>, antes de qualquer validação ou chamada ao <code>reservation</code> (testes
+<code>HttpContractTest.eventWallet_tokenDeAnaoAgeEmNomeDeBeto_returns403NosEndpoints</code> e <code>eventWallet_proprioUsuario_comESemUserId</code>).
+Com a #36, o <code>gateway</code> tira o id da claim <code>uid</code> do JWT RS256, validado sem estado pelo JWKS, <strong>sem consulta ao banco</strong> (a #57 sozinha
+faria uma consulta e-mail → <code>user_id</code> por requisição). O kit de carga já mandava o <code>userId</code> do dono do token, então <strong>a requisição do
+k6 é a mesma</strong>; muda o caminho no servidor (validação do JWT pelo JWKS, sem consulta). <strong>Não é uma variável isolada:</strong> entra junto
+com as outras mudanças entre as etapas 05 e 06 (a saída do <code>catalog</code> e do <code>identity</code> do processo do <code>gateway</code>, #35 e #36).</p>
+<p><strong>Ameaças desta comparação.</strong> (i) <strong>Uma escada por configuração</strong>, com resolução de 1k a 2k RPM no X (56k ± um passo). (ii) <strong>Rede, disco e
+estado do banco diferentes:</strong> o ponto 2 (04) rodou no Wi-Fi e, nos blocos 1 a 3b, sobre banco acumulado; o 04b, no cabo e em SSD, só deu um limite inferior. (iii) <strong>Códigos diferentes entre
+os pontos</strong>, sem isolar uma variável por vez (a arquitetura, o Hikari do monólito, o pool HTTP, o timeout, o token interno e a #57
+mudaram junto). (iv) O ponto 1 rodou com <strong>Tomcat de 200 threads</strong>; do ponto 2 em diante, 300. (v) O X do 04b é <strong>só limite inferior</strong>
+(≥ 60k). (vi) O lag não tem a mesma definição nos pontos: é uma variável configurada no ponto 1 e uma medida do pipeline depois.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="rodada-4-admission-e-autoescala-acima-do-x-2026-10-29-issue-179">Rodada 4 (admission e autoescala acima do X, 2026-10-29; issue #179)<a href="#rodada-4-admission-e-autoescala-acima-do-x-2026-10-29-issue-179" class="hash-link" aria-label="Link direto para Rodada 4 (admission e autoescala acima do X, 2026-10-29; issue #179)" title="Link direto para Rodada 4 (admission e autoescala acima do X, 2026-10-29; issue #179)" translate="no">​</a></h3>
+<p>Rodada 4, contra a <code>Batch_2</code> em <code>35955ef</code>: a configuração da Rodada R mais o <code>admission</code> (#41–#43: contador de RPM por evento no Redis, janela
+de 200 ms, fila no RabbitMQ com worker pool, gatilho 80/70 de <code>X × réplicas</code> com X = 56k, <code>202</code> e consulta de estado), a autoescala (#111/#112,
+opção A: override do compose, HAProxy e scaler no host) e as imagens slim (#177). Fonte: <code>Projeto/carga/results/07-rodada4-admission/</code>
+(README da etapa e <code>degraus-*.csv</code>). Escada sequencial de 20k a 98k RPM, passo de 6k, 60 s por degrau, 1000 usuários, 5% das respostas <code>202</code>
+acompanhadas até o estado final, parada por p95 acima de 5 s numa janela de 60 s, banco limpo antes de cada bloco, <code>pg_test_fsync</code> 0,37–0,39 ms.</p>
+<table><thead><tr><th>Bloco</th><th>Braço</th><th>Resultado</th><th>Overselling (CAS)</th></tr></thead><tbody><tr><td>1 (<code>degraus-46496</code>)</td><td>sem autoescala</td><td>14 degraus completos, 0 5xx, 0 descartes; fila drenada (máx. 4.419, 0 ao fim), dead-letter 0</td><td>0</td></tr><tr><td>2 (<code>degraus-49019</code>)</td><td>autoescala, parâmetros provisórios</td><td>parada no 32k (p95 de janela 5,58 s); 4.175 5xx (3.148 reserva, 1.027 confirma), 1.162 descartes</td><td>0</td></tr><tr><td>3 (<code>degraus-50350</code>)</td><td>autoescala calibrada</td><td>parada no 38k (p95 de janela 6,00 s); 9.537 5xx (7.557 reserva, 1.980 confirma), 4.609 descartes</td><td>0</td></tr></tbody></table>
+<p><strong>Contra a Rodada R</strong> (mesma escada e mesma regra do X):</p>
+<table><thead><tr><th></th><th>R (06, <code>b072346</code>)</th><th>R4 bloco 1</th><th>R4 bloco 2</th><th>R4 bloco 3</th></tr></thead><tbody><tr><td>1º degrau degradado fora do aquecimento</td><td><strong>56k</strong> (54k limpo)</td><td><strong>32k</strong> (26k limpo)</td><td>20k (já no 1º degrau)</td><td>26k</td></tr><tr><td>p50 / p95 / p99 a 32k (ms)</td><td>5,2 / 36,6 / 76,2</td><td>217,3 / 1.430,3 / 1.950,7</td><td>1.302,5 / 5.580,7 / 6.650,9</td><td>554,7 / 2.731,9 / 3.884,3</td></tr><tr><td>p50 / p95 / p99 a 56k (ms)</td><td>215,3 / 1.141,3 / 1.984,1</td><td>4,7 / 377,9 / 654,7</td><td>—</td><td>—</td></tr><tr><td>Taxa de 5xx</td><td>0</td><td>0</td><td>10,2% no 32k</td><td>24,1% no 38k</td></tr><tr><td>Tempo até admitir p95</td><td>—</td><td>2,2–3,0 s até 38k; 15,0–29,2 s de 44k a 98k</td><td>16,1–18,9 s</td><td>1,0–20,2 s</td></tr><tr><td>Réplicas</td><td>1 de cada</td><td>1 de cada</td><td>reservation 1→2→1, backend 1→3</td><td>reservation e backend 1→2</td></tr></tbody></table>
+<ul>
+<li class=""><strong>Sem autoescala, o modo de alta carga deixa o sistema estável acima do X.</strong> De 50k a 98k o efetivo fica igual ao alvo, sem 5xx e sem
+descartes, e o p95 de janela fica em 0,30–0,77 s. A Rodada R colapsava para ~42k efetivos logo depois de 56k.</li>
+<li class=""><strong>O preço do modo de alta carga</strong> é a espera até admitir (p95 de 15 a 29 s acima de 44k) e o <code>429</code> por usuário, que chega a 72% das
+respostas em 98k (limite de 5 em espera por usuário com 1000 usuários; a fila nunca encheu).</li>
+<li class=""><strong>Abaixo do X a R4 é mais lenta que a R.</strong> O contador de 200 ms vê rajadas acima do RPM oferecido e liga a fila já em 20k–44k. A fila e o
+caminho síncrono disputam a mesma linha do <code>eventcap</code>, e cada reserva ganha o salto ao <code>admission</code>.</li>
+<li class=""><strong>Com autoescala, neste host, o sistema não fica estável acima do X.</strong> O health check do HAProxy (<code>GET /actuator/health</code>) divide as 300
+threads do Tomcat do gateway com o tráfego e estoura os 2 s com o gateway saturado. O <code>lb</code> então tira a réplica do ar com milhares de
+sessões ativas, e os 503 são do próprio <code>lb</code> (<code>econ</code> = <code>hrsp_5xx</code> no <code>show stat</code>; os servidores têm 0 5xx próprios). Calibrar as
+capacidades do scaler pelo bloco 1 (bloco 3) corrigiu o começo, com p50 de 7,7 ms a 20k, mas não a ejeção. Follow-up #207; a oscilação do
+sinal <code>adm:hot</code> do scaler é a #206. Réplicas extras também não ganham capacidade aqui: o host é um só, e a linha quente do <code>eventcap</code>
+é a mesma (X(1) = X(2) no dry-run da #178).</li>
+</ul>
+<p><strong>Ameaças.</strong></p>
+<ul>
+<li class="">Uma escada por bloco, sem repetição.</li>
+<li class="">Imagens slim e 1000 usuários, contra as imagens originais e os 200 usuários da R.</li>
+<li class="">Matriz não rodada nesta rodada; o CAS foi conferido no banco por bloco.</li>
+<li class="">Sem telemetria do gerador no modo direto: a saturação do gerador sai só de <code>iteracoes_descartadas</code>/<code>rpm_efetivo</code>.</li>
+<li class="">Um host compartilhado entre todos os serviços e réplicas.</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="resultados-preliminares-fora-do-protocolo">Resultados preliminares (fora do protocolo)<a href="#resultados-preliminares-fora-do-protocolo" class="hash-link" aria-label="Link direto para Resultados preliminares (fora do protocolo)" title="Link direto para Resultados preliminares (fora do protocolo)" translate="no">​</a></h3>
+<p>Antes do protocolo acima, rodadas de 2026-10-04 (<code>Projeto/carga/results/02-hikari/ANALISE.md</code>) mediram os dois braços
+com <strong>um único lag (5 s) e uma ou duas repetições por configuração</strong> (<code>BACKLOG.md</code>, seção &quot;Estado&quot;;
+<code>ANALISE.md</code>, seção 6: &quot;uma rodada por configuração&quot;). Servem como motivação e como expectativa, <strong>não</strong>
+como resultado do protocolo: não entram nas curvas nem no X. A tabela traz só overselling, medido no banco
+como <code>(pending + confirmed) − capacidade</code> (<code>make verificar-*</code>), isto é, a métrica secundária; com 100% de
+confirmação ela coincide com a primária. As rodadas pós-pool rodaram com <code>max_connections=1000</code>
+(<code>docs/carga/setup.md</code>, seção 6), enquanto os comandos do protocolo usam <code>MAX_CONN=300</code>
+(<code>Projeto/carga/README.md</code>): mais um motivo para não compará-las com a matriz e a escada.</p>
+<table><thead><tr><th>Teste preliminar</th><th>Braço</th><th>Overselling (banco)</th></tr></thead><tbody><tr><td>Rodadas pós-pool (disputa, taxa fixa e aleatório; com e sem confirmação)</td><td><code>cas</code></td><td>0 (<code>eventos_com_overselling = 0</code>)</td></tr><tr><td>Disputa de 50 / 100 / 200 clientes, capacidade 20, com 100% e 60% de confirmação (N = 50 está fora do protocolo, que usa 100 e 200)</td><td><code>naive</code></td><td>30 / 80 / 180 (igual nas duas confirmações)</td></tr><tr><td>Taxa fixa de 10k RPM por 90 s, 79 eventos</td><td><code>naive</code></td><td>7.347 reservas a mais em 75 eventos (100% de confirmação); 6.985 em 75 eventos (60%)</td></tr><tr><td>Aleatório, 45 min, 1464 eventos</td><td><code>naive</code></td><td>0</td></tr></tbody></table>
+<p>Leitura (interpretação pelo código e pelo padrão de carga, <strong>não medida diretamente</strong>): na disputa preliminar
+do braço ingênuo todos os clientes foram aceitos (0 &quot;lotado&quot;), porque a rajada cabe dentro de um intervalo de
+refresh e o read model mostra 20 vagas durante toda ela; no aleatório, as tentativas de um mesmo evento chegam
+mais espaçadas que o refresh e o evento já aparece cheio na tentativa seguinte. Isso sugere que o overselling
+do braço ingênuo depende da concentração de tentativas por evento dentro do lag, e não da taxa total
+(hipótese a testar, não resultado).</p>
+<p>Para o X, os dados preliminares de monólito + HikariCP ficam abaixo ou no início da escada: 10k RPM por 90 s
+no braço CAS, com 0 respostas 5xx e p95 da reserva de 4,2 ms (<code>ANALISE.md</code>, seção 3), e o aleatório de 45 min
+(1k–12k RPM, com leituras), também sem 5xx. Não são comparáveis aos degraus (carga, duração e mistura
+diferentes). Os números anteriores ao pool de conexões (por exemplo, 5xx de cerca de 31% a 10k RPM) estão
+invalidados (issue #96) e não são usados.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="ameaças-à-validade">Ameaças à validade<a href="#ameaças-à-validade" class="hash-link" aria-label="Link direto para Ameaças à validade" title="Link direto para Ameaças à validade" translate="no">​</a></h2>
+<p>As sete primeiras são as ameaças obrigatórias do experimento; a sétima está <strong>aberta</strong>.</p>
+<ol>
+<li class=""><strong>LAN única.</strong> Host e gerador estão na mesma rede (host em Ethernet; gerador com link de 1 Gbps, meio
+físico não registrado). Não há variação de topologia nem das condições de rede. O RTT não foi isolado: o
+ICMP não respondeu e a &quot;latência base&quot; HTTP (p50 de 14,9 ms) veio de outro cliente (PowerShell) e de um
+endpoint que consulta o Postgres, então não é comparável ao k6 e não é subtraída; as latências do k6 vão
+como medidas, com o RTT embutido. Latências absolutas e X valem para esta topologia; o efeito de uma rede
+mais lenta ou com jitter sobre a duração da rajada, e portanto sobre o overselling do braço ingênuo, não
+foi avaliado.</li>
+<li class=""><strong>Um evento por disputa.</strong> Cada disputa concentra os N clientes num único evento: uma linha de <code>eventcap</code>
+e uma do read model. É o caso de maior concentração. Nas rodadas preliminares (ver &quot;Resultados
+preliminares&quot;) o braço ingênuo teve overselling na disputa concentrada e nenhum no teste aleatório, com
+as tentativas espalhadas por muitos eventos; o resultado da matriz vale para a concentração máxima e não
+diz quanto se oversella com a demanda espalhada. Na matriz também não há disputas simultâneas entre
+eventos.</li>
+<li class=""><strong>Determinismo do job de refresh.</strong> O overselling do braço ingênuo depende do ponto do ciclo do job em
+que a rajada chega e de haver ou não um refresh no meio dela. A mitigação é a espera aleatória em
+<code>[0, lag)</code>, as 5 repetições e a coleta de <code>lag_obs_*</code>. Resíduos: 5 repetições são uma amostra pequena das
+fases; a rajada é curta (cerca de 0,1-0,3 s segundo <code>Projeto/carga/lib-matriz.ps1</code>; &quot;menos de ~3 s&quot; nas
+rodadas preliminares, <code>ANALISE.md</code>), e na disputa preliminar todos os clientes foram aceitos, então para
+lags grandes o overselling pode atingir um patamar em N − capacidade que esconde a sensibilidade ao lag;
+o job usa <code>fixedDelay</code>, então o período efetivo é o lag mais a duração do refresh, um único
+<code>INSERT ... SELECT</code> que recalcula todas as linhas de <code>eventcap</code> e tende a crescer com os eventos acumulados
+no banco, de modo que a espera uniforme em <code>[0, lag)</code> cobre só parte do ciclo; e sob saturação o job pode
+atrasar (observado antes do pool, em <code>docs/carga/setup.md</code>). Em ambos os casos o lag efetivo difere do
+configurado, e o <code>lag_obs_*</code> registra o efeito. No ponto 1, o banco limpo reduziu esse efeito (ameaça 15).</li>
+<li class=""><strong>bcrypt no seed.</strong> O seed e o login usam bcrypt (custo alto): semear centenas de usuários leva dezenas de
+segundos e os logins do <code>setup()</code> custam cerca de 10 ms por cliente, o que domina o tempo de cada
+execução e deixa a rajada ocupar uma fração mínima dele. A consequência de validade é que esse custo leva a
+usar poucos usuários (200 na escada) para gerar milhares de reservas, com os pares (usuário, evento) em
+sequência (<code>Projeto/carga/README.md</code>, &quot;Como funciona&quot;), o que concentra as tentativas de cada evento (ver
+a ameaça 10). O <code>setup()</code> só termina depois de todos os logins (<code>http.batch</code>), então a rajada não compete
+com o bcrypt; resta, como possibilidade não medida, algum efeito do estado do host logo depois de N
+logins (coleta de lixo, JIT). A mitigação é medir só a janela da rajada (<code>disparo_ms</code> e <code>fim_ms</code>), sem os
+logins.</li>
+<li class=""><strong>Pool HikariCP de 1000.</strong> O tamanho padrão do pool não foi explorado: nas rodadas preliminares, com 100 VUs
+e latências de poucos ms, o pool nunca chegou perto de 1000 (<code>ANALISE.md</code>, seção 6), e o padrão só é seguro
+com <code>max_connections</code> alto. Um pool menor mudaria onde as requisições esperam (fila no pool em vez de conexão no Postgres) e,
+com isso, a latência e o X (não testado). Os resultados pré-pooler são de &quot;monólito + HikariCP (1000)&quot;. No ponto
+1 o HikariCP (1000) só enfileira no Supavisor, cujo pool real no Postgres é 245; o efeito disso sobre a latência
+não foi isolado (ameaça 14).</li>
+<li class=""><strong>Sem <code>pg_stat_statements</code>.</strong> A extensão não é coletada nesta fase (a coleta está prevista para o harness
+definitivo da Fase 8, e a imagem do Supabase a traz: <code>docs/adr/Architecture-Decision-Supabase-Self-Host.md</code>).
+Sem ela não há tempo por instrução SQL (o <code>UPDATE</code> do CAS, o UPSERT em <code>walletevent</code>, o <code>INSERT ... SELECT</code>
+do refresh), e as causas de latência e do X permanecem hipóteses. Os CSVs da matriz e da escada também não
+trazem série de CPU, memória nem uso do pool durante a carga, e o <code>sockstat</code> pós-pool não cobre as rodadas.</li>
+<li class=""><strong>p95 bimodal (~460 ms) sem causa medida (ameaça aberta).</strong> Nas rodadas preliminares pós-pool
+(medição fora do protocolo), o backend apresentou uma latência de <strong>leitura</strong> bimodal: p50 de ~2 ms e p95 de
+~460–475 ms, nos braços <code>cas</code> e <code>naive</code>, que não vem do pool nem da confirmação (<code>ANALISE.md</code>, seção 6).
+A suspeita, não medida por endpoint, é que <code>GET /bff/events/search</code> varra os eventos em memória. A matriz
+e a escada enviam só <code>POST</code> (reserva e confirmação), então esse comportamento não deveria aparecer nelas,
+mas a causa não foi isolada e não há evidência de que o caminho de escrita sob a escada esteja livre dele.
+Segue aberta até a latência ser medida por endpoint.</li>
+</ol>
+<p>Ameaças adicionais, sustentadas pelos documentos do kit:</p>
+<ol start="8">
+<li class=""><strong>Pool maior que <code>max_connections</code>.</strong> O pool cresce sob demanda a partir de 5 conexões; se crescer além de
+<code>max_connections</code>, o Postgres pode recusar conexões (<code>too many clients</code>) e o backend responde HTTP 500
+(<code>Projeto/carga/README.md</code>, &quot;Por que <code>MAX_CONN</code> importa&quot;). Os comandos do protocolo usam <code>MAX_CONN=300</code> com
+o pool padrão de 1000 (o valor efetivo é o registrado no Setup), então 5xx na escada podem ser artefato de
+configuração, o que pode antecipar o X. (No ponto 1 isso não se aplica do mesmo modo: o HikariCP conecta ao
+Supavisor, com <code>POOLER_MAX_CLIENT_CONN</code> 1500, que enfileira sobre as 245 conexões reais.) Mitigação parcial: <code>max_connections</code> e <code>pool_hikari</code> vão para o
+CSV, e a causa dos 5xx deve ser conferida no log. Na matriz, repetições com 5xx são descartadas, não
+gravadas. Nas escadas de 2026-10-16 isso não aconteceu: com <code>max_connections</code> 100 e pool de 1000, o Postgres
+chegou a recusar um <code>psql</code> externo (<code>too many clients</code>), mas o backend não registrou erro de conexão e a
+<code>taxa_5xx</code> ficou em 0. O risco que se confirmou foi outro: a coluna <code>max_connections</code> do CSV é um rótulo e
+divergiu do valor real (300 no CSV, 100 no host).</li>
+<li class=""><strong>Saturação do gerador.</strong> Se o k6 não sustenta a taxa (iterações descartadas ou <code>rpm_efetivo</code> abaixo de
+95% do alvo), o degrau mede o gerador, e X passa a limite inferior; a tolerância de 5% é fixa. Os 2000 VUs
+pré-alocados custam memória no gerador (estimativa de 1–2 MB por VU). Em 2026-10-16 o gerador limitou de três
+formas: portas efêmeras do Windows acima de ~60k RPM (corrigido com
+<code>netsh int ipv4 set dynamicport tcp start=10000 num=55535</code>; a <code>degraus-954833</code> fica como limitada pelo
+gerador), memória com 4000 VUs (escada interrompida, sem dados) e, com a carga intercalada, CPU e portas em
+160k RPM. Acima de ~140k RPM é preciso um segundo gerador.</li>
+<li class=""><strong>Concentração por evento crescente com o RPM na escada.</strong> Os pares (usuário, evento) são consumidos em
+sequência (usuário <code>i % U</code>, evento <code>floor(i / U)</code>, com U = 200 usuários;
+<code>Projeto/carga/degraus/carga-degraus.js</code>), então cada evento recebe até 200 tentativas, uma após a outra
+(capacidade 100); o padrão é o mesmo descrito em <code>ANALISE.md</code>, seção 5.3, para o teste de taxa fixa. A
+carga por evento é fixa: só a duração dessa rajada por evento encurta com o RPM (200 · 60 / RPM segundos,
+conta derivada da regra de pares: cerca de 1 s a 12k RPM e 0,3 s a 40k RPM). Logo, nos degraus altos
+sobem juntas a carga total e a concentração temporal por evento (contenção na linha de <code>eventcap</code>), e o X
+confunde os dois efeitos.</li>
+<li class=""><strong>Degraus contíguos e timeouts fora do X.</strong> Entre degraus só há 31 s ociosos, sem resfriamento, e a
+degradação de um degrau pode contaminar o seguinte. Um host que trava gera timeouts, contados em <code>outros</code>
+e não como 5xx; o report avisa, mas a regra do X não captura essa forma de degradação.</li>
+<li class=""><strong>Ambiente não caracterizado.</strong> CPU, RAM, disco, SO e a versão do Docker Desktop do host (e RAM, disco,
+SO e o meio físico do gerador) não constam nos registros (placeholders no Setup), o que limita a
+reprodução e a leitura do X em termos de recurso. O plano de energia
+&quot;Alto desempenho&quot; e o host na tomada são recomendados, mas não há registro de que tenham sido aplicados.</li>
+<li class=""><strong>Rótulo versus configuração real.</strong> <code>braco</code> e <code>lag_ms</code> são rotulados pelo operador no gerador, e o
+<code>commit</code> do CSV é o do checkout do gerador: o host precisa estar no mesmo commit e na mesma configuração,
+o que é conferido manualmente (<code>printenv</code>). O <code>lag_obs_*</code> permite detectar uma discrepância de lag, mas
+não de braço, de commit nem de pool.</li>
+<li class=""><strong>Três mudanças simultâneas no ponto 1.</strong> O ponto 1 difere da matriz pré-pooler em três fatores ao mesmo tempo:
+(a) a fila do pooler em transaction mode (Supavisor, um salto a mais por transação), (b) PG 16 → 17 e o locale
+(<code>postgres:16-alpine</code> com <code>pt_BR</code> → <code>supabase/postgres:17.6</code> com <code>en_US</code> ICU) e (c) o teto real de conexões, de
+~300 (HikariCP direto; a role <code>admin</code> era superuser e podia usar as 3 conexões reservadas) para 245 (<code>max_connections − 55</code>).
+O CAS ficou cerca de 2× mais lento e com 43% a 47% menos vazão. <strong>As rodadas de isolamento foram feitas em
+2026-10-17</strong> (subseção &quot;Isolamento do pooler&quot;; <code>docs/carga/resultados-isolamento-escada-pospooler-2026-10-17.md</code>): com
+o pool em 300, o p95 com N = 200 cai de 155 para 120 ms e com N = 100 quase não muda (96 contra 104 ms); sem o pooler
+(PG 17 direto), o p95 fica próximo do pré-pooler (67,4 contra 53,7 ms com N = 100; 77,1 contra 77,1 com N = 200). O
+Supavisor responde pela maior parte da piora e o teto de conexões por uma parte menor. <strong>Resíduos:</strong> o resto (~14 ms com
+N = 100) é o PG 17 junto com o banco limpo, que os dados não separam (ameaça 15); são 5 repetições por bloco, com
+intervalos mín–máx que se sobrepõem em parte; e os blocos de isolamento rodaram em outro dia que o ponto 1, em banco novo
+cada, na <code>main</code> <code>a8fc86a</code> e não no <code>8ba01b4</code> do ponto 1. O override do bloco (b) é local e não versionado.</li>
+<li class=""><strong>Banco limpo × inchado.</strong> O ponto 1 começou com o banco limpo (volume novo); a matriz pré-pooler rodou sobre ~35
+mil eventos e ~2 milhões de <code>walletevent</code> acumulados pelas escadas do dia. O refresh do read model recalcula
+todos os eventos, então o estado do banco muda o lag efetivo do braço ingênuo (lag 500: ~1,6 s antes, 151–428 ms
+agora) e, com ele, a chance de a rajada cruzar um refresh. Também pode afetar a latência do CAS (hipótese, não
+medida). A diferença do overselling do ingênuo entre as duas matrizes acompanha o lag observado, e portanto o estado do
+banco; não foi isolada dos demais fatores (ameaça 14).</li>
+</ol>
+<p>Ressalvas do ponto 2 (Rodada 2, 2026-10-19; fonte: <code>Projeto/carga/results/04-fase6-es/README.md</code>):</p>
+<ol start="16">
+<li class=""><strong>Rede em Wi-Fi.</strong> Nesta rodada o gerador e o host estavam em Wi-Fi, com IPs novos. A baseline
+(<code>baseline-20261019-074604.txt</code>) deu HTTP p50 26,6 / p95 42,9 ms (n = 30) e ping médio de 18,55 ms (máx. 180 ms, 0 de
+100 perdidos), contra ~15 / 19 ms no cabo das rodadas anteriores (ameaça 1). Como a baseline vem de outro cliente que
+o k6, ela não dá a parcela de rede nas latências do k6, e a parcela do Wi-Fi nelas não foi isolada. Afeta as
+latências e a vazão da matriz, do aleatório e, pelo p95 de janela, o X; o overselling do ingênuo já está no teto, e
+uma rajada mais longa não o aumentaria. A comparação de latência com as etapas anteriores fica com essa ressalva.
+O cabo volta no fim de semana; repetir no cabo é o que separa o Wi-Fi do custo do ES. O plano de energia do gerador
+foi ajustado à mão (o <code>setup-gerador.ps1</code> usou um GUID errado).</li>
+<li class=""><strong>Estado do banco entre os blocos e comparabilidade com o ponto 1.</strong> Os blocos 1 a 3b (matrizes ingênuo e CAS,
+escadas com e sem consumer) rodaram sobre banco <strong>acumulado</strong>, sem limpeza entre eles, e o backlog do consumer foi
+crescendo; do bloco 4 em diante, o banco foi limpo antes de cada teste (TRUNCATE, tópicos e consumer group do
+Redpanda apagados, backend reiniciado). O ponto 1 rodou com banco limpo, cabo e Tomcat de 200 threads, e o ponto 2
+com Tomcat de 300. Logo, a comparação das matrizes com o ponto 1 mistura o ES, o Wi-Fi, o banco acumulado e as
+threads (por isso a matriz CAS com Tomcat 300 entra como referência); o X do pós-pooler (cabo, banco limpo) é
+comparado com o dos blocos 3 e 3b (Wi-Fi, banco acumulado); e a comparação entre os blocos 3, 3b e 5
+mistura o consumer com o estado do banco (acumulado nos dois primeiros, limpo no 5); o 3b rodou depois do 3, herdando
+o volume e o backlog dele. A <code>Ale-29057</code> (#109) não
+registra as threads do Tomcat; a #124, que fixou 300, é do mesmo dia.</li>
+<li class=""><strong>Imagem <code>:146</code> montada localmente.</strong> O bloco 5 rodou com o consumer em lote (issue #146) numa imagem do backend
+montada à mão com as classes da branch <code>Issue-146</code>, porque o Maven Central estava bloqueado na rede do host (erro de
+certificado PKIX) e o <code>docker compose build</code> normal não fechava. A coluna <code>commit</code> dos CSVs desse bloco (<code>1ee6fbe</code>) é a
+do checkout do gerador e não reflete a imagem (ameaça 13).</li>
+<li class=""><strong>Redpanda em modo dev-container, sem fsync.</strong> O broker sobe com <code>--mode=dev-container</code> (<code>docs/arquitetura/fase6-cqrs-es.md</code>),
+que não força gravação em disco. A latência do relay e o lag do consumer são <strong>otimistas</strong> em relação a um broker
+com disco durável; um lag maior só reforçaria o overselling do ingênuo, mas o custo do ES no X e no aleatório pode
+estar subestimado.</li>
+<li class=""><strong><code>lag_obs</code> é limite inferior e o lag do consumer vem de amostras do host.</strong> Na matriz, o <code>lag_obs_*</code> mede a idade do
+último evento aplicado na linha do evento, amostrada pelo gerador durante uma rajada de ~0,2 s: vale -1 no disparo
+em todas as 20 linhas (a linha só nasce com a 1ª reserva) e ficou sem leitura em 7 delas, e não mede quanto a
+projeção está atrás do &quot;agora&quot;. O lag de consumer das escadas e do aleatório vem do offset lag do grupo, amostrado a
+cada 1 s no host (<code>host-lag/</code>; três arquivos com <code>ts</code> provavelmente em UTC, 3:00:00 à frente do nome do arquivo e do gerador (a confirmar), e o
+<code>lag-poll-cas</code> no horário local). A captura do aleatório continuou rodando depois do fim do teste (e pegou o início
+do bloco 5), e a da escada do bloco 3 parou de drenar depois do fim da carga (564.215 e depois 792.777), o que é
+compatível com o consumer desligado para o 3b. Só as janelas de cada teste entram nos números acima; os valores
+fora delas não são backlog do bloco, e o máximo do bloco 3 com o consumer ligado é 578.674.</li>
+<li class=""><strong>Incidentes da sessão.</strong> O host trocou de IP durante a sessão (DHCP do Wi-Fi): a 2ª tentativa do 3b abortou antes
+do seed, com o backend inacessível no IP antigo, e a escada foi relançada no IP novo, sem efeito nos resultados já
+coletados. A 1ª tentativa do 3b (40k a 120k) foi abortada no degrau de 80k por falta de memória no gerador, sem CSV
+(o host não foi afetado), e refeita só até 80k.</li>
+</ol>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="limitações">Limitações<a href="#limitações" class="hash-link" aria-label="Link direto para Limitações" title="Link direto para Limitações" translate="no">​</a></h2>
+<ul>
+<li class=""><strong>Pontos 1 e 2 e X.</strong> O ponto 1 (monólito CRUD + pooler) cobre as rodadas 1a e 1b e, desde 2026-10-17, o limiar X
+pelo pooler (≈ 78k RPM), com o 97k pré-pooler (HikariCP direto, PG 16) como referência. O ponto 2 (monólito com
+CQRS + ES, 2026-10-19) se compara com o ponto 1, não com os números pré-pooler; o ponto 3 (distribuído) vem depois
+e se compara com os dois. A comparação pré × pós-pooler dentro do ponto 1 mistura três mudanças e o estado do banco
+(ameaças 14 e 15); a do ponto 2 com o ponto 1 mistura o ES, o Wi-Fi, o banco acumulado e as threads do Tomcat
+(ameaças 16 e 17).</li>
+<li class=""><strong>Lag sintético × lag real.</strong> No ponto 1 o read model é recalculado por timer (lag fixo e configurável), que não é o
+atraso de uma projeção real. No ponto 2 o lag é o do consumer real, mas só foi medido como limite inferior na matriz
+(ameaça 20) e como offset lag do host nas escadas e no aleatório. A transferência para o ponto 3 (consumer em
+outro processo, banco separado) continua em aberto.</li>
+<li class=""><strong>X anteriores preliminares; X definitivo na Rodada R.</strong> Os X dos pontos 1 a 3 também vêm de escadas sequenciais, então
+valem a mesma leitura por evento (subseção &quot;Limiar X definitivo&quot;); o que os torna preliminares é a pouca repetição e as
+configurações diferentes, não a unidade. O X definitivo, ≈ 56k RPM por evento, é o da Rodada R. A ameaça 10 continua
+valendo: a rajada por evento é curta (~0,2 s a 56k) e a concentração cresce com o RPM, então o 56k é o limiar de
+contenção da linha quente, não de um evento sustentado por 60 s. O gatilho da fila (<code>RPM(evento) ≥ 80% de X × réplicas</code>,
+<code>docs/adr/Architecture-Decision-Async-Checkout-Queue.md</code>) é o das issues #111 e #112; a escala do X com as réplicas não foi
+medida.</li>
+<li class=""><strong>Escopo do workload.</strong> Só escrita (reserva e confirmação) com <code>PCT_CONFIRMA=100</code>; capacidade fixa em 20 e
+N ∈ {100, 200} na disputa; um único evento por disputa. A escada não tem leituras, e o teste aleatório
+(com leituras) ficou fora do protocolo da matriz e da escada; entra só no ponto 2, como comparação com a #109.</li>
+<li class=""><strong>Vazão do kit anterior não usada.</strong> Os números de &quot;Vazão&quot; e <code>reservas_por_s</code> do teste 1 anterior à matriz
+(<code>docs/carga/setup.md</code>, seção 6, tabela da disputa; coluna <code>reservas_por_s</code> de
+<code>Projeto/carga/results/02-hikari/resultados.csv</code>) não são reportados aqui. Há uma hipótese, <strong>não confirmada</strong>, de que meçam a taxa de login do
+<code>setup()</code> (bcrypt) e não a de reserva: o <code>duracao_s</code> desse teste inclui o <code>setup()</code> (<code>Projeto/carga/README.md</code>;
+<code>Projeto/carga/lib-matriz.ps1</code>). Não se afirma que estejam errados; a vazão desta seção vem só do
+<code>throughput</code> da matriz (janela da rajada) e do <code>throughput</code> da escada.</li>
+<li class=""><strong>Amostra e execução.</strong> 5 repetições por (lag, N) e uma execução da escada por X (três no X pelo pooler, com faixas parcialmente sobrepostas); a execução é feita pelo
+usuário no gerador, e o resultado depende do estado do host naquele dia.</li>
+<li class=""><strong>Observabilidade.</strong> Sem <code>pg_stat_statements</code>, sem série de recursos do host e sem medição de latência por
+endpoint (ver as ameaças 6 e 7).</li>
+</ul></div></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Páginas de documento"><a class="pagination-nav__link pagination-nav__link--prev" href="/testes/metodo/testes-manuais/overselling-sob-concorrencia"><div class="pagination-nav__sublabel">Anterior</div><div class="pagination-nav__label">Teste manual — overselling sob concorrência (EventCap/CAS)</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/testes/etapas"><div class="pagination-nav__sublabel">Próxima</div><div class="pagination-nav__label">Índice das etapas</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#hipótese" class="table-of-contents__link toc-highlight">Hipótese</a></li><li><a href="#setup" class="table-of-contents__link toc-highlight">Setup</a></li><li><a href="#workload" class="table-of-contents__link toc-highlight">Workload</a><ul><li><a href="#disputa-rodadas-1a-e-1b-matriz" class="table-of-contents__link toc-highlight">Disputa (rodadas 1a e 1b, matriz)</a></li><li><a href="#escada-de-carga-limiar-x-14" class="table-of-contents__link toc-highlight">Escada de carga (limiar X, #14)</a></li></ul></li><li><a href="#métricas" class="table-of-contents__link toc-highlight">Métricas</a></li><li><a href="#resultados" class="table-of-contents__link toc-highlight">Resultados</a><ul><li><a href="#ponto-1-pós-pooler-overselling--lag-e-latência" class="table-of-contents__link toc-highlight">Ponto 1 (pós-pooler): overselling × lag e latência</a></li><li><a href="#isolamento-do-pooler-2026-10-17" class="table-of-contents__link toc-highlight">Isolamento do pooler (2026-10-17)</a></li><li><a href="#overselling--lag-pré-pooler-referência-monólito--hikaricp" class="table-of-contents__link toc-highlight">Overselling × lag, pré-pooler (referência: monólito + HikariCP)</a></li><li><a href="#limiar-x-escada-de-carga-pré-pooler-referência" class="table-of-contents__link toc-highlight">Limiar X (escada de carga, pré-pooler: referência)</a></li><li><a href="#limiar-x-pelo-pooler-2026-10-17" class="table-of-contents__link toc-highlight">Limiar X pelo pooler (2026-10-17)</a></li><li><a href="#ponto-2-cqrs--es-no-monólito-rodada-2-2026-10-19" class="table-of-contents__link toc-highlight">Ponto 2 (CQRS + ES no monólito, Rodada 2, 2026-10-19)</a></li><li><a href="#ponto-3-serviços-separados-rodada-3-2026-10-24" class="table-of-contents__link toc-highlight">Ponto 3 (serviços separados, Rodada 3, 2026-10-24)</a></li><li><a href="#limiar-x-definitivo-rodada-r-2026-10-28-issue-40" class="table-of-contents__link toc-highlight">Limiar X definitivo (Rodada R, 2026-10-28; issue #40)</a></li><li><a href="#comparação-das-3-configurações-issue-39" class="table-of-contents__link toc-highlight">Comparação das 3 configurações (issue #39)</a></li><li><a href="#rodada-4-admission-e-autoescala-acima-do-x-2026-10-29-issue-179" class="table-of-contents__link toc-highlight">Rodada 4 (admission e autoescala acima do X, 2026-10-29; issue #179)</a></li><li><a href="#resultados-preliminares-fora-do-protocolo" class="table-of-contents__link toc-highlight">Resultados preliminares (fora do protocolo)</a></li></ul></li><li><a href="#ameaças-à-validade" class="table-of-contents__link toc-highlight">Ameaças à validade</a></li><li><a href="#limitações" class="table-of-contents__link toc-highlight">Limitações</a></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="footer__bottom text--center"><div class="footer__copyright">Gerado automaticamente a partir do repositório GerenciadorEventos e do vault de arquitetura.</div></div></div></footer></div>
+</body>
+</html>

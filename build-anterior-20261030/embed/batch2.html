@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tempo restante do Batch 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+</head>
+<body>
+<style>
+/* Layout: cabeçalho com a previsão e o botão de atualizar, três números, linha do tempo e histórico lado a lado, tabela dos itens. */
+:root{
+  --bg:#eef1f5; --surface:#ffffff; --surface-2:#f6f8fb; --ink:#152030; --muted:#5a6678; --line:#c5cedb;
+  --c-req:#2f5fb3; --c-bad:#c0352a; --c-ok:#2e8649; --accent:#b86200; --c-done:#9aa6b6;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0e131b; --surface:#161e29; --surface-2:#1b2532; --ink:#e4eaf2; --muted:#96a2b4; --line:#2f3b4c;
+  --c-req:#7ea6f0; --c-bad:#f06b5f; --c-ok:#5fc47c; --accent:#f2a541; --c-done:#4a5768; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0e131b; --surface:#161e29; --surface-2:#1b2532; --ink:#e4eaf2; --muted:#96a2b4; --line:#2f3b4c;
+  --c-req:#7ea6f0; --c-bad:#f06b5f; --c-ok:#5fc47c; --accent:#f2a541; --c-done:#4a5768; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:15px; line-height:1.55}
+[hidden]{display:none!important}
+.wrap{max-width:1280px; margin:0 auto; padding-block:24px 48px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px));
+  display:grid; gap:20px}
+header{display:grid; gap:6px}
+h1{margin:0; font-family:var(--f-display); font-weight:700; font-size:clamp(26px, 4vw, 38px); line-height:1.1; text-wrap:balance}
+h2{margin:0; font-family:var(--f-display); font-weight:500; font-size:19px}
+.lede{margin:0; font-size:17px; max-width:72ch}
+.linha{margin:0; max-width:80ch}
+.espera b{color:var(--accent)}
+.barra{display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; margin-top:6px; font-size:13px; color:var(--muted)}
+button{font:inherit; font-size:14px; font-weight:600; color:var(--bg); background:var(--ink); border:0; border-radius:6px; padding:7px 14px; cursor:pointer}
+button:hover{background:var(--c-req)}
+button:focus-visible{outline:2px solid var(--c-req); outline-offset:2px}
+button:disabled{opacity:.6; cursor:progress}
+.erro{color:var(--c-bad)}
+.numeros{display:grid; gap:14px; grid-template-columns:repeat(auto-fit, minmax(min(100%, 15rem), 1fr))}
+.grade{display:grid; gap:14px; grid-template-columns:repeat(auto-fit, minmax(min(100%, 22rem), 1fr))}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:18px; min-width:0}
+.rotulo{margin:0; font-family:var(--f-mono); font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+.grande{margin:6px 0 0; font-family:var(--f-display); font-weight:500; font-size:34px; line-height:1.1; font-variant-numeric:tabular-nums}
+.sub{margin:6px 0 0; font-size:13px; color:var(--muted); font-variant-numeric:tabular-nums}
+.nota{margin:4px 0 12px; font-size:13px; color:var(--muted); max-width:80ch}
+.grafico{position:relative; min-height:220px}
+.dica{position:absolute; pointer-events:none; background:var(--surface-2); border:1px solid var(--line); border-radius:6px; padding:6px 9px; font-size:12px; max-width:18rem; box-shadow:0 4px 14px rgb(0 0 0 / .18); z-index:1}
+.dica .cab{color:var(--muted)}
+.tabela{overflow:auto; max-height:34rem}
+table{width:100%; border-collapse:collapse; font-size:13px; font-variant-numeric:tabular-nums}
+th{position:sticky; top:0; background:var(--surface); text-align:left; font-weight:600; color:var(--muted); padding:6px 8px; border-bottom:1px solid var(--line); white-space:nowrap}
+td{padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top}
+td:nth-child(-n+7){white-space:nowrap}
+td.passo{color:var(--muted); min-width:18rem}
+.pill{display:inline-block; padding:0 7px; border:1px solid currentColor; border-radius:999px; white-space:nowrap}
+.pill.ok{color:var(--c-ok)} .pill.warn{color:var(--accent)} .pill.run{color:var(--c-req)} .pill.fila{color:var(--muted)}
+svg text{font-family:var(--f-body)}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Tempo restante do Batch 2</h1>
+    <p class="lede">O Batch 2 deve terminar <b id="eta">—</b>, com cerca de <b id="faltam">—</b> de trabalho pela frente.</p>
+    <p class="linha">Em andamento: <span id="agora">—</span>.</p>
+    <p class="linha espera" id="linha-espera" hidden>Esperando você: <b id="espera">—</b>.</p>
+    <div class="barra">
+      <button type="button" id="atualizar">Atualizar agora</button>
+      <span id="situacao" aria-live="polite">Lendo o ledger…</span>
+    </div>
+  </header>
+
+  <section class="numeros">
+    <div class="card">
+      <p class="rotulo">Fim previsto</p>
+      <p class="grande" id="eta-grande">—</p>
+      <p class="sub">Entre <span id="eta-min">—</span> e <span id="eta-max">—</span></p>
+    </div>
+    <div class="card">
+      <p class="rotulo">Faltam</p>
+      <p class="grande" id="faltam-grande">—</p>
+      <p class="sub">Entre <span id="faltam-min">—</span> e <span id="faltam-max">—</span>. As etapas já fechadas levaram <span id="ritmo">—</span> do tempo estimado.</p>
+    </div>
+    <div class="card">
+      <p class="rotulo">Itens concluídos</p>
+      <p class="grande"><span id="concluidos">—</span> de <span id="total">—</span></p>
+      <p class="sub">Issues mergeadas na Batch_2 e etapas fechadas</p>
+    </div>
+  </section>
+
+  <section class="grade">
+    <div class="card">
+      <h2>Linha do tempo</h2>
+      <p class="nota">Barras cheias já aconteceram ou estão em curso; as claras são previsão. O traço fino vai até o cenário lento, e a linha tracejada marca a leitura do ledger.</p>
+      <div class="grafico" id="gantt"></div>
+    </div>
+    <div class="card">
+      <h2>Como a previsão mudou</h2>
+      <p class="nota">A mesma conta refeita a cada meia hora só com o que o ledger tinha até ali; a faixa vai do cenário rápido ao lento.</p>
+      <div class="grafico" id="queda"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Itens</h2>
+    <p class="nota">O término dos itens abertos é previsto. O último passo é a linha mais recente do ledger sobre o item.</p>
+    <div class="tabela">
+      <table>
+        <thead><tr><th>Item</th><th>O quê</th><th>Situação</th><th>Início</th><th>Término</th><th>Levou</th><th>Falta</th><th>Último passo</th></tr></thead>
+        <tbody id="linhas"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Como a conta é feita</h2>
+    <p class="nota">Cada item tem três estimativas de horas, do início ao merge: rápida, central e lenta. O que já começou desconta o andamento pela última fase registrada no ledger (gerador, revisor, validador, gate) ou pelo tempo decorrido. O que não começou espera as dependências do plano: as trilhas T1 a T4, depois #44 e #111, #112, #178, Rodada 4, #47, harness da Rodada 5, Rodada 5 e, por fim, READMEs e PR final. As estimativas são corrigidas pelo ritmo das etapas já fechadas. A conta supõe que o ok das rodadas e as decisões saem na hora; o tempo de espera por você não entra.</p>
+  </section>
+</div>
+
+<script>
+  const SEM = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+  const p2 = (n) => String(n).padStart(2, '0');
+  const hora = (d) => `${p2(d.getHours())}:${p2(d.getMinutes())}`;
+  const quando = (v) => {
+    if (!v) return '';
+    const d = new Date(v);
+    return Number.isNaN(+d) ? '' : `${SEM[d.getDay()]} ${p2(d.getDate())}/${p2(d.getMonth() + 1)} ${hora(d)}`;
+  };
+  const horas = (v) => {
+    if (v == null || v === '') return '';
+    const h = Number(v);
+    return h < 1 ? `${Math.round(h * 60)} min` : `${h.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} h`;
+  };
+  const pct = (v) => Number(v).toLocaleString('pt-BR', { style: 'percent', maximumFractionDigits: 0 });
+  const marcaTempo = (d) => (d.getHours() === 0 && d.getMinutes() === 0 ? `${SEM[d.getDay()]} ${p2(d.getDate())}/${p2(d.getMonth() + 1)}` : hora(d));
+  const TOM = { 'concluído': 'ok', 'em andamento': 'run', 'aguardando decisão': 'warn', 'aguardando seu ok': 'warn', 'aguardando você': 'warn', 'na fila': 'fila' };
+  const cor = (s) => (s === 'concluído' ? 'var(--c-done)' : TOM[s] === 'warn' ? 'var(--accent)' : 'var(--c-req)');
+  const texto = (id, v) => { document.getElementById(id).textContent = v == null || v === '' ? '—' : v; };
+
+  const dica = (el) => {
+    const tip = document.createElement('div');
+    tip.className = 'dica';
+    tip.hidden = true;
+    el.append(tip);
+    return {
+      mostrar(ev, linhas) {
+        tip.replaceChildren(...linhas.map((t, n) => {
+          const d = document.createElement('div');
+          if (n === 0) d.className = 'cab';
+          d.textContent = t;
+          return d;
+        }));
+        tip.hidden = false;
+        const caixa = el.getBoundingClientRect();
+        const x = ev.clientX - caixa.left, y = ev.clientY - caixa.top;
+        tip.style.left = `${Math.max(0, Math.min(x + 12, caixa.width - tip.offsetWidth))}px`;
+        tip.style.top = `${Math.max(0, y - tip.offsetHeight - 8)}px`;
+      },
+      esconder() { tip.hidden = true; },
+    };
+  };
+  const estiloEixo = (g) => {
+    g.attr('font-size', null).attr('font-family', null);
+    g.selectAll('path, line').attr('stroke', 'var(--line)');
+    g.selectAll('text').attr('fill', 'var(--muted)').style('font-size', '12px');
+  };
+  const largura = (svg, textos) => {
+    let w = 0;
+    const g = svg.append('g');
+    g.selectAll('text').data(textos).join('text').style('font-size', '12px').text((t) => t)
+      .each(function () { w = Math.max(w, this.getComputedTextLength()); });
+    g.remove();
+    return Math.ceil(w);
+  };
+
+  function linhaDoTempo(el, itens, resumo) {
+    el.replaceChildren();
+    if (!itens.length) return;
+    const dados = itens.map((i, n) => ({ ...i, n, a: new Date(i.inicio_prev ?? i.termino), b: new Date(i.termino), m: i.fim_max ? new Date(i.fim_max) : null }));
+    const leitura = new Date(resumo.sync_at);
+    const W = Math.max(el.clientWidth, 280), LH = 22;
+    const svg = d3.select(el).append('svg').attr('width', '100%');
+    const M = { t: 20, r: 12, b: 26, l: largura(svg, dados.map((d) => d.item)) + 12 };
+    const H = M.t + M.b + dados.length * LH;
+    svg.attr('viewBox', `0 0 ${W} ${H}`).attr('height', H);
+    const x = d3.scaleTime([d3.min(dados, (d) => d.a), d3.max(dados, (d) => d.m ?? d.b)], [M.l, W - M.r]);
+    const y = (n) => M.t + n * LH;
+    const ticks = x.ticks(Math.max(2, Math.floor((W - M.l - M.r) / 80)));
+    svg.append('g').selectAll('line').data(ticks).join('line')
+      .attr('x1', x).attr('x2', x).attr('y1', M.t).attr('y2', H - M.b).attr('stroke', 'var(--line)').attr('stroke-opacity', 0.5);
+    svg.append('g').attr('transform', `translate(0,${H - M.b})`)
+      .call(d3.axisBottom(x).tickValues(ticks).tickFormat(marcaTempo).tickSizeOuter(0)).call(estiloEixo);
+    svg.append('g').selectAll('text').data(dados).join('text')
+      .attr('x', M.l - 8).attr('y', (d) => y(d.n) + LH / 2).attr('dy', '0.35em').attr('text-anchor', 'end')
+      .attr('fill', 'var(--ink)').style('font-size', '12px').text((d) => d.item);
+    svg.append('g').selectAll('line').data(dados.filter((d) => d.m)).join('line')
+      .attr('x1', (d) => x(d.b)).attr('x2', (d) => x(d.m)).attr('y1', (d) => y(d.n) + LH / 2).attr('y2', (d) => y(d.n) + LH / 2)
+      .attr('stroke', (d) => cor(d.status)).attr('stroke-width', 1.5).attr('stroke-opacity', 0.6);
+    svg.append('g').selectAll('rect').data(dados).join('rect')
+      .attr('x', (d) => x(d.a)).attr('width', (d) => Math.max(3, x(d.b) - x(d.a))).attr('y', (d) => y(d.n) + 5).attr('height', LH - 10)
+      .attr('rx', 3).attr('fill', (d) => cor(d.status)).attr('fill-opacity', (d) => (d.status === 'na fila' ? 0.35 : 1));
+    const xl = x(leitura);
+    svg.append('line').attr('x1', xl).attr('x2', xl).attr('y1', M.t - 4).attr('y2', H - M.b)
+      .attr('stroke', 'var(--muted)').attr('stroke-dasharray', '4 3');
+    svg.append('text').attr('x', xl).attr('y', M.t - 8).attr('text-anchor', xl > W - 70 ? 'end' : xl < M.l + 70 ? 'start' : 'middle')
+      .attr('fill', 'var(--muted)').style('font-size', '12px').text(`leitura ${hora(leitura)}`);
+    const t = dica(el);
+    svg.append('g').selectAll('rect').data(dados).join('rect')
+      .attr('x', 0).attr('width', W).attr('y', (d) => y(d.n)).attr('height', LH).attr('fill', 'transparent')
+      .on('pointermove', (ev, d) => t.mostrar(ev, [
+        `${d.item} · ${d.status}`, d.titulo, `${quando(d.a)} → ${quando(d.b)}${d.m ? `, no lento ${quando(d.m)}` : ''}`,
+      ]))
+      .on('pointerleave', () => t.esconder());
+  }
+
+  function historico(el, linhas) {
+    el.replaceChildren();
+    if (!linhas.length) return;
+    const pts = linhas.map((d) => ({ t: new Date(d.at), c: Number(d.restante_h), lo: Number(d.restante_min_h), hi: Number(d.restante_max_h) }));
+    const W = Math.max(el.clientWidth, 280), H = 220;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('height', H).attr('viewBox', `0 0 ${W} ${H}`);
+    const y = d3.scaleLinear([0, (d3.max(pts, (d) => d.hi) || 1) * 1.1], [H - 26, 12]).nice();
+    const yt = y.ticks(4);
+    const ult = pts.at(-1);
+    const M = { t: 12, b: 26, l: largura(svg, yt.map((v) => `${v} h`)) + 10, r: largura(svg, [horas(ult.c)]) + 14 };
+    let [t0, t1] = d3.extent(pts, (d) => d.t);
+    if (+t0 === +t1) { t0 = new Date(+t0 - 1800e3); t1 = new Date(+t1 + 1800e3); }
+    const x = d3.scaleTime([t0, t1], [M.l, W - M.r]);
+    svg.append('g').selectAll('line').data(yt).join('line')
+      .attr('x1', M.l).attr('x2', W - M.r).attr('y1', y).attr('y2', y).attr('stroke', 'var(--line)').attr('stroke-opacity', 0.5);
+    svg.append('g').selectAll('text').data(yt).join('text')
+      .attr('x', M.l - 6).attr('y', y).attr('dy', '0.35em').attr('text-anchor', 'end')
+      .attr('fill', 'var(--muted)').style('font-size', '12px').text((v) => `${v} h`);
+    const xt = x.ticks(Math.max(2, Math.floor((W - M.l - M.r) / 80)));
+    svg.append('g').attr('transform', `translate(0,${H - M.b})`)
+      .call(d3.axisBottom(x).tickValues(xt).tickFormat(marcaTempo).tickSizeOuter(0)).call(estiloEixo);
+    svg.append('path').datum(pts).attr('fill', 'var(--c-req)').attr('fill-opacity', 0.15)
+      .attr('d', d3.area().x((d) => x(d.t)).y0((d) => y(d.lo)).y1((d) => y(d.hi)));
+    svg.append('path').datum(pts).attr('fill', 'none').attr('stroke', 'var(--c-req)').attr('stroke-width', 2)
+      .attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('d', d3.line().x((d) => x(d.t)).y((d) => y(d.c)));
+    svg.append('circle').attr('cx', x(ult.t)).attr('cy', y(ult.c)).attr('r', 3.5).attr('fill', 'var(--c-req)');
+    svg.append('text').attr('x', x(ult.t) + 8).attr('y', y(ult.c)).attr('dy', '0.35em')
+      .attr('fill', 'var(--ink)').style('font-size', '12px').text(horas(ult.c));
+    const t = dica(el);
+    const marca = svg.append('circle').attr('r', 4).attr('fill', 'var(--c-req)').style('display', 'none');
+    svg.append('rect').attr('x', M.l).attr('y', M.t).attr('width', W - M.l - M.r).attr('height', H - M.t - M.b).attr('fill', 'transparent')
+      .on('pointermove', (ev) => {
+        const [mx] = d3.pointer(ev);
+        const d = pts[d3.leastIndex(pts, (p) => Math.abs(x(p.t) - mx))];
+        marca.attr('cx', x(d.t)).attr('cy', y(d.c)).style('display', null);
+        t.mostrar(ev, [quando(d.t), `faltavam ${horas(d.c)}`, `entre ${horas(d.lo)} e ${horas(d.hi)}`]);
+      })
+      .on('pointerleave', () => { marca.style('display', 'none'); t.esconder(); });
+  }
+
+  function tabela(itens) {
+    const tbody = document.getElementById('linhas');
+    tbody.replaceChildren(...itens.map((i) => {
+      const tr = document.createElement('tr');
+      const cel = (txt, cls) => {
+        const td = document.createElement('td');
+        if (cls) td.className = cls;
+        td.textContent = txt;
+        tr.append(td);
+        return td;
+      };
+      cel(i.item);
+      cel(i.titulo);
+      const pill = document.createElement('span');
+      pill.className = `pill ${TOM[i.status] ?? 'fila'}`;
+      pill.textContent = i.status;
+      cel('').append(pill);
+      cel(quando(i.inicio));
+      cel(quando(i.termino));
+      cel(horas(i.duracao_h));
+      cel(horas(i.restante_h));
+      cel(i.passo ?? '', 'passo');
+      return tr;
+    }));
+  }
+
+  let ultimo = null;
+  function desenhar() {
+    if (!ultimo) return;
+    const r = ultimo.find((l) => l.tipo === 'resumo');
+    const itens = ultimo.filter((l) => l.tipo === 'item').sort((a, b) => a.ordem - b.ordem);
+    const hist = ultimo.filter((l) => l.tipo === 'historico');
+    for (const id of ['eta', 'eta-grande']) texto(id, quando(r.eta));
+    for (const id of ['faltam', 'faltam-grande']) texto(id, horas(r.restante_h));
+    texto('eta-min', quando(r.eta_min));
+    texto('eta-max', quando(r.eta_max));
+    texto('faltam-min', horas(r.restante_min_h));
+    texto('faltam-max', horas(r.restante_max_h));
+    texto('ritmo', pct(r.ritmo));
+    texto('concluidos', String(r.concluidos));
+    texto('total', String(r.total));
+    texto('agora', r.agora_txt);
+    texto('espera', r.espera_txt);
+    document.getElementById('linha-espera').hidden = !r.espera_txt;
+    linhaDoTempo(document.getElementById('gantt'), itens, r);
+    historico(document.getElementById('queda'), hist);
+    tabela(itens);
+  }
+
+  const botao = document.getElementById('atualizar');
+  const situacao = document.getElementById('situacao');
+  async function carregar() {
+    botao.disabled = true;
+    situacao.textContent = 'Lendo o ledger…';
+    situacao.classList.remove('erro');
+    try {
+      const resposta = await fetch('/batch2/estado.json', { cache: 'no-store' });
+      if (!resposta.ok) throw new Error((await resposta.json().catch(() => ({}))).erro ?? `HTTP ${resposta.status}`);
+      ultimo = await resposta.json();
+      desenhar();
+      const r = ultimo.find((l) => l.tipo === 'resumo');
+      situacao.textContent = `Lido agora (${hora(new Date())}); última linha do ledger ${quando(r.ledger_at)}. Atualiza sozinho a cada minuto.`;
+    } catch (erro) {
+      situacao.classList.add('erro');
+      // Sessão do Hub vencida: o gate redireciona para o login e o fetch falha.
+      situacao.textContent = erro instanceof TypeError
+        ? 'Não deu para ler: a sessão pode ter expirado. Recarregue a página para entrar de novo.'
+        : `Não deu para ler o ledger: ${erro.message}`;
+    } finally {
+      botao.disabled = false;
+    }
+  }
+  botao.addEventListener('click', carregar);
+  setInterval(() => { if (document.visibilityState === 'visible') carregar(); }, 60e3);
+  let espera;
+  addEventListener('resize', () => { clearTimeout(espera); espera = setTimeout(desenhar, 150); });
+  carregar();
+</script>
+</body>
+</html>

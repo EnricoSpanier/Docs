@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkdocs=self.webpackChunkdocs||[]).push([[7958],{8013(e){e.exports=JSON.parse('{"tag":{"label":"project","permalink":"/tags/project","allTagsPath":"/tags","count":1,"items":[{"id":"decisoes-arquitetura/visao-geral","title":"Event Management System","description":"Objetivo","permalink":"/decisoes-arquitetura/visao-geral"}],"unlisted":false}}')}}]);

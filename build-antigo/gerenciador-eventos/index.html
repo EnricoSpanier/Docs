@@ -1,0 +1,728 @@
+<!doctype html>
+<html lang="pt-BR" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-gerenciador-eventos/README" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.10.2">
+<title data-rh="true">Documentação Gerenciamento de Eventos | Docs</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://docs.enricospanier.com.br/gerenciador-eventos/"><meta data-rh="true" property="og:locale" content="pt_BR"><meta data-rh="true" name="docusaurus_locale" content="pt-BR"><meta data-rh="true" name="docsearch:language" content="pt-BR"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Documentação Gerenciamento de Eventos | Docs"><meta data-rh="true" name="description" content="Link Video Final de 2025"><meta data-rh="true" property="og:description" content="Link Video Final de 2025"><link data-rh="true" rel="canonical" href="https://docs.enricospanier.com.br/gerenciador-eventos/"><link data-rh="true" rel="alternate" href="https://docs.enricospanier.com.br/gerenciador-eventos/" hreflang="pt-BR"><link data-rh="true" rel="alternate" href="https://docs.enricospanier.com.br/gerenciador-eventos/" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Documentação Gerenciamento de Eventos","item":"https://docs.enricospanier.com.br/gerenciador-eventos/"}]}</script><link rel="stylesheet" href="/assets/css/styles.a3250200.css">
+<script src="/assets/js/runtime~main.bbe974ed.js" defer="defer"></script>
+<script src="/assets/js/main.3216f4e1.js" defer="defer"></script>
+</head>
+<body>
+<svg style="display: none;"><defs>
+<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
+</defs></svg>
+<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||"dark"),document.documentElement.setAttribute("data-theme-choice",t||"dark")}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Pular para o conteúdo principal"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Pular para o conteúdo principal</a></div><nav aria-label="Navegação principal" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Alternar painel de navegação" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/"><b class="navbar__title text--truncate">Docs</b></a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/gerenciador-eventos/">Gerenciador de Eventos</a><a class="navbar__item navbar__link" href="/testes/">Testes</a><a class="navbar__item navbar__link" href="/decisoes-arquitetura/visao-geral">Decisões de Arquitetura</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="modo do sistema" aria-label="Mudar entre modo claro e escuro (modo do sistema está ativo)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div><div class="navbarSearchContainer_Bca1"><div class="navbar__search searchBarContainer_NW3z" dir="ltr"><svg aria-hidden="true" class="searchIcon_T3tP" focusable="false" viewBox="0 0 16 16"><path fill="currentColor" d="M6.02945 10.20327a4.17382 4.17382 0 1 1 4.17382-4.17382 4.15609 4.15609 0 0 1-4.17382 4.17382Zm9.69195 4.2199-4.8225-4.82338A5.88021 5.88021 0 0 0 12.058 6.02856 6.00467 6.00467 0 1 0 9.59979 10.8989l4.82338 4.82338a.89729.89729 0 0 0 1.29912 0 .89749.89749 0 0 0-.00087-1.29909Z"></path></svg><input placeholder="Search" aria-label="Search" class="navbar__search-input searchInput_YFbd" value=""><div class="loadingRing_RJI3 searchBarLoadingRing_YnHq"><div></div><div></div><div></div><div></div></div></div></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class="docsWrapper_hBAB"><button aria-label="Voltar para o topo" class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type="button"></button><div class="docRoot_UBD9"><aside class="theme-doc-sidebar-container docSidebarContainer_YfHR"><div class="sidebarViewport_aRkj"><div class="sidebar_njMd"><nav aria-label="Painel lateral de documentos" class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/"><span class="linkLabel_WmDU">Documentação</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/fluxos"><span class="linkLabel_WmDU">Fluxo de Dados</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/batch2"><span class="linkLabel_WmDU">Tempo restante do Batch 2</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" href="/gerenciador-eventos/BACKLOG"><span class="categoryLinkLabel_W154">Gerenciador de Eventos</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/gerenciador-eventos/BACKLOG"><span class="linkLabel_WmDU">Backlog — Decomposição do Sistema em Issues Iterativas</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/gerenciador-eventos/CLAUDE"><span class="linkLabel_WmDU">CLAUDE.md — Regras do projeto (Gerenciador de Eventos / TCC)</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" tabindex="0" href="/gerenciador-eventos/Projeto/Backend/CLAUDE"><span class="categoryLinkLabel_W154">Projeto</span></a></div></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/gerenciador-eventos/"><span class="linkLabel_WmDU">Documentação Gerenciamento de Eventos</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" tabindex="0" href="/gerenciador-eventos/docs/arquitetura/fase6-cqrs-es"><span class="categoryLinkLabel_W154">docs</span></a></div></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/testes/"><span class="categoryLinkLabel_W154">Testes</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/decisoes-arquitetura/visao-geral"><span class="categoryLinkLabel_W154">Decisões de Arquitetura</span></a></div></li></ul></nav></div></div></aside><main class="docMainContainer_TBSr"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_VOVn"><div class="docItemContainer_Djhp"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_Z_bl" aria-label="Trilha"><ul class="breadcrumbs"><li class="breadcrumbs__item"><a aria-label="Página Inicial" class="breadcrumbs__link" href="/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_YNFT"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">Gerenciador de Eventos</span></li><li class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link">Documentação Gerenciamento de Eventos</span></li></ul></nav><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_ITEo"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">Nesta página</button></div><div class="theme-doc-markdown markdown"><header><h1>Documentação Gerenciamento de Eventos</h1></header>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="link-video-final-de-2025"><a href="https://www.youtube.com/watch?v=49sNSOQzUIc" target="_blank" rel="noopener noreferrer" class="">Link Video Final de 2025</a><a href="#link-video-final-de-2025" class="hash-link" aria-label="Link direto para link-video-final-de-2025" title="Link direto para link-video-final-de-2025" translate="no">​</a></h3>
+<p>Esta documentação unificada descreve o software web completo para gerenciamento de eventos, como palestras, shows ou workshops. O sistema é composto por duas partes principais: o <strong>back-end</strong> (o &quot;cérebro&quot; que lida com lógica, dados e segurança, construído em Java com Spring Boot) e o <strong>front-end</strong> (a &quot;fachada&quot; visível no navegador ou app, feita com Flutter, que permite interações como login, criação de eventos e inscrições).</p>
+<p>O software permite que usuários se cadastrem, loguem, criem e gerenciem eventos, busquem e se inscrevam neles. O back-end cuida do armazenamento seguro de dados em um banco PostgreSQL e usa Docker para fácil implantação. O front-end oferece telas intuitivas, conectando-se ao back-end via API para trocar informações.</p>
+<p>Pense no sistema como um clube de eventos: o back-end é a administração nos bastidores (guarda listas, verifica identidades), enquanto o front-end é a recepção e salão (onde você interage e vê tudo).</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="sumário">Sumário<a href="#sumário" class="hash-link" aria-label="Link direto para Sumário" title="Link direto para Sumário" translate="no">​</a></h2>
+<ul>
+<li class=""><a href="#back-end" class="">Back-end</a>
+<ul>
+<li class=""><a href="#introdu%C3%A7%C3%A3o-ao-sistema" class="">Introdução ao Sistema</a></li>
+<li class=""><a href="#classes-de-dados-pojos" class="">Classes de Dados (POJOs)</a></li>
+<li class=""><a href="#camada-de-acesso-a-dados-repositories" class="">Camada de Acesso a Dados (Repositories)</a></li>
+<li class=""><a href="#camada-de-l%C3%B3gica-de-neg%C3%B3cio-services" class="">Camada de Lógica de Negócio (Services)</a></li>
+<li class=""><a href="#camada-de-interface-controllers-e-bff" class="">Camada de Interface (Controllers e BFF)</a></li>
+<li class=""><a href="#como-tudo-funciona-passo-a-passo-simples" class="">Como Tudo Funciona (Passo a Passo Simples)</a></li>
+<li class=""><a href="#regras-importantes-que-o-sistema-segue-para-n%C3%A3o-dar-bagun%C3%A7a" class="">Regras Importantes que o Sistema Segue (Para Não Dar Bagunça)</a></li>
+<li class=""><a href="#resumo-em-uma-frase-para-quem-quiser-entender-r%C3%A1pido" class="">Resumo em Uma Frase (Para Quem Quiser Entender Rápido)</a></li>
+<li class=""><a href="#as-partes-do-sistema-explicadas-como-pessoas" class="">As Partes do Sistema (Explicadas Como Pessoas)</a></li>
+<li class=""><a href="#configura%C3%A7%C3%A3o-do-banco-de-dados" class="">Configuração do Banco de Dados</a></li>
+<li class=""><a href="#fun%C3%A7%C3%B5es-auxiliares-no-banco-de-dados" class="">Funções Auxiliares no Banco de Dados</a></li>
+<li class=""><a href="#tabelas-do-banco-de-dados" class="">Tabelas do Banco de Dados</a></li>
+<li class=""><a href="#seguran%C3%A7a-e-autentica%C3%A7%C3%A3o" class="">Segurança e Autenticação</a></li>
+<li class=""><a href="#inicializa%C3%A7%C3%A3o-do-aplicativo" class="">Inicialização do Aplicativo</a></li>
+<li class=""><a href="#popular-o-banco-de-dados-seeding" class="">Popular o Banco de Dados (Seeding)</a></li>
+<li class=""><a href="#scripts-para-gerenciar-dados" class="">Scripts para Gerenciar Dados</a></li>
+<li class=""><a href="#scripts-para-testes" class="">Scripts para Testes</a></li>
+<li class=""><a href="#configura%C3%A7%C3%A3o-com-docker" class="">Configuração com Docker</a></li>
+<li class=""><a href="#configura%C3%A7%C3%A3o-do-projeto-java-pomxml" class="">Configuração do Projeto Java (pom.xml)</a></li>
+<li class=""><a href="#guia-de-comandos" class="">Guia de Comandos</a></li>
+<li class=""><a href="#considera%C3%A7%C3%B5es-finais" class="">Considerações Finais</a></li>
+</ul>
+</li>
+<li class=""><a href="#front-end" class="">Front-end</a>
+<ul>
+<li class=""><a href="#introdu%C3%A7%C3%A3o-ao-projeto" class="">Introdução ao Projeto</a></li>
+<li class=""><a href="#configura%C3%A7%C3%A3o-de-implanta%C3%A7%C3%A3o-dockerfile-e-nginxconf" class="">Configuração de Implantação (Dockerfile e nginx.conf)</a></li>
+<li class=""><a href="#depend%C3%AAncias-e-configura%C3%A7%C3%A3o-pubspecyaml" class="">Dependências e Configuração (pubspec.yaml)</a></li>
+<li class=""><a href="#p%C3%A1gina-de-entrada-indexhtml" class="">Página de Entrada (index.html)</a></li>
+<li class=""><a href="#c%C3%B3digo-principal-do-app-blocointeirodart" class="">Código Principal do App (blocoInteiro.dart)</a></li>
+<li class=""><a href="#considera%C3%A7%C3%B5es-finais-1" class="">Considerações Finais</a></li>
+</ul>
+</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="back-end">Back-end<a href="#back-end" class="hash-link" aria-label="Link direto para Back-end" title="Link direto para Back-end" translate="no">​</a></h2>
+<h1>Documentação Back-end</h1>
+<p>Esta documentação completa reúne todas as partes do back-end do sistema de gerenciamento de eventos, incluindo gerenciamento de usuários, eventos, carteiras de inscrições, segurança, configuração do banco de dados, inicialização, seeding de dados e setup com Docker. O sistema é construído em Java com Spring Boot, focando em uma API REST para gerenciar eventos como palestras, shows ou workshops.</p>
+<p>Imagine o sistema como uma casa organizada ou um clube de eventos:</p>
+<ul>
+<li class="">As <strong>classes de dados</strong> são como móveis ou cartões que guardam informações.</li>
+<li class="">Os <strong>repositórios</strong> são como o porão ou arquivo onde as informações são armazenadas permanentemente.</li>
+<li class="">Os <strong>serviços</strong> são como regras da casa ou gerente que verificam se tudo está certo.</li>
+<li class="">Os <strong>controladores</strong> são como portas de entrada que recebem pedidos.</li>
+<li class=""><strong>Segurança</strong>: Porteiros que verificam identidades.</li>
+<li class=""><strong>Banco de dados</strong>: Um armário digital ou agenda onde guardam listas de membros e eventos.</li>
+<li class=""><strong>Inicialização</strong>: A chave que abre a porta.</li>
+<li class=""><strong>Docker</strong>: Caixas mágicas que isolam partes do sistema para fácil instalação e teste.</li>
+</ul>
+<p>O sistema permite criar contas de usuários, criar eventos (presenciais ou online), atualizar detalhes, deletar itens e gerenciar inscrições via carteiras digitais. Verifica regras como nomes únicos e datas válidas. Não é completo (sem interface gráfica), mas foca na lógica principal.</p>
+<p>Usuários podem se cadastrar, logar, criar eventos, e o sistema responde a perguntas como “Quais eventos eu já comprei ou estou inscrito?”. Cada usuário tem uma carteira digital automática para guardar &quot;ingressos&quot; (inscrições).</p>
+<p>O banco é PostgreSQL, configurado para UTF-8 (suporte a acentos). O app roda em containers Docker: um para o banco e outro para o backend Java.</p>
+<p>Se algo parecer confuso, imagine processos do dia a dia, como gerenciar uma festa. Se precisar de exemplos de uso ou mais detalhes, é só pedir!</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="introdução-ao-sistema">Introdução ao Sistema<a href="#introdução-ao-sistema" class="hash-link" aria-label="Link direto para Introdução ao Sistema" title="Link direto para Introdução ao Sistema" translate="no">​</a></h2>
+<p>Este é um aplicativo para gerenciar eventos e usuários. Usuários podem se cadastrar, logar, criar eventos (presenciais ou online), atualizar detalhes e deletar itens. O sistema verifica regras, como não permitir nomes repetidos ou datas inválidas, para evitar erros.</p>
+<ul>
+<li class=""><strong>Usuários</strong>: Pessoas que usam o sistema, como organizadores de eventos.</li>
+<li class=""><strong>Eventos</strong>: Atividades como festas ou seminários, com detalhes como data, local e capacidade.</li>
+<li class=""><strong>Banco de dados</strong>: Um lugar para guardar informações permanentemente, como uma agenda digital.</li>
+<li class=""><strong>API</strong>: Uma forma de o sistema se comunicar com o mundo exterior, como um site ou app móvel, usando endereços web (chamados endpoints).</li>
+</ul>
+<p>O sistema não é completo (por exemplo, não tem interface gráfica), mas foca na lógica principal.</p>
+<p>Este novo pedaço do sistema serve para responder uma pergunta muito comum em aplicativos de eventos:</p>
+<blockquote>
+<p>“Quais eventos eu já comprei ou estou inscrito?”</p>
+</blockquote>
+<p>É como se cada usuário tivesse uma <strong>carteira digital</strong> (um tipo de “mochila”) onde ficam guardados todos os eventos que ele adquiriu ou se inscreveu.<br>
+<!-- -->Pense na carteira física que você leva no bolso: dentro dela tem ingressos de cinema, shows ou palestras. Aqui funciona igual, só que tudo é digital.</p>
+<p>Se você já usou apps como Sympla, Eventbrite ou Ticketmaster, a parte “Meus ingressos” funciona exatamente assim por trás dos panos.<br>
+<!-- -->Agora você sabe como ela é feita!</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="classes-de-dados-pojos">Classes de Dados (POJOs)<a href="#classes-de-dados-pojos" class="hash-link" aria-label="Link direto para Classes de Dados (POJOs)" title="Link direto para Classes de Dados (POJOs)" translate="no">​</a></h2>
+<p>Essas são como &quot;caixas&quot; que guardam informações. Elas não fazem nada sozinhas, só armazenam dados. São chamadas POJOs (Plain Old Java Objects), que significa &quot;objetos simples em Java&quot;.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="user-usuário">User (Usuário)<a href="#user-usuário" class="hash-link" aria-label="Link direto para User (Usuário)" title="Link direto para User (Usuário)" translate="no">​</a></h3>
+<p>Representa uma pessoa no sistema. É como um cartão de identificação com detalhes pessoais.</p>
+<ul>
+<li class=""><strong>Campos principais</strong>:<!-- -->
+<ul>
+<li class=""><code>id</code>: Um número único para identificar o usuário (gerado automaticamente).</li>
+<li class=""><code>name</code>: Nome da pessoa.</li>
+<li class=""><code>email</code>: Endereço de email (obrigatório e único).</li>
+<li class=""><code>fone</code>: Telefone (obrigatório e único).</li>
+<li class=""><code>password</code>: Senha (guardada de forma segura, &quot;codificada&quot; para ninguém ler).</li>
+<li class=""><code>birthDate</code>: Data de nascimento (no formato &quot;ano-mês-dia&quot;).</li>
+<li class=""><code>isAdmin</code>: Indica se o usuário é administrador (true/false, padrão false).</li>
+<li class=""><code>isActive</code>: Indica se a conta está ativa (true/false, padrão true).</li>
+<li class=""><code>createdAt</code> e <code>updatedAt</code>: Datas automáticas de quando a conta foi criada ou atualizada.</li>
+</ul>
+</li>
+</ul>
+<p>Exemplo: Um usuário chamado &quot;João&quot; com email &quot;<a href="mailto:joao@email.com" target="_blank" rel="noopener noreferrer" class="">joao@email.com</a>&quot; e senha &quot;123&quot;.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="event-evento">Event (Evento)<a href="#event-evento" class="hash-link" aria-label="Link direto para Event (Evento)" title="Link direto para Event (Evento)" translate="no">​</a></h3>
+<p>Representa um evento. É como um convite com todos os detalhes.</p>
+<ul>
+<li class=""><strong>Campos principais</strong>:<!-- -->
+<ul>
+<li class=""><code>event_id</code>: Número único do evento (gerado automaticamente).</li>
+<li class=""><code>creator_id</code>: ID do usuário que criou o evento. Desde a #35 o gateway grava o usuário do token (o <code>creator_id</code> do corpo é ignorado) e só o dono edita, apaga ou troca a imagem (403).</li>
+<li class=""><code>creator_name</code>: Nome de quem criou (somente leitura, #35). Composto pelo gateway a partir do <code>creator_id</code>; vem nulo se a conta estiver desativada.</li>
+<li class=""><code>event_name</code>: Nome do evento (obrigatório e único).</li>
+<li class=""><code>is_EAD</code>: Indica se é online (true) ou presencial (false).</li>
+<li class=""><code>address</code>: Endereço (obrigatório se presencial).</li>
+<li class=""><code>event_date</code>: Data e hora do evento (obrigatória).</li>
+<li class=""><code>buy_time_limit</code>: Data limite para comprar ingressos (padrão: mesma do evento).</li>
+<li class=""><code>lot_quantity</code>: Capacidade máxima (opcional, não pode ser negativa).</li>
+<li class=""><code>quantity</code>: Quantidade de ingressos disponíveis (não pode ser negativa).</li>
+<li class=""><code>description</code>: Descrição do evento.</li>
+<li class=""><code>presenters</code>: Lista de nomes de apresentadores (pode ser vazia).</li>
+<li class=""><code>image_data</code>: Imagem do evento (em formato bytes, como uma foto JPG). Não vem nas listas (busca e eventos de um criador, #35): só no evento por id e em <code>/bff/events/{id}/image</code>.</li>
+<li class=""><code>createdAt</code> e <code>updatedAt</code>: Datas automáticas de criação e atualização.</li>
+</ul>
+</li>
+</ul>
+<p>Exemplo: Um evento &quot;Palestra sobre Java&quot; online, criado por João, em 2025-12-01.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="mywallet-carteira">MyWallet (Carteira)<a href="#mywallet-carteira" class="hash-link" aria-label="Link direto para MyWallet (Carteira)" title="Link direto para MyWallet (Carteira)" translate="no">​</a></h3>
+<ul>
+<li class="">Toda pessoa que se cadastra no sistema ganha automaticamente <strong>uma carteira</strong> (chamada <code>MyWallet</code>).</li>
+<li class="">Essa carteira é criada sozinha (por um “gatilho” no banco de dados) no momento em que o usuário é criado — você não precisa fazer nada.</li>
+<li class="">A carteira tem apenas um número: o ID do usuário. Ela é como uma pasta com o nome da pessoa.</li>
+</ul>
+<p>Exemplo real:<br>
+<!-- -->Quando o João (ID = 5) se cadastra, o sistema cria automaticamente uma pasta chamada “Carteira do João (ID 5)”.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="eventwallet-ingresso-na-carteira">EventWallet (Ingresso na Carteira)<a href="#eventwallet-ingresso-na-carteira" class="hash-link" aria-label="Link direto para EventWallet (Ingresso na Carteira)" title="Link direto para EventWallet (Ingresso na Carteira)" translate="no">​</a></h3>
+<ul>
+<li class="">Cada vez que o usuário “compra” ou “se inscreve” em um evento, o sistema coloca um <strong>ingresso digital</strong> dentro da carteira dele.</li>
+<li class="">Esse ingresso é representado pela classe <code>EventWallet</code>.</li>
+<li class="">Ele é apenas uma ligação: “Usuário 5 tem o Evento 23”.</li>
+</ul>
+<p>Exemplo:<br>
+<!-- -->João se inscreveu na “Palestra de Java” (ID do evento = 23).<br>
+<!-- -->O sistema cria um papelzinho que diz:<br>
+<!-- -->“Usuário 5 tem Evento 23” → esse papelzinho fica dentro da carteira do João.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="camada-de-acesso-a-dados-repositories">Camada de Acesso a Dados (Repositories)<a href="#camada-de-acesso-a-dados-repositories" class="hash-link" aria-label="Link direto para Camada de Acesso a Dados (Repositories)" title="Link direto para Camada de Acesso a Dados (Repositories)" translate="no">​</a></h2>
+<p>Essas partes lidam com o banco de dados: salvam, buscam, atualizam ou deletam informações. É como um bibliotecário que organiza livros em prateleiras.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="userrepository">UserRepository<a href="#userrepository" class="hash-link" aria-label="Link direto para UserRepository" title="Link direto para UserRepository" translate="no">​</a></h3>
+<p>Cuida dos usuários no banco de dados.</p>
+<ul>
+<li class=""><strong>Funções principais</strong>:<!-- -->
+<ul>
+<li class=""><code>save</code>: Salva um novo usuário, gerando ID e datas automáticas. Adiciona valores padrão se algo faltar (como data de nascimento atual).</li>
+<li class=""><code>update</code>: Atualiza um usuário existente, mantendo senha antiga se não for mudada.</li>
+<li class=""><code>findById</code> e <code>findByEmail</code>: Busca um usuário por ID ou email.</li>
+<li class=""><code>emailExists</code>, <code>nameExists</code>, <code>foneExists</code>: Verifica se email, nome ou telefone já estão em uso.</li>
+<li class=""><code>softDelete</code>: Desativa uma conta (não apaga de verdade, só marca como inativa).</li>
+</ul>
+</li>
+</ul>
+<p>Usa conexões ao banco para executar comandos SQL (linguagem para bancos de dados).</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="eventrepository">EventRepository<a href="#eventrepository" class="hash-link" aria-label="Link direto para EventRepository" title="Link direto para EventRepository" translate="no">​</a></h3>
+<p>Cuida dos eventos no banco de dados.</p>
+<ul>
+<li class=""><strong>Funções principais</strong>:<!-- -->
+<ul>
+<li class=""><code>save</code>: Salva um novo evento, gerando ID e datas. Usa data do evento como limite de compra se não informado.</li>
+<li class=""><code>update</code>: Atualiza um evento existente, sem mudar campos não informados.</li>
+<li class=""><code>findById</code> e <code>findByName</code>: Busca por ID ou nome.</li>
+<li class=""><code>nameExists</code>: Verifica se o nome do evento já existe.</li>
+<li class=""><code>findAll</code>: Lista todos os eventos.</li>
+<li class=""><code>delete</code>: Apaga um evento de verdade.</li>
+</ul>
+</li>
+</ul>
+<p>Lida com imagens e datas, convertendo formatos para o banco.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="mywalletrepository">MyWalletRepository<a href="#mywalletrepository" class="hash-link" aria-label="Link direto para MyWalletRepository" title="Link direto para MyWalletRepository" translate="no">​</a></h3>
+<p>O funcionário que guarda e busca carteiras no armário do banco | Guarda-volumes das carteiras</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="eventwalletrepository">EventWalletRepository<a href="#eventwalletrepository" class="hash-link" aria-label="Link direto para EventWalletRepository" title="Link direto para EventWalletRepository" translate="no">​</a></h3>
+<p>O funcionário que coloca e tira ingressos das carteiras | Organizador de ingressos</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="camada-de-lógica-de-negócio-services">Camada de Lógica de Negócio (Services)<a href="#camada-de-lógica-de-negócio-services" class="hash-link" aria-label="Link direto para Camada de Lógica de Negócio (Services)" title="Link direto para Camada de Lógica de Negócio (Services)" translate="no">​</a></h2>
+<p>Aqui estão as regras do sistema. Elas verificam se algo é válido antes de salvar, como checar se um nome já existe ou se datas fazem sentido. É como um gerente que aprova ações.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="userservice">UserService<a href="#userservice" class="hash-link" aria-label="Link direto para UserService" title="Link direto para UserService" translate="no">​</a></h3>
+<p>Gerencia regras para usuários.</p>
+<ul>
+<li class=""><strong>Funções principais</strong>:<!-- -->
+<ul>
+<li class=""><code>createUser</code>: Cria usuário, verifica campos obrigatórios (nome, email), checa duplicatas e codifica a senha.</li>
+<li class=""><code>updateUser</code>: Atualiza, mas exige ID.</li>
+<li class=""><code>findById</code> e <code>findByEmail</code>: Busca usuários.</li>
+<li class=""><code>deactivateUser</code>: Desativa conta.</li>
+<li class=""><code>getValidationErrors</code>: Lista erros de validação (ex: &quot;Email já existe&quot;).</li>
+<li class=""><code>login</code>: Verifica email e senha.</li>
+<li class=""><code>changePassword</code>: Muda senha, verificando a antiga e o tamanho da nova.</li>
+</ul>
+</li>
+</ul>
+<p>Usa o repositório para acessar dados e adiciona lógica extra, como codificação de senha.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="eventservice">EventService<a href="#eventservice" class="hash-link" aria-label="Link direto para EventService" title="Link direto para EventService" translate="no">​</a></h3>
+<p>Gerencia regras para eventos.</p>
+<ul>
+<li class=""><strong>Funções principais</strong>:<!-- -->
+<ul>
+<li class=""><code>createEvent</code>: Cria evento, aplica padrões (como limite de compra), verifica obrigatórios, regras (datas lógicas) e duplicatas.</li>
+<li class=""><code>updateEvent</code>: Atualiza, sem aplicar padrões automáticos.</li>
+<li class=""><code>findById</code> e <code>findByName</code>: Busca eventos.</li>
+<li class=""><code>delete</code>: Apaga evento.</li>
+<li class=""><code>getValidationErrors</code>: Lista erros (ex: &quot;Nome já existe&quot; ou &quot;Endereço obrigatório&quot;).</li>
+<li class=""><code>searchEvents</code>: Busca eventos por termo (simples, por nome).</li>
+<li class=""><code>findByCreatorId</code>: Lista eventos de um criador.</li>
+</ul>
+</li>
+</ul>
+<p>Inclui buscas simples em memória (não otimizadas para muitos dados).</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="mywalletservice">MyWalletService<a href="#mywalletservice" class="hash-link" aria-label="Link direto para MyWalletService" title="Link direto para MyWalletService" translate="no">​</a></h3>
+<p>O atendente que responde: “Você tem carteira?” | Atendente da carteira</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="eventwalletservice">EventWalletService<a href="#eventwalletservice" class="hash-link" aria-label="Link direto para EventWalletService" title="Link direto para EventWalletService" translate="no">​</a></h3>
+<p>O atendente principal que faz tudo: verifica regras, evita duplicatas, etc. | Gerente da inscrição</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="camada-de-interface-controllers-e-bff">Camada de Interface (Controllers e BFF)<a href="#camada-de-interface-controllers-e-bff" class="hash-link" aria-label="Link direto para Camada de Interface (Controllers e BFF)" title="Link direto para Camada de Interface (Controllers e BFF)" translate="no">​</a></h2>
+<p>Essas partes recebem pedidos da internet (como de um navegador ou app) e respondem. São endpoints de uma API REST, que usa HTTP (protocolo web).</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="usercontroller">UserController<a href="#usercontroller" class="hash-link" aria-label="Link direto para UserController" title="Link direto para UserController" translate="no">​</a></h3>
+<p>Endpoints para usuários.</p>
+<ul>
+<li class=""><strong>POST /api/users</strong>: Cria usuário novo.</li>
+<li class=""><strong>GET /api/users/{id}</strong>: Busca por ID.</li>
+<li class=""><strong>GET /api/users/email/{email}</strong>: Busca por email.</li>
+<li class=""><strong>PUT /api/users/{id}</strong>: Atualiza.</li>
+<li class=""><strong>DELETE /api/users/{id}</strong>: Desativa.</li>
+<li class=""><strong>POST /api/users/validate</strong>: Verifica sem criar.</li>
+</ul>
+<p>Retorna respostas como &quot;OK&quot; (200) ou erros (400, 500).</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="eventcontroller">EventController<a href="#eventcontroller" class="hash-link" aria-label="Link direto para EventController" title="Link direto para EventController" translate="no">​</a></h3>
+<p>Endpoints para eventos.</p>
+<ul>
+<li class=""><strong>POST /api/events</strong>: Cria evento.</li>
+<li class=""><strong>POST /api/events/validate</strong>: Verifica sem criar.</li>
+<li class=""><strong>GET /api/events/{id}</strong>: Busca por ID.</li>
+<li class=""><strong>PUT /api/events/{id}</strong>: Atualiza.</li>
+<li class=""><strong>DELETE /api/events/{id}</strong>: Apaga.</li>
+</ul>
+<p>Faz validações básicas antes de chamar o serviço.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="mywalletcontroller">MyWalletController<a href="#mywalletcontroller" class="hash-link" aria-label="Link direto para MyWalletController" title="Link direto para MyWalletController" translate="no">​</a></h3>
+<p>A porta de entrada: quem pergunta “Me mostra a carteira do usuário 5?” | Recepção da carteira</p>
+<ul>
+<li class=""><strong>Endereço</strong>: <code>GET /api/wallets/5</code> | Mostra a carteira do usuário número 5 | “Quero ver a carteira do João”</li>
+<li class=""><strong>POST /api/wallets/validate</strong>: Só verifica se os dados da carteira estão certos | Testar antes de usar</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="eventwalletcontroller">EventWalletController<a href="#eventwalletcontroller" class="hash-link" aria-label="Link direto para EventWalletController" title="Link direto para EventWalletController" translate="no">​</a></h3>
+<p>A porta para adicionar ingressos: “Coloca o evento 23 na carteira do usuário 5” | Balcão de inscrição</p>
+<ul>
+<li class=""><strong>POST /api/event-wallets</strong>: Adiciona um evento à carteira de alguém | “João se inscreveu na palestra”</li>
+<li class=""><strong>POST /api/event-wallets/validate</strong>: Só verifica se pode adicionar (sem fazer nada) | Testar antes de inscrever</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="aplicativo-bff-backend-for-frontend">Aplicativo BFF (Backend for Frontend)<a href="#aplicativo-bff-backend-for-frontend" class="hash-link" aria-label="Link direto para Aplicativo BFF (Backend for Frontend)" title="Link direto para Aplicativo BFF (Backend for Frontend)" translate="no">​</a></h3>
+<p>BFF significa &quot;Backend para Frontend&quot; — é como um &quot;garçom&quot; que une tudo para apps ou sites usarem facilmente. Inclui controladores para usuários, eventos, carteiras, etc.</p>
+<ul>
+<li class=""><strong>O que faz</strong>: É o app principal que junta todos os controladores em um só lugar. Inicia o sistema e escaneia pacotes para encontrar peças.</li>
+<li class=""><strong>Como funciona</strong>: Contém classes internas (como mini-apps) para:<!-- -->
+<ul>
+<li class=""><strong>Usuários</strong>: Criar, logar, atualizar, deletar. Inclui login com JWT (gera bilhete ao logar certo).</li>
+<li class=""><strong>Eventos</strong>: Criar, atualizar, deletar, buscar (por nome, ID ou criador). Validações básicas antes de salvar.</li>
+<li class=""><strong>Carteiras (MyWallet)</strong>: Buscar ou garantir que exista para um usuário.</li>
+<li class=""><strong>Inscrições (EventWallet)</strong>: Adicionar/remover inscrição em evento, listar por usuário.</li>
+</ul>
+</li>
+<li class=""><strong>Por quê?</strong>: Facilita a integração com interfaces (como um site). Une rotas em &quot;/bff/&quot; para serem chamadas por apps.</li>
+</ul>
+<p>Exemplo: Em vez de ir a várias lojas, o BFF é uma loja única que vende tudo — usuários pedem por &quot;/bff/users/login&quot; e recebem um bilhete.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="como-tudo-funciona-passo-a-passo-simples">Como Tudo Funciona (Passo a Passo Simples)<a href="#como-tudo-funciona-passo-a-passo-simples" class="hash-link" aria-label="Link direto para Como Tudo Funciona (Passo a Passo Simples)" title="Link direto para Como Tudo Funciona (Passo a Passo Simples)" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="para-usuários-e-eventos-geral">Para Usuários e Eventos (Geral)<a href="#para-usuários-e-eventos-geral" class="hash-link" aria-label="Link direto para Para Usuários e Eventos (Geral)" title="Link direto para Para Usuários e Eventos (Geral)" translate="no">​</a></h3>
+<p>O sistema separa as partes para ficar organizado e fácil de manter.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="para-carteiras-e-inscrições">Para Carteiras e Inscrições<a href="#para-carteiras-e-inscrições" class="hash-link" aria-label="Link direto para Para Carteiras e Inscrições" title="Link direto para Para Carteiras e Inscrições" translate="no">​</a></h3>
+<ol>
+<li class="">
+<p>Quando alguém se cadastra<br>
+<!-- -->→ O banco de dados cria automaticamente uma carteira vazia para essa pessoa.</p>
+</li>
+<li class="">
+<p>Quando a pessoa se inscreve em um evento<br>
+<!-- -->→ O sistema verifica:</p>
+</li>
+</ol>
+<ul>
+<li class="">A carteira da pessoa existe? → Sim</li>
+<li class="">O evento existe? → Sim</li>
+<li class="">Ela já tem esse evento na carteira? → Não (não pode ter duplicado)</li>
+</ul>
+<p>→ Se tudo estiver certo, coloca o “ingresso” (EventWallet) dentro da carteira.</p>
+<ol start="3">
+<li class="">Quando a pessoa quer ver seus eventos<br>
+<!-- -->→ O sistema abre a carteira dela e lista todos os ingressos que estão lá.</li>
+</ol>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="regras-importantes-que-o-sistema-segue-para-não-dar-bagunça">Regras Importantes que o Sistema Segue (Para Não Dar Bagunça)<a href="#regras-importantes-que-o-sistema-segue-para-não-dar-bagunça" class="hash-link" aria-label="Link direto para Regras Importantes que o Sistema Segue (Para Não Dar Bagunça)" title="Link direto para Regras Importantes que o Sistema Segue (Para Não Dar Bagunça)" translate="no">​</a></h2>
+<ol>
+<li class="">Ninguém pode ter o mesmo evento duas vezes na carteira.</li>
+<li class="">Só pode adicionar evento se o usuário e o evento realmente existirem.</li>
+<li class="">A carteira é criada automaticamente — ninguém precisa criar na mão.</li>
+<li class="">Se o usuário for apagado, a carteira e todos os ingressos somem juntos (limpeza automática).</li>
+</ol>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="resumo-em-uma-frase-para-quem-quiser-entender-rápido">Resumo em Uma Frase (Para Quem Quiser Entender Rápido)<a href="#resumo-em-uma-frase-para-quem-quiser-entender-rápido" class="hash-link" aria-label="Link direto para Resumo em Uma Frase (Para Quem Quiser Entender Rápido)" title="Link direto para Resumo em Uma Frase (Para Quem Quiser Entender Rápido)" translate="no">​</a></h2>
+<blockquote>
+<p>Cada usuário tem uma carteira digital automática.<br>
+<!-- -->Quando ele se inscreve em um evento, o sistema coloca um “ingresso” nessa carteira.<br>
+<!-- -->Depois, é só abrir a carteira para ver todos os eventos que a pessoa tem.</p>
+</blockquote>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="as-partes-do-sistema-explicadas-como-pessoas">As Partes do Sistema (Explicadas Como Pessoas)<a href="#as-partes-do-sistema-explicadas-como-pessoas" class="hash-link" aria-label="Link direto para As Partes do Sistema (Explicadas Como Pessoas)" title="Link direto para As Partes do Sistema (Explicadas Como Pessoas)" translate="no">​</a></h2>
+<table><thead><tr><th>Nome da classe</th><th>O que ela faz na vida real</th><th>Nome fácil</th></tr></thead><tbody><tr><td><code>MyWallet</code></td><td>A carteira em si (a pasta vazia que cada usuário tem)</td><td>A carteira</td></tr><tr><td><code>EventWallet</code></td><td>O ingresso que fica dentro da carteira</td><td>O ingresso</td></tr><tr><td><code>MyWalletRepository</code></td><td>O funcionário que guarda e busca carteiras no armário do banco</td><td>Guarda-volumes das carteiras</td></tr><tr><td><code>EventWalletRepository</code></td><td>O funcionário que coloca e tira ingressos das carteiras</td><td>Organizador de ingressos</td></tr><tr><td><code>MyWalletService</code></td><td>O atendente que responde: “Você tem carteira?”</td><td>Atendente da carteira</td></tr><tr><td><code>EventWalletService</code></td><td>O atendente principal que faz tudo: verifica regras, evita duplicatas, etc.</td><td>Gerente da inscrição</td></tr><tr><td><code>MyWalletController</code></td><td>A porta de entrada: quem pergunta “Me mostra a carteira do usuário 5?”</td><td>Recepção da carteira</td></tr><tr><td><code>EventWalletController</code></td><td>A porta para adicionar ingressos: “Coloca o evento 23 na carteira do usuário 5”</td><td>Balcão de inscrição</td></tr></tbody></table>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="configuração-do-banco-de-dados">Configuração do Banco de Dados<a href="#configuração-do-banco-de-dados" class="hash-link" aria-label="Link direto para Configuração do Banco de Dados" title="Link direto para Configuração do Banco de Dados" translate="no">​</a></h2>
+<p>Essa parte cuida de conectar o sistema a um &quot;armário digital&quot; (banco de dados) onde as informações são guardadas de forma permanente.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="databaseconnection">DatabaseConnection<a href="#databaseconnection" class="hash-link" aria-label="Link direto para DatabaseConnection" title="Link direto para DatabaseConnection" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: É como uma chave que abre a porta do armário. Usa um endereço (URL), nome de usuário e senha para conectar ao banco.</li>
+<li class=""><strong>Como funciona</strong>: Quando o sistema precisa salvar ou ler algo (como um novo usuário), ele &quot;liga&quot; para o banco usando essas credenciais. Se der errado, avisa com um erro.</li>
+<li class=""><strong>Por quê?</strong>: Sem isso, o sistema não consegue guardar nada para sempre — tudo sumiria ao desligar o computador.</li>
+</ul>
+<p>Exemplo: Imagine ligar para um amigo: você precisa do número (URL), nome (usuário) e talvez uma senha secreta.</p>
+<p>Esta documentação explica a parte do &quot;armário digital&quot; (banco de dados) do sistema de gerenciamento de eventos. O banco é como uma grande agenda organizada onde guardamos informações sobre usuários, eventos e inscrições. Usamos um programa chamado PostgreSQL, que é gratuito e seguro.</p>
+<p>Pense no banco de dados como uma biblioteca:</p>
+<ul>
+<li class=""><strong>Tabelas</strong>: São como prateleiras ou gavetas, cada uma guardando um tipo de informação (ex: uma gaveta para usuários, outra para eventos).</li>
+<li class=""><strong>Linhas</strong>: Cada item na gaveta é um cartão com detalhes específicos (ex: nome, email de um usuário).</li>
+<li class=""><strong>Regras (constraints)</strong>: Impedem bagunça, como não permitir dois cartões com o mesmo email.</li>
+<li class=""><strong>Funções e triggers</strong>: São &quot;robôs&quot; automáticos que fazem tarefas sozinhos, como criar uma carteira quando um usuário é adicionado.</li>
+</ul>
+<p>O banco é configurado para rodar em uma &quot;caixa mágica&quot; (container Docker), facilitando a instalação. Tudo é em português (UTF-8) para suportar acentos.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="funções-auxiliares-no-banco-de-dados">Funções Auxiliares no Banco de Dados<a href="#funções-auxiliares-no-banco-de-dados" class="hash-link" aria-label="Link direto para Funções Auxiliares no Banco de Dados" title="Link direto para Funções Auxiliares no Banco de Dados" translate="no">​</a></h2>
+<p>Essas são &quot;receitas automáticas&quot; (funções) que o banco usa para tarefas repetitivas.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="create_wallet_for_user">create_wallet_for_user<a href="#create_wallet_for_user" class="hash-link" aria-label="Link direto para create_wallet_for_user" title="Link direto para create_wallet_for_user" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: Cria automaticamente uma carteira (entrada na tabela MyWallet) quando um novo usuário é adicionado.</li>
+<li class=""><strong>Como funciona</strong>: É chamada por um &quot;gatilho&quot; (trigger) na tabela de usuários. Pega o ID do novo usuário e insere na tabela de carteiras.</li>
+<li class=""><strong>Por quê?</strong>: Para que todo usuário tenha uma carteira sem precisar lembrar de criar manualmente. É como um robô que, ao cadastrar um cliente em uma loja, já cria uma conta fidelidade.</li>
+<li class=""><strong>Exemplo</strong>: Se você adiciona &quot;João&quot;, o robô cria &quot;Carteira de João&quot; imediatamente.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="tabelas-do-banco-de-dados">Tabelas do Banco de Dados<a href="#tabelas-do-banco-de-dados" class="hash-link" aria-label="Link direto para Tabelas do Banco de Dados" title="Link direto para Tabelas do Banco de Dados" translate="no">​</a></h2>
+<p>Essas são as &quot;gavetas&quot; principais. Cada uma tem colunas (campos) para guardar detalhes específicos. Elas se conectam via chaves (IDs) para evitar repetições.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="tabela-users---usuários">Tabela Users - Usuários<a href="#tabela-users---usuários" class="hash-link" aria-label="Link direto para Tabela Users - Usuários" title="Link direto para Tabela Users - Usuários" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: Guarda informações de pessoas, como nome, email e senha.</li>
+<li class=""><strong>Campos principais</strong>:<!-- -->
+<ul>
+<li class=""><code>user_id</code>: Número único automático (como um CPF gerado).</li>
+<li class=""><code>user_name</code>, <code>email</code>, <code>fone</code>: Nome, email e telefone (únicos, não repetem).</li>
+<li class=""><code>password</code>: Senha (guardada de forma segura).</li>
+<li class=""><code>birthdate</code>: Data de nascimento.</li>
+<li class=""><code>admin</code>: Se é administrador (sim/não, padrão não).</li>
+<li class=""><code>isActive</code>: Se a conta está ativa (padrão sim).</li>
+<li class=""><code>created_at</code> e <code>updated_at</code>: Datas automáticas de criação e atualização.</li>
+</ul>
+</li>
+<li class=""><strong>Regras</strong>: Email, nome e telefone não repetem. Se deletar um usuário, carteiras ligadas somem (cascade).</li>
+<li class=""><strong>Gatilho (trigger_create_wallet)</strong>: Chama a função para criar carteira automática ao inserir usuário.</li>
+<li class=""><strong>Exemplo</strong>: Como uma ficha de cadastro: &quot;João, <a href="mailto:joao@email.com" target="_blank" rel="noopener noreferrer" class="">joao@email.com</a>, senha123, nascido em 1990&quot;.</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="tabela-event---eventos">Tabela Event - Eventos<a href="#tabela-event---eventos" class="hash-link" aria-label="Link direto para Tabela Event - Eventos" title="Link direto para Tabela Event - Eventos" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: Guarda detalhes de eventos, como nome, data e local.</li>
+<li class=""><strong>Campos principais</strong>:<!-- -->
+<ul>
+<li class=""><code>event_id</code>: Número único automático.</li>
+<li class=""><code>creator_id</code>: ID do usuário que criou (referência solta a <code>users</code>, sem FK: desde a #35 a tabela fica no schema <code>catalog</code>, do serviço <code>catalog</code>).</li>
+<li class=""><code>event_name</code>: Nome único.</li>
+<li class=""><code>ead</code>: Se é online (sim/não, padrão não).</li>
+<li class=""><code>address</code>: Endereço (se presencial).</li>
+<li class=""><code>event_date</code> e <code>buy_time_limit</code>: Data do evento e limite para comprar ingressos.</li>
+<li class=""><code>capacity</code> e <code>quant</code>: Capacidade máxima e quantidade disponível.</li>
+<li class=""><code>description</code>: Texto explicando o evento.</li>
+<li class=""><code>image_data</code>: Foto do evento (em bytes).</li>
+<li class=""><code>created_at</code> e <code>updated_at</code>: Datas automáticas.</li>
+</ul>
+</li>
+<li class=""><strong>Regras</strong>: Nome não repete. Liga ao criador (se deletar usuário, eventos ficam? Não especificado para delete).</li>
+<li class=""><strong>Exemplo</strong>: &quot;Workshop de Java, criado por João, em São Paulo, dia 15/12/2025&quot;.</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="tabela-mywallet---carteiras">Tabela MyWallet - Carteiras<a href="#tabela-mywallet---carteiras" class="hash-link" aria-label="Link direto para Tabela MyWallet - Carteiras" title="Link direto para Tabela MyWallet - Carteiras" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: Representa a carteira digital de cada usuário (guarda inscrições).</li>
+<li class=""><strong>Campos principais</strong>:<!-- -->
+<ul>
+<li class=""><code>user_id</code>: ID do usuário (chave principal, liga à users).</li>
+<li class=""><code>created_at</code> e <code>updated_at</code>: Datas automáticas.</li>
+</ul>
+</li>
+<li class=""><strong>Regras</strong>: Uma carteira por usuário. Se deletar usuário, carteira some (cascade).</li>
+<li class=""><strong>Exemplo</strong>: &quot;Carteira do usuário 1 (João), criada em 23/11/2025&quot;.</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="tabela-walletevent---inscrições">Tabela WalletEvent - Inscrições<a href="#tabela-walletevent---inscrições" class="hash-link" aria-label="Link direto para Tabela WalletEvent - Inscrições" title="Link direto para Tabela WalletEvent - Inscrições" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: Liga usuários a eventos (quem se inscreveu onde).</li>
+<li class=""><strong>Campos principais</strong>:<!-- -->
+<ul>
+<li class=""><code>user_id</code> e <code>event_id</code>: IDs do usuário e evento (chave composta).</li>
+<li class=""><code>created_at</code> e <code>updated_at</code>: Datas automáticas.</li>
+</ul>
+</li>
+<li class=""><strong>Regras</strong>: Liga às tabelas users e event. Não deleta se tentar remover usuário ou evento (restrict).</li>
+<li class=""><strong>Exemplo</strong>: &quot;Usuário 1 se inscreveu no evento 1, em 23/11/2025&quot;.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="segurança-e-autenticação">Segurança e Autenticação<a href="#segurança-e-autenticação" class="hash-link" aria-label="Link direto para Segurança e Autenticação" title="Link direto para Segurança e Autenticação" translate="no">​</a></h2>
+<p>Essas partes protegem o sistema contra intrusos, como um porteiro que verifica identidades. Usam algo chamado JWT (um &quot;bilhete digital&quot; que prova quem você é).</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="jwtutil">JwtUtil<a href="#jwtutil" class="hash-link" aria-label="Link direto para JwtUtil" title="Link direto para JwtUtil" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: Cria e verifica bilhetes (tokens JWT). Cada bilhete tem um &quot;nome&quot; (subject), data de validade e uma assinatura secreta para evitar falsificações.</li>
+<li class=""><strong>Como funciona</strong>:<!-- -->
+<ul>
+<li class="">Gera um bilhete novo quando você loga (com uma senha secreta e tempo de expiração, como 1 hora).</li>
+<li class="">Verifica se o bilhete é válido (não expirou e assinatura certa).</li>
+</ul>
+</li>
+<li class=""><strong>Por quê?</strong>: Para que só pessoas autorizadas acessem partes privadas, como editar eventos.</li>
+</ul>
+<p>Exemplo: Como um ingresso de show com holograma anti-falsificação e data de validade.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="jwtauthenticationfilter">JwtAuthenticationFilter<a href="#jwtauthenticationfilter" class="hash-link" aria-label="Link direto para JwtAuthenticationFilter" title="Link direto para JwtAuthenticationFilter" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: É o &quot;porteiro&quot; que checa o bilhete em cada pedido ao sistema (como acessar uma página).</li>
+<li class=""><strong>Como funciona</strong>: Olha no cabeçalho da mensagem (como um envelope) por um bilhete &quot;Bearer&quot;. Se válido, deixa passar; senão, bloqueia.</li>
+<li class=""><strong>Por quê?</strong>: Para proteger rotas, como só permitir que donos de eventos os editem.</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="securityconfig">SecurityConfig<a href="#securityconfig" class="hash-link" aria-label="Link direto para SecurityConfig" title="Link direto para SecurityConfig" translate="no">  ​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: Define as regras de segurança gerais, como quais partes são públicas ou privadas.</li>
+<li class=""><strong>Como funciona</strong>:<!-- -->
+<ul>
+<li class="">Desliga proteções desnecessárias (como CSRF, para apps web simples).</li>
+<li class="">Permite acesso livre a coisas como login ou busca de eventos.</li>
+<li class="">Exige bilhete JWT para o resto.</li>
+<li class="">Configura CORS (permite que sites de outros domínios acessem o sistema, como um app móvel).</li>
+<li class="">Usa uma ferramenta para codificar senhas (BCrypt).</li>
+</ul>
+</li>
+<li class=""><strong>Por quê?</strong>: Para o sistema ser seguro, mas acessível. Sem isso, qualquer um poderia bagunçar os dados.</li>
+</ul>
+<p>Exemplo: Regras do clube: Entrada livre para ver a agenda, mas só membros com cartão entram na sala VIP.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="inicialização-do-aplicativo">Inicialização do Aplicativo<a href="#inicialização-do-aplicativo" class="hash-link" aria-label="Link direto para Inicialização do Aplicativo" title="Link direto para Inicialização do Aplicativo" translate="no">​</a></h2>
+<p>Aqui está o &quot;botão de ligar&quot; do sistema inteiro.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="main">Main<a href="#main" class="hash-link" aria-label="Link direto para Main" title="Link direto para Main" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: É o ponto de partida. Inicia o aplicativo usando uma ferramenta chamada Spring Boot, que configura tudo automaticamente.</li>
+<li class=""><strong>Como funciona</strong>: Quando você roda o programa, ele &quot;acorda&quot; todos os outros pedaços (como serviços e controladores) e os coloca para trabalhar.</li>
+<li class=""><strong>Por quê?</strong>: Sem isso, o sistema não começa. É como apertar o play em um vídeo.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="popular-o-banco-de-dados-seeding">Popular o Banco de Dados (Seeding)<a href="#popular-o-banco-de-dados-seeding" class="hash-link" aria-label="Link direto para Popular o Banco de Dados (Seeding)" title="Link direto para Popular o Banco de Dados (Seeding)" translate="no">​</a></h2>
+<p>Essas partes servem para encher o banco com dados de teste de uma vez, como adicionar vários convidados a uma lista.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="seeddata">SeedData<a href="#seeddata" class="hash-link" aria-label="Link direto para SeedData" title="Link direto para SeedData" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: É uma &quot;caixa&quot; que guarda listas de usuários, eventos e inscrições (quem se inscreveu onde).</li>
+<li class=""><strong>Como funciona</strong>: Recebe dados em formato JSON (como uma lista de compras) e os organiza.</li>
+<li class=""><strong>Por quê?</strong>: Para testar o sistema rapidamente, sem criar tudo manualmente.</li>
+</ul>
+<p>Exemplo: Uma lista: &quot;Adicionar João, Maria; Eventos: Festa1, Festa2; Inscrições: João na Festa1&quot;.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="seedcontroller">SeedController<a href="#seedcontroller" class="hash-link" aria-label="Link direto para SeedController" title="Link direto para SeedController" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: Recebe a caixa de dados e os salva no banco, usando os serviços normais (para aplicar regras, como codificar senhas).</li>
+<li class=""><strong>Como funciona</strong>:<!-- -->
+<ul>
+<li class="">Tenta criar cada usuário, evento e inscrição.</li>
+<li class="">Registra sucessos, avisos (como &quot;Já existe&quot;) e erros.</li>
+<li class="">Retorna um resumo: &quot;X criados, com Y avisos&quot;.</li>
+</ul>
+</li>
+<li class=""><strong>Por quê?</strong>: Útil para desenvolvedores testarem ou inicializarem o sistema com dados reais.</li>
+<li class=""><strong>Desligado por padrão (#35)</strong>: <code>POST /bff/seed</code> só existe com <code>SEED_ENABLED=true</code> (senão responde 404). O override de carga (<code>Projeto/carga/docker-compose.carga.yml</code>) liga; ligado, ele aceita o <code>creator_id</code> do corpo (ferramenta de dev).</li>
+</ul>
+<p>Exemplo: Como importar uma planilha de convidados para uma festa — o sistema checa duplicatas e avisa problemas.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="dados-de-exemplo-e-inicialização">Dados de Exemplo e Inicialização<a href="#dados-de-exemplo-e-inicialização" class="hash-link" aria-label="Link direto para Dados de Exemplo e Inicialização" title="Link direto para Dados de Exemplo e Inicialização" translate="no">​</a></h3>
+<p>Esse script enche as tabelas com dados fictícios para testar.</p>
+<ul>
+<li class=""><strong>O que faz</strong>: Adiciona usuários, eventos e inscrições sem apagar o que já existe (idempotente).</li>
+<li class=""><strong>Como funciona</strong>:<!-- -->
+<ul>
+<li class="">Insere 5 usuários (como João, Maria) com senhas simples (na vida real, codifique!).</li>
+<li class="">Insere 5 eventos (workshops, conferências) ligados aos usuários.</li>
+<li class="">Insere inscrições (ex: João no Workshop de Java).</li>
+<li class="">Mostra um resumo: quantos usuários, eventos, etc.</li>
+<li class="">Lista todas as tabelas no final para verificar.</li>
+</ul>
+</li>
+<li class=""><strong>Por quê?</strong>: Para testar o sistema sem começar do zero. É como colocar livros de amostra na biblioteca.</li>
+<li class=""><strong>Exemplo de saída</strong>: &quot;✅ Dados populados! Usuários: 5, Eventos: 5&quot;.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="scripts-para-gerenciar-dados">Scripts para Gerenciar Dados<a href="#scripts-para-gerenciar-dados" class="hash-link" aria-label="Link direto para Scripts para Gerenciar Dados" title="Link direto para Scripts para Gerenciar Dados" translate="no">​</a></h2>
+<p>Esses são &quot;receitas automáticas&quot; (scripts) para lidar com dados no banco.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="populate-dataps1-powershell-para-windows">populate-data.ps1 (PowerShell para Windows)<a href="#populate-dataps1-powershell-para-windows" class="hash-link" aria-label="Link direto para populate-data.ps1 (PowerShell para Windows)" title="Link direto para populate-data.ps1 (PowerShell para Windows)" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: Enche o banco com dados de teste (usuários, eventos, inscrições) via API do servidor. Senhas são codificadas para segurança.</li>
+<li class=""><strong>Como funciona</strong>: Cria uma lista de usuários e eventos (como João, Maria, Workshops), converte em formato JSON (uma lista organizada) e envia para o servidor. Mostra resumo de sucessos, avisos e erros.</li>
+<li class=""><strong>Exemplo</strong>: Como adicionar convidados a uma festa: envia a lista e o servidor cuida do resto.</li>
+<li class=""><strong>Uso</strong>: Rode no PowerShell. Certifique-se de que o servidor está ligado.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="scripts-para-testes">Scripts para Testes<a href="#scripts-para-testes" class="hash-link" aria-label="Link direto para Scripts para Testes" title="Link direto para Scripts para Testes" translate="no">​</a></h2>
+<p>Esses scripts verificam se o sistema funciona direito, como um checklist de qualidade.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="run-testssh-bash">run-tests.sh (Bash)<a href="#run-testssh-bash" class="hash-link" aria-label="Link direto para run-tests.sh (Bash)" title="Link direto para run-tests.sh (Bash)" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: Roda testes automáticos dentro de uma caixa Docker temporária, sem sujar seu computador.</li>
+<li class=""><strong>Como funciona</strong>: Copia o código para dentro da caixa, executa Maven para testar, coleta relatórios e mostra resumo colorido (sucessos, falhas, tempo). Salva relatórios em &quot;target/surefire-reports&quot;.</li>
+<li class=""><strong>Exemplo</strong>: Como testar um carro: roda vários cenários (acelerar, frear) e diz se passou ou falhou.</li>
+<li class=""><strong>Uso</strong>: Rode o script. Mostra algo como &quot;✅ 23 testes passaram em 5s&quot;.</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="export-testssh-bash">export-tests.sh (Bash)<a href="#export-testssh-bash" class="hash-link" aria-label="Link direto para export-tests.sh (Bash)" title="Link direto para export-tests.sh (Bash)" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: Gera um relatório texto dos testes, com ou sem rodar eles de novo.</li>
+<li class=""><strong>Como funciona</strong>: Lê relatórios existentes (ou roda testes se não usar -n), formata com classes de teste, estatísticas e resumo. Salva em arquivo como &quot;tests-report-20251123-120000.txt&quot;.</li>
+<li class=""><strong>Opções</strong>:<!-- -->
+<ul>
+<li class=""><code>-n</code>: Não roda testes, usa os últimos.</li>
+<li class=""><code>-o arquivo.txt</code>: Muda o nome.</li>
+</ul>
+</li>
+<li class=""><strong>Exemplo</strong>: Como um boletim escolar: lista notas por matéria e total.</li>
+<li class=""><strong>Uso</strong>: Rode o script com opções para exportar sem rodar.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="configuração-com-docker">Configuração com Docker<a href="#configuração-com-docker" class="hash-link" aria-label="Link direto para Configuração com Docker" title="Link direto para Configuração com Docker" translate="no">​</a></h2>
+<p>Esta é a parte final da documentação do sistema de gerenciamento de eventos. Aqui, explicamos como o sistema é &quot;embalado&quot; e executado usando uma ferramenta chamada Docker. Pense no Docker como caixas mágicas (chamadas containers) que guardam partes do sistema (como o banco de dados e o servidor) de forma isolada, facilitando a instalação e o teste em qualquer computador.</p>
+<p>Se você não entende de programação ou computadores, imagine o Docker como um kit de montagem de uma casa de bonecas: cada caixa tem uma peça pronta (banco de dados em uma, servidor em outra), e um manual (docker-compose) diz como juntar tudo. Os scripts são como receitas que automatizam tarefas, como encher a casa com móveis (dados) ou verificar se está tudo certo (testes).</p>
+<p>O sistema roda em dois containers principais: um para o banco de dados (PostgreSQL) e outro para o aplicativo Java (backend). Tudo é configurado para ser fácil de ligar e desligar.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="introdução-ao-docker-no-projeto">Introdução ao Docker no Projeto<a href="#introdução-ao-docker-no-projeto" class="hash-link" aria-label="Link direto para Introdução ao Docker no Projeto" title="Link direto para Introdução ao Docker no Projeto" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que é Docker?</strong>: Uma ferramenta que cria &quot;caixas virtuais&quot; para rodar programas sem bagunçar seu computador. Cada caixa tem tudo o que precisa (como Java ou banco de dados) e não interfere nas outras.</li>
+<li class=""><strong>Por quê usar?</strong>: Facilita testar o sistema em qualquer máquina, sem instalar nada extra. É como um jogo que roda direto de um pen drive.</li>
+<li class=""><strong>Requisitos básicos</strong>: Instale o Docker no seu computador (procure &quot;instalar Docker&quot; no Google). O projeto usa arquivos como <code>Dockerfile</code> (receita para construir a caixa do backend) e <code>docker-compose.yml</code> (manual para montar tudo).</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="construção-da-imagem-do-backend-dockerfile">Construção da Imagem do Backend (Dockerfile)<a href="#construção-da-imagem-do-backend-dockerfile" class="hash-link" aria-label="Link direto para Construção da Imagem do Backend (Dockerfile)" title="Link direto para Construção da Imagem do Backend (Dockerfile)" translate="no">​</a></h3>
+<p>Esse arquivo é a &quot;receita&quot; para criar a caixa do servidor Java.</p>
+<ul>
+<li class=""><strong>Como funciona</strong>:<!-- -->
+<ul>
+<li class=""><strong>Primeira parte (build)</strong>: Usa uma caixa grande com Java 21 e Maven (ferramenta para construir apps Java). Copia o código, constrói um arquivo executável (JAR, como um ZIP com o programa pronto).</li>
+<li class=""><strong>Segunda parte (runtime)</strong>: Usa uma caixa pequena só com Java 25 para rodar o JAR. Expõe a porta 8081 (como uma janela para acessar o servidor).</li>
+</ul>
+</li>
+<li class=""><strong>Exemplo simples</strong>: É como assar um bolo: primeiro misture ingredientes (build), depois sirva o bolo pronto (runtime).</li>
+<li class=""><strong>Uso</strong>: O docker-compose faz isso automaticamente.</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="configuração-com-docker-para-o-banco-de-dados-dockerfile">Configuração com Docker para o Banco de Dados (Dockerfile)<a href="#configuração-com-docker-para-o-banco-de-dados-dockerfile" class="hash-link" aria-label="Link direto para Configuração com Docker para o Banco de Dados (Dockerfile)" title="Link direto para Configuração com Docker para o Banco de Dados (Dockerfile)" translate="no">​</a></h3>
+<p>Essa parte configura a caixa (container) onde o banco roda, isolada do resto do computador.</p>
+<ul>
+<li class=""><strong>O que faz</strong>: Usa uma caixa pronta do PostgreSQL versão 16 (leve, chamada &quot;alpine&quot;). Define o idioma como português (UTF-8) para nomes com acentos não darem problema.</li>
+<li class=""><strong>Como funciona</strong>:<!-- -->
+<ul>
+<li class="">Copia scripts de inicialização (como criar tabelas) para uma pasta especial. Esses scripts rodam automaticamente na primeira vez que a caixa liga.</li>
+<li class="">Expõe a porta 5432 (como uma janela para conectar ao banco).</li>
+<li class="">Guarda dados em um &quot;armário persistente&quot; para não perder ao desligar.</li>
+</ul>
+</li>
+<li class=""><strong>Variáveis</strong>: Senha e usuário vêm de um arquivo separado (.env) para segurança.</li>
+<li class=""><strong>Exemplo</strong>: Imagine montar uma estante: a receita diz &quot;pegue a estante básica, adicione gavetas (scripts), e defina o idioma&quot;.</li>
+<li class=""><strong>Comando de teste</strong>: Há um exemplo para rodar testes no banco via Docker.</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="configuração-geral-docker-composeyml">Configuração Geral (docker-compose.yml)<a href="#configuração-geral-docker-composeyml" class="hash-link" aria-label="Link direto para Configuração Geral (docker-compose.yml)" title="Link direto para Configuração Geral (docker-compose.yml)" translate="no">​</a></h3>
+<p>Esse arquivo é o &quot;manual de montagem&quot; que define as caixas e como elas se conectam.</p>
+<ul>
+<li class=""><strong>Serviços (caixas)</strong>:<!-- -->
+<ul>
+<li class=""><strong>db (banco de dados)</strong>: Usa PostgreSQL 17 (imagem do Supabase). Porta 5433 no seu computador (dentro da caixa é 5432). Guarda dados em um &quot;armário persistente&quot; (volume supabase-db-data) para não perder ao desligar. Verifica se está &quot;saudável&quot; antes de prosseguir.</li>
+<li class=""><strong>backend (servidor)</strong>: Constrói a partir do Dockerfile. Porta 8081. Espera o banco estar pronto (depends_on). Reinicia sozinho se cair.</li>
+</ul>
+</li>
+<li class=""><strong>Outros itens</strong>:<!-- -->
+<ul>
+<li class=""><strong>Volumes</strong>: Armário para dados do banco (não some ao parar).</li>
+<li class=""><strong>Networks</strong>: Uma &quot;rede privada&quot; (gerenciador-net) para as caixas conversarem.</li>
+<li class=""><strong>Env_file</strong>: Pega configurações de um arquivo <code>.env</code> (como URL do banco, usuário e senha).</li>
+</ul>
+</li>
+<li class=""><strong>Comandos básicos</strong>:<!-- -->
+<ul>
+<li class="">Ligar: Rode o comando up em modo detached (fundo, sem parar o terminal).</li>
+<li class="">Desligar: Rode o comando down.</li>
+</ul>
+</li>
+<li class=""><strong>Exemplo</strong>: Como montar um brinquedo LEGO: o arquivo diz &quot;conecte a peça DB à rede, espere ela ligar, então conecte o backend&quot;.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="configuração-do-projeto-java-pomxml">Configuração do Projeto Java (pom.xml)<a href="#configuração-do-projeto-java-pomxml" class="hash-link" aria-label="Link direto para Configuração do Projeto Java (pom.xml)" title="Link direto para Configuração do Projeto Java (pom.xml)" translate="no">​</a></h2>
+<p>Esse é o &quot;cardápio&quot; de ingredientes para construir o app Java.</p>
+<ul>
+<li class=""><strong>O que faz</strong>: Define o que o Maven (ferramenta de construção) precisa: versão Java 21, dependências (pacotes prontos como Spring Boot para web, segurança, banco PostgreSQL, JWT para autenticação).</li>
+<li class=""><strong>Partes principais</strong>:<!-- -->
+<ul>
+<li class=""><strong>Dependências</strong>: Como ingredientes: Spring para o app, segurança para proteger, PostgreSQL para o banco.</li>
+<li class=""><strong>Build</strong>: Configura como compilar (usar Java 21) e empacotar em JAR.</li>
+</ul>
+</li>
+<li class=""><strong>Exemplo</strong>: Como uma receita de bolo: lista farinha (Spring), ovos (segurança) e como assar (build).</li>
+<li class=""><strong>Uso</strong>: Maven usa isso automaticamente no Dockerfile ou scripts de teste.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="guia-de-comandos">Guia de Comandos<a href="#guia-de-comandos" class="hash-link" aria-label="Link direto para Guia de Comandos" title="Link direto para Guia de Comandos" translate="no">​</a></h2>
+<p>Esse arquivo é um manual pronto com comandos comuns.</p>
+<ul>
+<li class=""><strong>Início rápido</strong>: 4 passos para ligar, esperar, popular e exportar.</li>
+<li class=""><strong>Comandos principais</strong>: Ligar/desligar, reconstruir.</li>
+<li class=""><strong>Testes</strong>: Rode o script de testes.</li>
+<li class=""><strong>Problemas comuns</strong>: Ver logs, checar portas, resetar.</li>
+<li class=""><strong>Workflows</strong>: Rotinas diárias, após mudanças, antes de salvar código.</li>
+<li class=""><strong>Notas</strong>: Dados persistem, use .env para configurações (ex: senha do banco).</li>
+</ul>
+<p>Exemplo de .env: Inclui URL do banco, usuário e senha.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="considerações-finais">Considerações Finais<a href="#considerações-finais" class="hash-link" aria-label="Link direto para Considerações Finais" title="Link direto para Considerações Finais" translate="no">​</a></h2>
+<ul>
+<li class=""><strong>Segurança</strong>: Senhas são codificadas, mas o sistema não tem autenticação completa (ex: tokens). O sistema protege dados com senhas codificadas e bilhetes JWT. Sempre verifique o bilhete para ações privadas. Senhas no .env ficam escondidas; não compartilhe.</li>
+<li class=""><strong>Banco de dados</strong>: Assume uma tabela &quot;users&quot; e &quot;event&quot; com colunas específicas. Ordem de criação: Users primeiro (pois outros dependem dela), depois Event, MyWallet e WalletEvent. Automação: Triggers e funções evitam erros humanos, como esquecer carteiras. Senhas devem ser codificadas no app (não no SQL). Use UTF-8 para acentos.</li>
+<li class=""><strong>Melhorias possíveis</strong>: Adicionar mais validações, interface gráfica ou buscas avançadas. Adicione mais roles (como admin) no JWT para controles finos. Adicione mais regras, como checar datas lógicas.</li>
+<li class=""><strong>Como usar</strong>: Para testar, use ferramentas como Postman para enviar pedidos aos endpoints.</li>
+<li class=""><strong>Testes</strong>: Use o seeding para encher o banco e testar fluxos, como inscrição em eventos. Sempre rode testes após mudanças; use populate/export para verificar dados.</li>
+<li class=""><strong>Integração</strong>: O BFF é o &quot;ponto único&quot; para apps front-end se conectarem.</li>
+<li class=""><strong>Portas</strong>: 5433 (banco), 8081 (API) — mude se conflitar.</li>
+<li class=""><strong>Dicas para iniciantes</strong>: Comece com o comando para ligar o Docker, acesse a porta 8081 em um navegador para testar a API.</li>
+</ul>
+<p>Se o sistema for como uma festa, o Docker é o salão pronto: monte, encha de convidados (dados) e verifique se todos estão felizes (testes)! Se precisar de ajuda, rode os scripts e veja os logs.</p>
+<p>Se o banco for como uma casa, as tabelas são cômodos, funções são empregados automáticos, e o seed é mobiliar para a inauguração! Se precisar rodar, use Docker para ligar tudo.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="front-end">Front-end<a href="#front-end" class="hash-link" aria-label="Link direto para Front-end" title="Link direto para Front-end" translate="no">​</a></h2>
+<h1>Documentação  Front-end</h1>
+<p>Esta documentação explica o funcionamento da parte visível do aplicativo (chamada front-end), que é o que você vê e toca na tela do celular, tablet ou navegador. O app é feito com uma ferramenta chamada Flutter, que cria telas bonitas e fáceis de usar para gerenciar eventos como festas, palestras ou shows.</p>
+<p>Pense no front-end como a loja que você visita: as vitrines (telas), botões para clicar, campos para digitar e mensagens que aparecem. Ele se conecta a um &quot;depósito&quot; no fundo (back-end) para guardar e buscar informações.</p>
+<p>O app permite ver eventos, se cadastrar, logar, criar eventos, editar perfil, buscar e se inscrever. Aqui, explicamos os arquivos principais de forma simples, como se fossem peças de um quebra-cabeça.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="introdução-ao-projeto">Introdução ao Projeto<a href="#introdução-ao-projeto" class="hash-link" aria-label="Link direto para Introdução ao Projeto" title="Link direto para Introdução ao Projeto" translate="no">​</a></h2>
+<p>Este é um aplicativo web (roda no navegador) feito com Flutter. Ele começa carregando uma página simples e vai crescendo para mostrar telas interativas.</p>
+<ul>
+<li class=""><strong>Como funciona geral</strong>: Quando você abre o site, ele carrega arquivos como imagens e códigos. Se demorar, mostra &quot;Carregando...&quot;. Tudo é seguro e rápido graças a configurações especiais.</li>
+<li class=""><strong>Por quê?</strong>: Para que qualquer um acesse pelo navegador, sem baixar nada.</li>
+<li class=""><strong>Exemplo</strong>: Como entrar em um site de ingressos: clica, vê eventos e interage.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="configuração-de-implantação-dockerfile-e-nginxconf">Configuração de Implantação (Dockerfile e nginx.conf)<a href="#configuração-de-implantação-dockerfile-e-nginxconf" class="hash-link" aria-label="Link direto para Configuração de Implantação (Dockerfile e nginx.conf)" title="Link direto para Configuração de Implantação (Dockerfile e nginx.conf)" translate="no">​</a></h2>
+<p>Essas partes são como &quot;caixas&quot; e &quot;regras da casa&quot; para colocar o app online, para que funcione em um servidor (como um computador na nuvem).</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="dockerfile">Dockerfile<a href="#dockerfile" class="hash-link" aria-label="Link direto para Dockerfile" title="Link direto para Dockerfile" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: É uma receita para construir a &quot;caixa&quot; do app. Divide em dois passos: primeiro, prepara o código Flutter; depois, coloca em um servidor leve.</li>
+<li class=""><strong>Como funciona</strong>: Usa uma base simples (Ubuntu), instala ferramentas, copia o código, constrói o app e coloca em um servidor chamado Nginx. Define uma variável para o endereço do back-end.</li>
+<li class=""><strong>Por quê?</strong>: Para rodar o app em qualquer computador sem problemas.</li>
+<li class=""><strong>Exemplo</strong>: Como fazer um bolo: receita para misturar ingredientes e assar.</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="nginxconf">nginx.conf<a href="#nginxconf" class="hash-link" aria-label="Link direto para nginx.conf" title="Link direto para nginx.conf" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: São regras para o servidor Nginx, que &quot;entrega&quot; as páginas para você.</li>
+<li class=""><strong>Como funciona</strong>: Define onde estão os arquivos do app, redireciona pedidos para o back-end (ex: /api/ vai para outro lugar) e cuida de erros.</li>
+<li class=""><strong>Por quê?</strong>: Para o app carregar rápido e seguro.</li>
+<li class=""><strong>Exemplo</strong>: Como um garçom: sabe onde pegar a comida (arquivos) e entrega no balcão certo.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="dependências-e-configuração-pubspecyaml">Dependências e Configuração (pubspec.yaml)<a href="#dependências-e-configuração-pubspecyaml" class="hash-link" aria-label="Link direto para Dependências e Configuração (pubspec.yaml)" title="Link direto para Dependências e Configuração (pubspec.yaml)" translate="no">​</a></h2>
+<p>Este arquivo é como uma &quot;lista de compras&quot; do app: diz o que precisa para funcionar.</p>
+<ul>
+<li class=""><strong>O que faz</strong>: Lista o nome do app, versão e ferramentas extras (como botões bonitos ou envio de dados).</li>
+<li class=""><strong>Como funciona</strong>: Inclui Flutter para as telas, Provider para compartilhar dados entre páginas, HTTP para falar com o back-end, e mais.</li>
+<li class=""><strong>Por quê?</strong>: Para o app saber o que baixar e usar.</li>
+<li class=""><strong>Exemplo</strong>: Como uma receita: lista farinha, ovos e forno.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="página-de-entrada-indexhtml">Página de Entrada (index.html)<a href="#página-de-entrada-indexhtml" class="hash-link" aria-label="Link direto para Página de Entrada (index.html)" title="Link direto para Página de Entrada (index.html)" translate="no">​</a></h2>
+<p>Esta é a &quot;porta de entrada&quot; no navegador: a primeira página que carrega.</p>
+<ul>
+<li class=""><strong>O que faz</strong>: Prepara o terreno para o app Flutter rodar.</li>
+<li class=""><strong>Como funciona</strong>: Mostra &quot;Carregando...&quot; enquanto baixa o código. Se der erro, avisa. Usa um script para iniciar o app.</li>
+<li class=""><strong>Por quê?</strong>: Para evitar tela branca e guiar o usuário.</li>
+<li class=""><strong>Exemplo</strong>: Como uma recepção: diz &quot;Aguarde&quot; enquanto prepara a sala.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="código-principal-do-app-blocointeirodart">Código Principal do App (blocoInteiro.dart)<a href="#código-principal-do-app-blocointeirodart" class="hash-link" aria-label="Link direto para Código Principal do App (blocoInteiro.dart)" title="Link direto para Código Principal do App (blocoInteiro.dart)" translate="no">​</a></h2>
+<p>Este é o &quot;coração&quot; do app: o código que cria todas as telas e botões. Explicamos por partes, como cômodos de uma casa.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="início-do-app-main-e-myapp">Início do App (main e MyApp)<a href="#início-do-app-main-e-myapp" class="hash-link" aria-label="Link direto para Início do App (main e MyApp)" title="Link direto para Início do App (main e MyApp)" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: Liga o app e verifica se você está logado.</li>
+<li class=""><strong>Como funciona</strong>: Carrega o crachá (token), tenta pegar dados do usuário. Se ok, vai para painel principal; senão, para página inicial.</li>
+<li class=""><strong>Por quê?</strong>: Para entrar rápido se já logado.</li>
+<li class=""><strong>Exemplo</strong>: Como ligar a TV: verifica canal favorito.</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="dados-compartilhados-homepagedata">Dados Compartilhados (HomePageData)<a href="#dados-compartilhados-homepagedata" class="hash-link" aria-label="Link direto para Dados Compartilhados (HomePageData)" title="Link direto para Dados Compartilhados (HomePageData)" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: Guarda coisas como nome do site, links e dados do usuário.</li>
+<li class=""><strong>Como funciona</strong>: Compartilha entre telas, atualiza quando muda (ex: após login).</li>
+<li class=""><strong>Por quê?</strong>: Para não repetir informações.</li>
+<li class=""><strong>Exemplo</strong>: Como uma prateleira: todos pegam o que precisam.</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="tela-inicial-homescreen">Tela Inicial (HomeScreen)<a href="#tela-inicial-homescreen" class="hash-link" aria-label="Link direto para Tela Inicial (HomeScreen)" title="Link direto para Tela Inicial (HomeScreen)" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: Mostra eventos públicos.</li>
+<li class=""><strong>Como funciona</strong>: Barra superior com nome, perfil falso, imagem grande e botões para explorar ou criar.</li>
+<li class=""><strong>Por quê?</strong>: Para visitantes verem sem logar.</li>
+<li class=""><strong>Exemplo</strong>: Como vitrine de loja: atrai para entrar.</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="barra-de-navegação-_topnavigationbar">Barra de Navegação (_TopNavigationBar)<a href="#barra-de-navegação-_topnavigationbar" class="hash-link" aria-label="Link direto para Barra de Navegação (_TopNavigationBar)" title="Link direto para Barra de Navegação (_TopNavigationBar)" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: Menu no topo com nome do site e botões.</li>
+<li class=""><strong>Como funciona</strong>: Links para buscar ou gerenciar eventos.</li>
+<li class=""><strong>Por quê?</strong>: Para navegar fácil.</li>
+<li class=""><strong>Exemplo</strong>: Como menu de restaurante.</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="seção-de-perfil-_userprofilesection">Seção de Perfil (_UserProfileSection)<a href="#seção-de-perfil-_userprofilesection" class="hash-link" aria-label="Link direto para Seção de Perfil (_UserProfileSection)" title="Link direto para Seção de Perfil (_UserProfileSection)" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: Mostra nome e foto do usuário (ou genérico).</li>
+<li class=""><strong>Como funciona</strong>: Após login, atualiza com dados reais.</li>
+<li class=""><strong>Por quê?</strong>: Para personalizar.</li>
+<li class=""><strong>Exemplo</strong>: Como crachá: identifica você.</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="conteúdo-principal-_maincontentcard">Conteúdo Principal (_MainContentCard)<a href="#conteúdo-principal-_maincontentcard" class="hash-link" aria-label="Link direto para Conteúdo Principal (_MainContentCard)" title="Link direto para Conteúdo Principal (_MainContentCard)" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: Mostra imagem com texto sobreposto.</li>
+<li class=""><strong>Como funciona</strong>: Carrega imagem e coloca texto em cima.</li>
+<li class=""><strong>Por quê?</strong>: Para chamar atenção.</li>
+<li class=""><strong>Exemplo</strong>: Como pôster: destaca o principal.</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="botões-de-ação-_actionbuttonssection">Botões de Ação (_ActionButtonsSection)<a href="#botões-de-ação-_actionbuttonssection" class="hash-link" aria-label="Link direto para Botões de Ação (_ActionButtonsSection)" title="Link direto para Botões de Ação (_ActionButtonsSection)" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>O que faz</strong>: Botões para explorar ou criar eventos.</li>
+<li class=""><strong>Como funciona</strong>: Clica e vai para outra tela.</li>
+<li class=""><strong>Por quê?</strong>: Para incentivar ações.</li>
+<li class=""><strong>Exemplo</strong>: Como &quot;Compre agora&quot; em loja.</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="outras-telas-e-componentes">Outras Telas e Componentes<a href="#outras-telas-e-componentes" class="hash-link" aria-label="Link direto para Outras Telas e Componentes" title="Link direto para Outras Telas e Componentes" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>Telas de Eventos</strong>: Criar, editar, inscrever — preenche formulários e envia dados.</li>
+<li class=""><strong>Gerenciamento</strong>: Abas para ver inscritos ou criados.</li>
+<li class=""><strong>Login/Cadastro</strong>: Campos para digitar, verifica e salva.</li>
+<li class=""><strong>Pesquisa</strong>: Barra para buscar, filtra resultados.</li>
+<li class=""><strong>Edição de Perfil</strong>: Muda dados pessoais.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="considerações-finais-1">Considerações Finais<a href="#considerações-finais-1" class="hash-link" aria-label="Link direto para Considerações Finais" title="Link direto para Considerações Finais" translate="no">​</a></h2>
+<ul>
+<li class=""><strong>Segurança</strong>: Verifica login antes de ações privadas.</li>
+<li class=""><strong>Carregamento</strong>: Mostra avisos enquanto espera.</li>
+<li class=""><strong>Melhorias</strong>: Pode adicionar mais botões ou imagens.</li>
+</ul>
+<p>O app é como um organizador de eventos: fácil de usar e conectado ao back-end para guardar tudo!</p></div></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Páginas de documento"><a class="pagination-nav__link pagination-nav__link--prev" href="/gerenciador-eventos/Projeto/supabase/"><div class="pagination-nav__sublabel">Anterior</div><div class="pagination-nav__label">supabase/ — Supabase self-hosted (vendorizado)</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/gerenciador-eventos/docs/arquitetura/fase6-cqrs-es"><div class="pagination-nav__sublabel">Próxima</div><div class="pagination-nav__label">Fase 6 — CQRS + Event Sourcing no monólito (command, evento, projeção)</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#link-video-final-de-2025" class="table-of-contents__link toc-highlight">Link Video Final de 2025</a></li><li><a href="#sumário" class="table-of-contents__link toc-highlight">Sumário</a></li><li><a href="#back-end" class="table-of-contents__link toc-highlight">Back-end</a></li><li><a href="#introdução-ao-sistema" class="table-of-contents__link toc-highlight">Introdução ao Sistema</a></li><li><a href="#classes-de-dados-pojos" class="table-of-contents__link toc-highlight">Classes de Dados (POJOs)</a><ul><li><a href="#user-usuário" class="table-of-contents__link toc-highlight">User (Usuário)</a></li><li><a href="#event-evento" class="table-of-contents__link toc-highlight">Event (Evento)</a></li><li><a href="#mywallet-carteira" class="table-of-contents__link toc-highlight">MyWallet (Carteira)</a></li><li><a href="#eventwallet-ingresso-na-carteira" class="table-of-contents__link toc-highlight">EventWallet (Ingresso na Carteira)</a></li></ul></li><li><a href="#camada-de-acesso-a-dados-repositories" class="table-of-contents__link toc-highlight">Camada de Acesso a Dados (Repositories)</a><ul><li><a href="#userrepository" class="table-of-contents__link toc-highlight">UserRepository</a></li><li><a href="#eventrepository" class="table-of-contents__link toc-highlight">EventRepository</a></li><li><a href="#mywalletrepository" class="table-of-contents__link toc-highlight">MyWalletRepository</a></li><li><a href="#eventwalletrepository" class="table-of-contents__link toc-highlight">EventWalletRepository</a></li></ul></li><li><a href="#camada-de-lógica-de-negócio-services" class="table-of-contents__link toc-highlight">Camada de Lógica de Negócio (Services)</a><ul><li><a href="#userservice" class="table-of-contents__link toc-highlight">UserService</a></li><li><a href="#eventservice" class="table-of-contents__link toc-highlight">EventService</a></li><li><a href="#mywalletservice" class="table-of-contents__link toc-highlight">MyWalletService</a></li><li><a href="#eventwalletservice" class="table-of-contents__link toc-highlight">EventWalletService</a></li></ul></li><li><a href="#camada-de-interface-controllers-e-bff" class="table-of-contents__link toc-highlight">Camada de Interface (Controllers e BFF)</a><ul><li><a href="#usercontroller" class="table-of-contents__link toc-highlight">UserController</a></li><li><a href="#eventcontroller" class="table-of-contents__link toc-highlight">EventController</a></li><li><a href="#mywalletcontroller" class="table-of-contents__link toc-highlight">MyWalletController</a></li><li><a href="#eventwalletcontroller" class="table-of-contents__link toc-highlight">EventWalletController</a></li><li><a href="#aplicativo-bff-backend-for-frontend" class="table-of-contents__link toc-highlight">Aplicativo BFF (Backend for Frontend)</a></li></ul></li><li><a href="#como-tudo-funciona-passo-a-passo-simples" class="table-of-contents__link toc-highlight">Como Tudo Funciona (Passo a Passo Simples)</a><ul><li><a href="#para-usuários-e-eventos-geral" class="table-of-contents__link toc-highlight">Para Usuários e Eventos (Geral)</a></li><li><a href="#para-carteiras-e-inscrições" class="table-of-contents__link toc-highlight">Para Carteiras e Inscrições</a></li></ul></li><li><a href="#regras-importantes-que-o-sistema-segue-para-não-dar-bagunça" class="table-of-contents__link toc-highlight">Regras Importantes que o Sistema Segue (Para Não Dar Bagunça)</a></li><li><a href="#resumo-em-uma-frase-para-quem-quiser-entender-rápido" class="table-of-contents__link toc-highlight">Resumo em Uma Frase (Para Quem Quiser Entender Rápido)</a></li><li><a href="#as-partes-do-sistema-explicadas-como-pessoas" class="table-of-contents__link toc-highlight">As Partes do Sistema (Explicadas Como Pessoas)</a></li><li><a href="#configuração-do-banco-de-dados" class="table-of-contents__link toc-highlight">Configuração do Banco de Dados</a><ul><li><a href="#databaseconnection" class="table-of-contents__link toc-highlight">DatabaseConnection</a></li></ul></li><li><a href="#funções-auxiliares-no-banco-de-dados" class="table-of-contents__link toc-highlight">Funções Auxiliares no Banco de Dados</a><ul><li><a href="#create_wallet_for_user" class="table-of-contents__link toc-highlight">create_wallet_for_user</a></li></ul></li><li><a href="#tabelas-do-banco-de-dados" class="table-of-contents__link toc-highlight">Tabelas do Banco de Dados</a><ul><li><a href="#tabela-users---usuários" class="table-of-contents__link toc-highlight">Tabela Users - Usuários</a></li><li><a href="#tabela-event---eventos" class="table-of-contents__link toc-highlight">Tabela Event - Eventos</a></li><li><a href="#tabela-mywallet---carteiras" class="table-of-contents__link toc-highlight">Tabela MyWallet - Carteiras</a></li><li><a href="#tabela-walletevent---inscrições" class="table-of-contents__link toc-highlight">Tabela WalletEvent - Inscrições</a></li></ul></li><li><a href="#segurança-e-autenticação" class="table-of-contents__link toc-highlight">Segurança e Autenticação</a><ul><li><a href="#jwtutil" class="table-of-contents__link toc-highlight">JwtUtil</a></li><li><a href="#jwtauthenticationfilter" class="table-of-contents__link toc-highlight">JwtAuthenticationFilter</a></li><li><a href="#securityconfig" class="table-of-contents__link toc-highlight">SecurityConfig</a></li></ul></li><li><a href="#inicialização-do-aplicativo" class="table-of-contents__link toc-highlight">Inicialização do Aplicativo</a><ul><li><a href="#main" class="table-of-contents__link toc-highlight">Main</a></li></ul></li><li><a href="#popular-o-banco-de-dados-seeding" class="table-of-contents__link toc-highlight">Popular o Banco de Dados (Seeding)</a><ul><li><a href="#seeddata" class="table-of-contents__link toc-highlight">SeedData</a></li><li><a href="#seedcontroller" class="table-of-contents__link toc-highlight">SeedController</a></li><li><a href="#dados-de-exemplo-e-inicialização" class="table-of-contents__link toc-highlight">Dados de Exemplo e Inicialização</a></li></ul></li><li><a href="#scripts-para-gerenciar-dados" class="table-of-contents__link toc-highlight">Scripts para Gerenciar Dados</a><ul><li><a href="#populate-dataps1-powershell-para-windows" class="table-of-contents__link toc-highlight">populate-data.ps1 (PowerShell para Windows)</a></li></ul></li><li><a href="#scripts-para-testes" class="table-of-contents__link toc-highlight">Scripts para Testes</a><ul><li><a href="#run-testssh-bash" class="table-of-contents__link toc-highlight">run-tests.sh (Bash)</a></li><li><a href="#export-testssh-bash" class="table-of-contents__link toc-highlight">export-tests.sh (Bash)</a></li></ul></li><li><a href="#configuração-com-docker" class="table-of-contents__link toc-highlight">Configuração com Docker</a><ul><li><a href="#introdução-ao-docker-no-projeto" class="table-of-contents__link toc-highlight">Introdução ao Docker no Projeto</a></li><li><a href="#construção-da-imagem-do-backend-dockerfile" class="table-of-contents__link toc-highlight">Construção da Imagem do Backend (Dockerfile)</a></li><li><a href="#configuração-com-docker-para-o-banco-de-dados-dockerfile" class="table-of-contents__link toc-highlight">Configuração com Docker para o Banco de Dados (Dockerfile)</a></li><li><a href="#configuração-geral-docker-composeyml" class="table-of-contents__link toc-highlight">Configuração Geral (docker-compose.yml)</a></li></ul></li><li><a href="#configuração-do-projeto-java-pomxml" class="table-of-contents__link toc-highlight">Configuração do Projeto Java (pom.xml)</a></li><li><a href="#guia-de-comandos" class="table-of-contents__link toc-highlight">Guia de Comandos</a></li><li><a href="#considerações-finais" class="table-of-contents__link toc-highlight">Considerações Finais</a></li><li><a href="#front-end" class="table-of-contents__link toc-highlight">Front-end</a></li><li><a href="#introdução-ao-projeto" class="table-of-contents__link toc-highlight">Introdução ao Projeto</a></li><li><a href="#configuração-de-implantação-dockerfile-e-nginxconf" class="table-of-contents__link toc-highlight">Configuração de Implantação (Dockerfile e nginx.conf)</a><ul><li><a href="#dockerfile" class="table-of-contents__link toc-highlight">Dockerfile</a></li><li><a href="#nginxconf" class="table-of-contents__link toc-highlight">nginx.conf</a></li></ul></li><li><a href="#dependências-e-configuração-pubspecyaml" class="table-of-contents__link toc-highlight">Dependências e Configuração (pubspec.yaml)</a></li><li><a href="#página-de-entrada-indexhtml" class="table-of-contents__link toc-highlight">Página de Entrada (index.html)</a></li><li><a href="#código-principal-do-app-blocointeirodart" class="table-of-contents__link toc-highlight">Código Principal do App (blocoInteiro.dart)</a><ul><li><a href="#início-do-app-main-e-myapp" class="table-of-contents__link toc-highlight">Início do App (main e MyApp)</a></li><li><a href="#dados-compartilhados-homepagedata" class="table-of-contents__link toc-highlight">Dados Compartilhados (HomePageData)</a></li><li><a href="#tela-inicial-homescreen" class="table-of-contents__link toc-highlight">Tela Inicial (HomeScreen)</a></li><li><a href="#barra-de-navegação-_topnavigationbar" class="table-of-contents__link toc-highlight">Barra de Navegação (_TopNavigationBar)</a></li><li><a href="#seção-de-perfil-_userprofilesection" class="table-of-contents__link toc-highlight">Seção de Perfil (_UserProfileSection)</a></li><li><a href="#conteúdo-principal-_maincontentcard" class="table-of-contents__link toc-highlight">Conteúdo Principal (_MainContentCard)</a></li><li><a href="#botões-de-ação-_actionbuttonssection" class="table-of-contents__link toc-highlight">Botões de Ação (_ActionButtonsSection)</a></li><li><a href="#outras-telas-e-componentes" class="table-of-contents__link toc-highlight">Outras Telas e Componentes</a></li></ul></li><li><a href="#considerações-finais-1" class="table-of-contents__link toc-highlight">Considerações Finais</a></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="footer__bottom text--center"><div class="footer__copyright">Gerado automaticamente a partir do repositório GerenciadorEventos e do vault de arquitetura.</div></div></div></footer></div>
+</body>
+</html>

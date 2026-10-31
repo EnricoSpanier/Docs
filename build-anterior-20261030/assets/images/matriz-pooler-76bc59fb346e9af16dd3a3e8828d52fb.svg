@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 442" width="100%" role="img" aria-label="Overselling × lag, ponto 1 (pós-pooler): Overselling médio por lag e braço. N = 100 (capacity 20): naive no lag 500 ms: 77,6; naive no lag 2000 ms: 80; cas no lag 5000 ms: 0; naive no lag 5000 ms: 76,8; naive no lag 10000 ms: 80. N = 200 (capacity 20): naive no lag 500 ms: 116; naive no lag 2000 ms: 180; cas no lag 5000 ms: 0; naive no lag 5000 ms: 180; naive no lag 10000 ms: 180">
+<title>Overselling × lag, ponto 1 (pós-pooler)</title>
+<desc>Overselling médio por lag e braço. N = 100 (capacity 20): naive no lag 500 ms: 77,6; naive no lag 2000 ms: 80; cas no lag 5000 ms: 0; naive no lag 5000 ms: 76,8; naive no lag 10000 ms: 80. N = 200 (capacity 20): naive no lag 500 ms: 116; naive no lag 2000 ms: 180; cas no lag 5000 ms: 0; naive no lag 5000 ms: 180; naive no lag 10000 ms: 180</desc>
+<style>
+  :root { --surface-1:#fcfcfb; --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#898781; --grid:#e1e0d9; --baseline:#c3c2b7; --series-1:#2a78d6; --series-2:#eb6834; --series-3:#1baf7a; --series-4:#eda100; }
+  @media (prefers-color-scheme: dark) {
+    :root { --surface-1:#1a1a19; --text-primary:#ffffff; --text-secondary:#c3c2b7; --grid:#2c2c2a; --baseline:#383835; --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70; --series-4:#c98500; }
+  }
+  text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-variant-numeric: tabular-nums; }
+  svg { overflow: visible; }
+  .bg { fill: var(--surface-1); }
+  .titulo { fill: var(--text-primary); font-size: 16px; font-weight: 600; }
+  .sub { fill: var(--text-secondary); font-size: 12px; }
+  .tp { fill: var(--text-primary); font-size: 13px; font-weight: 600; }
+  .ts { fill: var(--text-secondary); font-size: 12px; }
+  .tm { fill: var(--text-muted); font-size: 11px; }
+  .grid { stroke: var(--grid); stroke-width: 1; }
+  .baseline { stroke: var(--baseline); stroke-width: 1; }
+  .eixo { fill: var(--text-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .rotulo-serie { fill: var(--text-secondary); font-size: 11px; }
+  .rotulo-x { fill: var(--text-primary); font-size: 11px; font-weight: 600; }
+  .marca-x { stroke: var(--text-secondary); stroke-width: 1.5; }
+</style>
+<rect class="bg" width="880" height="442"/>
+<text class="titulo" x="16" y="26">Overselling × lag, ponto 1 (pós-pooler)</text>
+<text class="sub" x="16" y="45">Matriz de 2026-10-16, capacity 20, 100% de confirmação, Supabase + Supavisor. Fonte: 03-supabase-pooler/matriz.csv</text>
+<line x1="16.0" y1="64.0" x2="32.0" y2="64.0" stroke="var(--series-1)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="5 3"/><text class="ts" x="38.0" y="68.0">cas · independe do lag (linha de referência)</text>
+<line x1="323.4" y1="64.0" x2="339.4" y2="64.0" stroke="var(--series-2)" stroke-width="2.5" stroke-linecap="round"/><text class="ts" x="345.4" y="68.0">naive (curva)</text>
+<text class="tp" x="52" y="106">Overselling · N = 100 · capacity 20</text>
+<svg viewBox="0 0 420 250" x="10" y="112" width="420" height="250" role="img" aria-label="Overselling por lag, N=100, capacity 20">
+<line class="baseline" x1="52" y1="214.0" x2="364" y2="214.0"/>
+<text class="eixo" x="44" y="218.0" text-anchor="end">0</text>
+<line class="grid" x1="52" y1="114.0" x2="364" y2="114.0"/>
+<text class="eixo" x="44" y="118.0" text-anchor="end">50</text>
+<line class="grid" x1="52" y1="14.0" x2="364" y2="14.0"/>
+<text class="eixo" x="44" y="18.0" text-anchor="end">100</text>
+<line class="baseline" x1="67.6" y1="214" x2="67.6" y2="218"/>
+<text class="eixo eixo-x" x="67.6" y="230" text-anchor="middle">500</text>
+<line class="baseline" x1="114.4" y1="214" x2="114.4" y2="218"/>
+<text class="eixo eixo-x" x="114.4" y="230" text-anchor="middle">2000</text>
+<line class="baseline" x1="208.0" y1="214" x2="208.0" y2="218"/>
+<text class="eixo eixo-x" x="208.0" y="230" text-anchor="middle">5000</text>
+<line class="baseline" x1="364.0" y1="214" x2="364.0" y2="218"/>
+<text class="eixo eixo-x" x="364.0" y="230" text-anchor="middle">10000</text>
+<text class="eixo" x="208.0" y="246" text-anchor="middle">lag (ms) · escala linear</text>
+<g><title>cas · independe do lag · média 0.00 ± 0.00 (mín 0, máx 0) · 5 execuções</title>
+<line x1="52.0" y1="214.0" x2="364.0" y2="214.0" stroke="transparent" stroke-width="14" pointer-events="stroke"/>
+<line class="ref-cas" x1="52.0" y1="214.0" x2="364.0" y2="214.0" stroke="var(--series-1)" stroke-width="2" stroke-dasharray="6 4" stroke-linecap="round"/>
+</g>
+<polyline class="serie serie-naive" points="67.6,58.8 114.4,54.0 208.0,60.4 364.0,54.0 " fill="none" stroke="var(--series-2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M208.0 214.0V214.0M205.0 214.0h6M205.0 214.0h6" fill="none" stroke="var(--series-1)" stroke-width="1.5" stroke-opacity=".6" stroke-linecap="round"/>
+<path d="M67.6 54.0V78.0M64.6 54.0h6M64.6 78.0h6" fill="none" stroke="var(--series-2)" stroke-width="1.5" stroke-opacity=".6" stroke-linecap="round"/>
+<line x1="67.6" y1="48.1" x2="67.6" y2="69.5" stroke="var(--series-2)" stroke-width="5" stroke-opacity=".35" stroke-linecap="round"/>
+<path d="M114.4 54.0V54.0M111.4 54.0h6M111.4 54.0h6" fill="none" stroke="var(--series-2)" stroke-width="1.5" stroke-opacity=".6" stroke-linecap="round"/>
+<path d="M208.0 54.0V86.0M205.0 54.0h6M205.0 86.0h6" fill="none" stroke="var(--series-2)" stroke-width="1.5" stroke-opacity=".6" stroke-linecap="round"/>
+<line x1="208.0" y1="46.1" x2="208.0" y2="74.7" stroke="var(--series-2)" stroke-width="5" stroke-opacity=".35" stroke-linecap="round"/>
+<path d="M364.0 54.0V54.0M361.0 54.0h6M361.0 54.0h6" fill="none" stroke="var(--series-2)" stroke-width="1.5" stroke-opacity=".6" stroke-linecap="round"/>
+<g class="pt"><title>cas · lag 5000 ms · N=100 · capacity 20 · 5 repetições · média 0.00 ± 0.00 (mín 0, máx 0)</title><circle cx="208.0" cy="214.0" r="12" fill="transparent" pointer-events="all"/><circle cx="208.0" cy="214.0" r="4.5" fill="var(--series-1)" stroke="var(--surface-1)" stroke-width="2"/></g>
+<g class="pt"><title>naive · lag 500 ms · N=100 · capacity 20 · 5 repetições · média 77.60 ± 5.37 (mín 68, máx 80)</title><circle cx="67.6" cy="58.8" r="12" fill="transparent" pointer-events="all"/><circle cx="67.6" cy="58.8" r="4.5" fill="var(--series-2)" stroke="var(--surface-1)" stroke-width="2"/></g>
+<g class="pt"><title>naive · lag 2000 ms · N=100 · capacity 20 · 5 repetições · média 80.00 ± 0.00 (mín 80, máx 80)</title><circle cx="114.4" cy="54.0" r="12" fill="transparent" pointer-events="all"/><circle cx="114.4" cy="54.0" r="4.5" fill="var(--series-2)" stroke="var(--surface-1)" stroke-width="2"/></g>
+<g class="pt"><title>naive · lag 5000 ms · N=100 · capacity 20 · 5 repetições · média 76.80 ± 7.16 (mín 64, máx 80)</title><circle cx="208.0" cy="60.4" r="12" fill="transparent" pointer-events="all"/><circle cx="208.0" cy="60.4" r="4.5" fill="var(--series-2)" stroke="var(--surface-1)" stroke-width="2"/></g>
+<g class="pt"><title>naive · lag 10000 ms · N=100 · capacity 20 · 5 repetições · média 80.00 ± 0.00 (mín 80, máx 80)</title><circle cx="364.0" cy="54.0" r="12" fill="transparent" pointer-events="all"/><circle cx="364.0" cy="54.0" r="4.5" fill="var(--series-2)" stroke="var(--surface-1)" stroke-width="2"/></g>
+<text class="rotulo-serie" x="373.0" y="218.0">cas</text>
+<text class="rotulo-serie" x="373.0" y="58.0">naive</text>
+</svg>
+<text class="tp" x="492" y="106">Overselling · N = 200 · capacity 20</text>
+<svg viewBox="0 0 420 250" x="450" y="112" width="420" height="250" role="img" aria-label="Overselling por lag, N=200, capacity 20">
+<line class="baseline" x1="52" y1="214.0" x2="364" y2="214.0"/>
+<text class="eixo" x="44" y="218.0" text-anchor="end">0</text>
+<line class="grid" x1="52" y1="147.3" x2="364" y2="147.3"/>
+<text class="eixo" x="44" y="151.3" text-anchor="end">100</text>
+<line class="grid" x1="52" y1="80.7" x2="364" y2="80.7"/>
+<text class="eixo" x="44" y="84.7" text-anchor="end">200</text>
+<line class="grid" x1="52" y1="14.0" x2="364" y2="14.0"/>
+<text class="eixo" x="44" y="18.0" text-anchor="end">300</text>
+<line class="baseline" x1="67.6" y1="214" x2="67.6" y2="218"/>
+<text class="eixo eixo-x" x="67.6" y="230" text-anchor="middle">500</text>
+<line class="baseline" x1="114.4" y1="214" x2="114.4" y2="218"/>
+<text class="eixo eixo-x" x="114.4" y="230" text-anchor="middle">2000</text>
+<line class="baseline" x1="208.0" y1="214" x2="208.0" y2="218"/>
+<text class="eixo eixo-x" x="208.0" y="230" text-anchor="middle">5000</text>
+<line class="baseline" x1="364.0" y1="214" x2="364.0" y2="218"/>
+<text class="eixo eixo-x" x="364.0" y="230" text-anchor="middle">10000</text>
+<text class="eixo" x="208.0" y="246" text-anchor="middle">lag (ms) · escala linear</text>
+<g><title>cas · independe do lag · média 0.00 ± 0.00 (mín 0, máx 0) · 5 execuções</title>
+<line x1="52.0" y1="214.0" x2="364.0" y2="214.0" stroke="transparent" stroke-width="14" pointer-events="stroke"/>
+<line class="ref-cas" x1="52.0" y1="214.0" x2="364.0" y2="214.0" stroke="var(--series-1)" stroke-width="2" stroke-dasharray="6 4" stroke-linecap="round"/>
+</g>
+<polyline class="serie serie-naive" points="67.6,136.7 114.4,94.0 208.0,94.0 364.0,94.0 " fill="none" stroke="var(--series-2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M208.0 214.0V214.0M205.0 214.0h6M205.0 214.0h6" fill="none" stroke="var(--series-1)" stroke-width="1.5" stroke-opacity=".6" stroke-linecap="round"/>
+<path d="M67.6 94.0V204.0M64.6 94.0h6M64.6 204.0h6" fill="none" stroke="var(--series-2)" stroke-width="1.5" stroke-opacity=".6" stroke-linecap="round"/>
+<line x1="67.6" y1="78.2" x2="67.6" y2="195.1" stroke="var(--series-2)" stroke-width="5" stroke-opacity=".35" stroke-linecap="round"/>
+<path d="M114.4 94.0V94.0M111.4 94.0h6M111.4 94.0h6" fill="none" stroke="var(--series-2)" stroke-width="1.5" stroke-opacity=".6" stroke-linecap="round"/>
+<path d="M208.0 94.0V94.0M205.0 94.0h6M205.0 94.0h6" fill="none" stroke="var(--series-2)" stroke-width="1.5" stroke-opacity=".6" stroke-linecap="round"/>
+<path d="M364.0 94.0V94.0M361.0 94.0h6M361.0 94.0h6" fill="none" stroke="var(--series-2)" stroke-width="1.5" stroke-opacity=".6" stroke-linecap="round"/>
+<g class="pt"><title>cas · lag 5000 ms · N=200 · capacity 20 · 5 repetições · média 0.00 ± 0.00 (mín 0, máx 0)</title><circle cx="208.0" cy="214.0" r="12" fill="transparent" pointer-events="all"/><circle cx="208.0" cy="214.0" r="4.5" fill="var(--series-1)" stroke="var(--surface-1)" stroke-width="2"/></g>
+<g class="pt"><title>naive · lag 500 ms · N=200 · capacity 20 · 5 repetições · média 116.00 ± 87.71 (mín 15, máx 180)</title><circle cx="67.6" cy="136.7" r="12" fill="transparent" pointer-events="all"/><circle cx="67.6" cy="136.7" r="4.5" fill="var(--series-2)" stroke="var(--surface-1)" stroke-width="2"/></g>
+<g class="pt"><title>naive · lag 2000 ms · N=200 · capacity 20 · 5 repetições · média 180.00 ± 0.00 (mín 180, máx 180)</title><circle cx="114.4" cy="94.0" r="12" fill="transparent" pointer-events="all"/><circle cx="114.4" cy="94.0" r="4.5" fill="var(--series-2)" stroke="var(--surface-1)" stroke-width="2"/></g>
+<g class="pt"><title>naive · lag 5000 ms · N=200 · capacity 20 · 5 repetições · média 180.00 ± 0.00 (mín 180, máx 180)</title><circle cx="208.0" cy="94.0" r="12" fill="transparent" pointer-events="all"/><circle cx="208.0" cy="94.0" r="4.5" fill="var(--series-2)" stroke="var(--surface-1)" stroke-width="2"/></g>
+<g class="pt"><title>naive · lag 10000 ms · N=200 · capacity 20 · 5 repetições · média 180.00 ± 0.00 (mín 180, máx 180)</title><circle cx="364.0" cy="94.0" r="12" fill="transparent" pointer-events="all"/><circle cx="364.0" cy="94.0" r="4.5" fill="var(--series-2)" stroke="var(--surface-1)" stroke-width="2"/></g>
+<text class="rotulo-serie" x="373.0" y="218.0">cas</text>
+<text class="rotulo-serie" x="373.0" y="98.0">naive</text>
+</svg>
+<text class="tm" x="16" y="418">Marcador = média das repetições · barra grossa = ±1 desvio amostral · linha fina = mín–máx · eixo x linear em ms.</text>
+<text class="tm" x="16" y="432">Overselling = max(0, confirmed − capacity). Valores exatos nas tabelas do artigo e no tooltip de cada marcador.</text>
+</svg>

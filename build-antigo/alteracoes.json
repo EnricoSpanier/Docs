@@ -1,0 +1,62 @@
+[
+  {
+    "titulo": "Teste manual — overselling sob concorrência (EventCap/CAS)",
+    "link": "/testes/metodo/testes-manuais/overselling-sob-concorrencia",
+    "data": "2026-10-29T13:04:06.891Z",
+    "criado": "2026-10-29T13:04:06.891Z"
+  },
+  {
+    "titulo": "Fase 7 — serviços extraídos: os saltos gateway → reservation, gateway → catalog e gateway → identity",
+    "link": "/gerenciador-eventos/docs/arquitetura/fase7-servicos",
+    "data": "2026-10-29T13:04:06.890Z",
+    "criado": "2026-10-29T13:04:06.890Z"
+  },
+  {
+    "titulo": "Experimento de reserva concorrente no monólito: reserva por CAS × caminho ingênuo",
+    "link": "/testes/artigo/experimento-monolito",
+    "data": "2026-10-29T13:04:06.890Z",
+    "criado": "2026-10-29T13:04:06.890Z"
+  },
+  {
+    "titulo": "Resultados de carga",
+    "link": "/testes/etapas",
+    "data": "2026-10-29T13:04:06.884Z",
+    "criado": "2026-10-29T13:04:06.884Z"
+  },
+  {
+    "titulo": "Etapa 07: Rodada 4, admission acima do X, com e sem autoescala (issue #179)",
+    "link": "/testes/ponto-3/rodada4-admission",
+    "data": "2026-10-29T13:04:06.872Z",
+    "criado": "2026-10-29T13:04:06.872Z"
+  },
+  {
+    "titulo": "CLAUDE.md — Banco de dados (PostgreSQL)",
+    "link": "/gerenciador-eventos/Projeto/Backend/db/CLAUDE",
+    "data": "2026-10-29T13:04:06.847Z",
+    "criado": "2026-10-29T13:04:06.847Z"
+  },
+  {
+    "titulo": "CLAUDE.md — Backend (API Spring Boot)",
+    "link": "/gerenciador-eventos/Projeto/Backend/CLAUDE",
+    "data": "2026-10-29T13:04:06.844Z",
+    "criado": "2026-10-29T13:04:06.844Z"
+  },
+  {
+    "titulo": "CLAUDE.md — Regras do projeto (Gerenciador de Eventos / TCC)",
+    "link": "/gerenciador-eventos/CLAUDE",
+    "data": "2026-10-29T13:04:06.843Z",
+    "criado": "2026-10-29T13:04:06.843Z"
+  },
+  {
+    "titulo": "CLAUDE.md — Frontend (Flutter Web)",
+    "link": "/gerenciador-eventos/Projeto/frontend/CLAUDE",
+    "data": "2026-10-29T05:53:35.474Z",
+    "criado": "2026-10-29T05:53:35.474Z"
+  },
+  {
+    "titulo": "Etapa 02: monólito + HikariCP, Postgres direto",
+    "link": "/testes/pre-serie/hikari",
+    "data": "2026-10-28T11:13:31.807Z",
+    "criado": "2026-10-28T11:13:31.807Z"
+  }
+]

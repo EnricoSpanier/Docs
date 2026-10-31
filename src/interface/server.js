@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import express from "express";
 
 import { criarMiddlewareHubAccess } from "./lib/hubAccess.js";
+import { lerPainelBatch2 as lerPainelBatch2Padrao } from "./lib/painelBatch2.js";
 import {
   dispararRebuild as dispararRebuildPadrao,
   obterUltimaAtualizacao as obterUltimaAtualizacaoPadrao,
@@ -70,6 +71,7 @@ export function criarApp({
   obterUltimaAtualizacao = obterUltimaAtualizacaoPadrao,
   rebuildEmAndamento = rebuildEmAndamentoPadrao,
   caminhoAdmin = caminhoAdminPadrao,
+  lerPainelBatch2 = lerPainelBatch2Padrao,
 } = {}) {
   const hubAccess = criarMiddlewareHubAccess({ hubUrl, hubLoginUrl, publicOrigin, fetchImpl });
 
@@ -129,6 +131,18 @@ export function criarApp({
       }
     }
   );
+
+  // Painel do Batch 2 do TCC (`/embed/batch2.html`): a conta é refeita do ledger a cada pedido, então o
+  // botão "Atualizar agora" da página é só este GET de novo. Só lê um arquivo local, sem mutação.
+  app.get("/batch2/estado.json", (_req, res) => {
+    try {
+      res.set("Cache-Control", "no-store").json(lerPainelBatch2());
+    } catch (erro) {
+      // O erro pode trazer o caminho do ledger no servidor: fica só no log.
+      console.error("Falha ao ler o ledger do Batch 2:", erro);
+      res.status(503).json({ erro: "Não deu para ler o ledger do Batch 2." });
+    }
+  });
 
   app.use(express.static(caminhoBuild));
 

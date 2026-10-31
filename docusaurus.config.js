@@ -9,6 +9,7 @@ const config = {
   markdown: {
     hooks: {
       onBrokenMarkdownLinks: "warn",
+      onBrokenMarkdownImages: "warn",
     },
   },
 
@@ -65,7 +66,7 @@ const config = {
             position: "left",
           },
           {
-            to: "/testes/testes-manuais/",
+            to: "/testes/",
             label: "Testes",
             position: "left",
           },

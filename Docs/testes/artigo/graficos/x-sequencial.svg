@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 470" width="100%" role="img" aria-label="Limiar X da escada sequencial por configuração, em reservas por minuto por evento: pré-pooler 97k, ponto 1 78k, ponto 2 no Wi-Fi 56k, ponto 2 no cabo no mínimo 60k, ponto 3 intermediário 58k, rodada final 56k">
+<title>Limiar X da escada sequencial por configuração</title>
+<desc>Barras horizontais, uma série, em reservas por minuto por evento. O ponto 2 no cabo é só limite inferior. O teto do host intercalado da rodada final fica fora da série.</desc>
+<style>
+  :root { --surface-1:#fcfcfb; --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#898781; --grid:#e1e0d9; --baseline:#c3c2b7; --series-1:#2a78d6; --series-2:#eb6834; --series-3:#1baf7a; }
+  @media (prefers-color-scheme: dark) {
+    :root { --surface-1:#1a1a19; --text-primary:#ffffff; --text-secondary:#c3c2b7; --grid:#2c2c2a; --baseline:#383835; --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70; }
+  }
+  text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-variant-numeric: tabular-nums; }
+  .bg { fill: var(--surface-1); }
+  .titulo { fill: var(--text-primary); font-size: 16px; font-weight: 600; }
+  .sub { fill: var(--text-secondary); font-size: 12px; }
+  .tp { fill: var(--text-primary); font-size: 13px; }
+  .ts { fill: var(--text-secondary); font-size: 12px; }
+  .tm { fill: var(--text-muted); font-size: 11px; }
+  .val { fill: var(--text-primary); font-size: 13px; font-weight: 600; }
+  .grid { stroke: var(--grid); stroke-width: 1; }
+  .base { stroke: var(--baseline); stroke-width: 1; }
+  .s1 { fill: var(--series-1); } .s2 { fill: var(--series-2); } .s3 { fill: var(--series-3); }
+  .oco { fill: none; stroke: var(--series-1); stroke-width: 2; stroke-dasharray: 5 3; }
+  .seta { fill: none; stroke: var(--series-1); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .teto { fill: none; stroke: var(--text-secondary); stroke-width: 2; }
+  .div { stroke: var(--baseline); stroke-width: 1; stroke-dasharray: 3 4; }
+  .hit { fill: transparent; pointer-events: all; }
+</style>
+<rect class="bg" width="900" height="470"/>
+<text class="titulo" x="16" y="26">Limiar X por configuração (escada sequencial)</text>
+<text class="sub" x="16" y="45">Reservas por minuto numa única linha do eventcap, braço CAS. Uma escada por configuração.</text>
+<line class="base" x1="250.0" y1="66" x2="250.0" y2="400"/>
+<text class="tm" x="250.0" y="416" text-anchor="middle">0</text>
+<line class="grid" x1="334.0" y1="66" x2="334.0" y2="400"/>
+<text class="tm" x="334.0" y="416" text-anchor="middle">20k</text>
+<line class="grid" x1="418.0" y1="66" x2="418.0" y2="400"/>
+<text class="tm" x="418.0" y="416" text-anchor="middle">40k</text>
+<line class="grid" x1="502.0" y1="66" x2="502.0" y2="400"/>
+<text class="tm" x="502.0" y="416" text-anchor="middle">60k</text>
+<line class="grid" x1="586.0" y1="66" x2="586.0" y2="400"/>
+<text class="tm" x="586.0" y="416" text-anchor="middle">80k</text>
+<line class="grid" x1="670.0" y1="66" x2="670.0" y2="400"/>
+<text class="tm" x="670.0" y="416" text-anchor="middle">100k</text>
+<text class="tm" x="460.0" y="436" text-anchor="middle">RPM por evento (reservas/min) · escala linear</text>
+<g><title>Pré-pooler (02) · monólito + HikariCP · referência: X 97k RPM · fonte: docs/artigo/experimento-monolito.md</title><rect class="hit" x="0" y="60.0" width="900" height="44"/>
+<text class="tp" x="16" y="80.0">Pré-pooler (02)</text><text class="tm" x="16" y="95.0">monólito + HikariCP · referência</text>
+<path class="s1" d="M250.0 73.0 H653.4 a4 4 0 0 1 4 4 V87.0 a4 4 0 0 1 -4 4 H250.0 Z"/>
+<text class="val" x="665.4" y="87.0">97k<tspan class="ts" font-weight="400"></tspan></text>
+</g>
+<g><title>Ponto 1 (03) · monólito CRUD + pooler: X 78k RPM · fonte: Projeto/carga/results/03-supabase-pooler/README.md</title><rect class="hit" x="0" y="106.0" width="900" height="44"/>
+<text class="tp" x="16" y="126.0">Ponto 1 (03)</text><text class="tm" x="16" y="141.0">monólito CRUD + pooler</text>
+<path class="s1" d="M250.0 119.0 H573.6 a4 4 0 0 1 4 4 V133.0 a4 4 0 0 1 -4 4 H250.0 Z"/>
+<text class="val" x="585.6" y="133.0">78k<tspan class="ts" font-weight="400"></tspan></text>
+</g>
+<g><title>Ponto 2 (04) · monólito ES · Wi-Fi: X 56k RPM · fonte: Projeto/carga/results/04-fase6-es/README.md</title><rect class="hit" x="0" y="152.0" width="900" height="44"/>
+<text class="tp" x="16" y="172.0">Ponto 2 (04)</text><text class="tm" x="16" y="187.0">monólito ES · Wi-Fi</text>
+<path class="s1" d="M250.0 165.0 H481.2 a4 4 0 0 1 4 4 V179.0 a4 4 0 0 1 -4 4 H250.0 Z"/>
+<text class="val" x="493.2" y="179.0">56k<tspan class="ts" font-weight="400"> · Wi-Fi</tspan></text>
+</g>
+<g><title>Ponto 2 (04b) · monólito ES · cabo: X ≥ 60k RPM · fonte: Projeto/carga/results/04b-fase6-es-cabo/README.md</title><rect class="hit" x="0" y="198.0" width="900" height="44"/>
+<text class="tp" x="16" y="218.0">Ponto 2 (04b)</text><text class="tm" x="16" y="233.0">monólito ES · cabo</text>
+<rect class="oco" x="251.0" y="211.0" width="251.0" height="18" rx="4"/>
+<path class="seta" d="M505.0 220.0 H524.0 M518.0 215.0 L524.0 220.0 L518.0 225.0"/>
+<text class="val" x="532.0" y="225.0">≥ 60k<tspan class="ts" font-weight="400"> · limite inferior</tspan></text>
+</g>
+<g><title>Ponto 3 (05) · distribuído intermediário: X 58k RPM · fonte: Projeto/carga/results/05-distribuido/README.md</title><rect class="hit" x="0" y="244.0" width="900" height="44"/>
+<text class="tp" x="16" y="264.0">Ponto 3 (05)</text><text class="tm" x="16" y="279.0">distribuído intermediário</text>
+<path class="s1" d="M250.0 257.0 H489.6 a4 4 0 0 1 4 4 V271.0 a4 4 0 0 1 -4 4 H250.0 Z"/>
+<text class="val" x="501.6" y="271.0">58k<tspan class="ts" font-weight="400"></tspan></text>
+</g>
+<g><title>Final (06) · distribuído · Rodada R: X 56k RPM · fonte: Projeto/carga/results/06-batch1-final/README.md · último degrau limpo 54k</title><rect class="hit" x="0" y="290.0" width="900" height="44"/>
+<text class="tp" x="16" y="310.0">Final (06)</text><text class="tm" x="16" y="325.0">distribuído · Rodada R</text>
+<path class="s1" d="M250.0 303.0 H481.2 a4 4 0 0 1 4 4 V317.0 a4 4 0 0 1 -4 4 H250.0 Z"/>
+<text class="val" x="493.2" y="317.0">56k<tspan class="ts" font-weight="400"> · último limpo 54k</tspan></text>
+</g>
+<line class="div" x1="16" y1="350" x2="884" y2="350"/>
+<text class="tm" x="16" y="366">Fora da série · não comparável com o X sequencial</text>
+<g><title>Final (06), mapeamento intercalado: 86k RPM (teto do host somado entre eventos, não é X por evento; não comparável com o X sequencial) · último degrau limpo 84k · fonte: Projeto/carga/results/06-batch1-final/README.md</title><rect class="hit" x="0" y="371.0" width="900" height="26"/>
+<text class="tp" x="16" y="388.0">Final (06) · intercalado</text>
+<path class="teto" d="M611.2 377.0 l7 7 l-7 7 l-7 -7 Z"/>
+<text class="val" x="625.2" y="389.0">86k<tspan class="ts" font-weight="400"> · teto do host</tspan></text>
+</g>
+</svg>

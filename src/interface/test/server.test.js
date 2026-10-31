@@ -212,3 +212,42 @@ test("404 em rota inexistente não vaza stack trace (NODE_ENV forçado pra produ
     await fechar();
   }
 });
+
+test("GET /batch2/estado.json devolve as linhas do painel, sem cache", async () => {
+  const linhas = [{ tipo: "resumo", restante_h: 21.5 }];
+  const { baseUrl, fechar } = await subirApp({ lerPainelBatch2: () => linhas });
+  try {
+    const resposta = await fetch(`${baseUrl}/batch2/estado.json`, { headers: { cookie: cookieAdmin() } });
+    assert.equal(resposta.status, 200);
+    assert.equal(resposta.headers.get("cache-control"), "no-store");
+    assert.deepEqual(await resposta.json(), linhas);
+  } finally {
+    await fechar();
+  }
+});
+
+test("GET /batch2/estado.json sem sessão para no gate do hub, sem ler o ledger", async () => {
+  let leu = false;
+  const { baseUrl, fechar } = await subirApp({ lerPainelBatch2: () => { leu = true; return []; } });
+  try {
+    const resposta = await fetch(`${baseUrl}/batch2/estado.json`, { redirect: "manual" });
+    assert.notEqual(resposta.status, 200);
+    assert.equal(leu, false);
+  } finally {
+    await fechar();
+  }
+});
+
+test("GET /batch2/estado.json com o ledger ilegível: 503 sem caminho de arquivo", async () => {
+  const { baseUrl, fechar } = await subirApp({
+    lerPainelBatch2: () => { throw new Error("ENOENT: no such file, open 'E:\\TCC\\batch2-ledger.md'"); },
+  });
+  try {
+    const resposta = await fetch(`${baseUrl}/batch2/estado.json`, { headers: { cookie: cookieAdmin() } });
+    const corpo = await resposta.text();
+    assert.equal(resposta.status, 503);
+    assert.doesNotMatch(corpo, /ENOENT|[A-Za-z]:\\/, "não deveria vazar o caminho do ledger");
+  } finally {
+    await fechar();
+  }
+});

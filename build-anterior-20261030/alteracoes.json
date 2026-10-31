@@ -1,0 +1,62 @@
+[
+  {
+    "titulo": "Gerenciador de Eventos",
+    "link": "/gerenciador-eventos",
+    "data": "2026-10-30T14:57:03.766Z",
+    "criado": "2026-10-30T14:57:03.766Z"
+  },
+  {
+    "titulo": "Front-end (Flutter Web)",
+    "link": "/gerenciador-eventos/Projeto/frontend",
+    "data": "2026-10-30T14:57:03.766Z",
+    "criado": "2026-10-30T14:57:03.766Z"
+  },
+  {
+    "titulo": "Resultados de carga",
+    "link": "/testes/etapas",
+    "data": "2026-10-30T14:57:03.766Z",
+    "criado": "2026-10-30T14:57:03.766Z"
+  },
+  {
+    "titulo": "Etapa 07: Rodada 4, admission acima do X, com e sem autoescala (issue #179)",
+    "link": "/testes/rodada-4/rodada4-admission",
+    "data": "2026-10-30T14:57:03.763Z",
+    "criado": "2026-10-30T14:57:03.763Z"
+  },
+  {
+    "titulo": "Etapa 08: Rodada 5, saga stock + wallet sobre a configuração da R4 (issue #180)",
+    "link": "/testes/rodada-5/rodada5-saga",
+    "data": "2026-10-30T14:57:03.763Z",
+    "criado": "2026-10-30T14:57:03.763Z"
+  },
+  {
+    "titulo": "GerenciadorEventos — Guia de Containers",
+    "link": "/gerenciador-eventos/Projeto",
+    "data": "2026-10-30T14:57:03.762Z",
+    "criado": "2026-10-30T14:57:03.762Z"
+  },
+  {
+    "titulo": "reservation",
+    "link": "/gerenciador-eventos/Projeto/Backend/reservation",
+    "data": "2026-10-30T14:57:03.762Z",
+    "criado": "2026-10-30T14:57:03.762Z"
+  },
+  {
+    "titulo": "stock",
+    "link": "/gerenciador-eventos/Projeto/Backend/stock",
+    "data": "2026-10-30T14:57:03.762Z",
+    "criado": "2026-10-30T14:57:03.762Z"
+  },
+  {
+    "titulo": "reservation-client",
+    "link": "/gerenciador-eventos/Projeto/Backend/reservation-client",
+    "data": "2026-10-30T14:57:03.762Z",
+    "criado": "2026-10-30T14:57:03.762Z"
+  },
+  {
+    "titulo": "stock-client",
+    "link": "/gerenciador-eventos/Projeto/Backend/stock-client",
+    "data": "2026-10-30T14:57:03.762Z",
+    "criado": "2026-10-30T14:57:03.762Z"
+  }
+]

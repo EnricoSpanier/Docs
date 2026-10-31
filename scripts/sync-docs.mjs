@@ -2,7 +2,7 @@
 // gerado, nunca editado à mão, nunca versionado (ver .gitignore). Roda como parte de
 // `docs:build`/`docs:start` (nunca precisa ser chamado sozinho em uso normal).
 
-import { existsSync, mkdirSync, rmSync, readFileSync, writeFileSync, readdirSync, statSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, rmSync, readFileSync, writeFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -33,7 +33,16 @@ const WHITELIST_A = [
   "Projeto/Backend/db/CLAUDE.md",
   "Projeto/frontend/CLAUDE.md",
   "Projeto/supabase/README.md",
+  // READMEs por parte do repo (#46).
+  "Projeto/README.md",
+  "Projeto/Backend/README.md",
+  "Projeto/Backend/db/README.md",
+  "Projeto/Backend/monolito/README.md",
+  ...["identity", "catalog", "reservation", "stock", "notification", "admission"].map((s) => `Projeto/Backend/${s}/README.md`),
+  ...["identity", "catalog", "reservation", "stock", "admission"].map((s) => `Projeto/Backend/${s}-client/README.md`),
+  "Projeto/frontend/README.md",
   "docs/arquitetura/fase6-cqrs-es.md",
+  "docs/arquitetura/fase7-servicos.md",
 ];
 
 function limparDestino(dir) {
@@ -46,7 +55,9 @@ function limparDestino(dir) {
 // `ReferenceError: id is not defined` em vez de um erro de sintaxe claro. `{`/`}` dentro de code
 // span ou bloco cercado (` `` `/``` ```) nunca são tocados — só o resto do texto.
 function escaparChavesForaDeCodigo(texto) {
-  return texto.replace(/(`+)[\s\S]*?\1|([{}])/g, (trecho, _crases, chave) => {
+  // `<` seguido de `=`, dígito ou espaço (ex.: `<= 1500`) também quebra o MDX (não é tag): vira `&lt;`.
+  return texto.replace(/(`+)[\s\S]*?\1|([{}])|<(?=[=\d\s])/g, (trecho, _crases, chave) => {
+    if (trecho === "<") return "&lt;";
     if (!chave) return trecho; // code span/bloco cercado: preservado intacto
     return chave === "{" ? "\\{" : "\\}";
   });
@@ -77,22 +88,6 @@ function copiarArquivo(origem, destino) {
   writeFileSync(destino, conteudo);
 }
 
-function copiarMdRecursivo(origemDir, destinoDir) {
-  if (!existsSync(origemDir)) return 0;
-  let contagem = 0;
-  for (const entrada of readdirSync(origemDir, { withFileTypes: true })) {
-    const origemCaminho = path.join(origemDir, entrada.name);
-    const destinoCaminho = path.join(destinoDir, entrada.name);
-    if (entrada.isDirectory()) {
-      contagem += copiarMdRecursivo(origemCaminho, destinoCaminho);
-    } else if (entrada.name.endsWith(".md")) {
-      copiarArquivo(origemCaminho, destinoCaminho);
-      contagem += 1;
-    }
-  }
-  return contagem;
-}
-
 function sincronizarFonteA() {
   limparDestino(DEST_A);
   let contagem = 0;
@@ -106,10 +101,19 @@ function sincronizarFonteA() {
     const destino = path.join(DEST_A, relativo);
     copiarArquivo(origem, destino);
     // docs/adr/** não é publicado daqui (vem da Fonte B): link para ADR vira a página da Fonte B; link para
-    // docs/arquitetura/ vira a rota absoluta (o Docusaurus não resolve o .md relativo dentro de uma pasta "docs").
+    // docs/arquitetura/ vira a rota absoluta (o Docusaurus não resolve o .md relativo dentro de uma pasta "docs");
+    // link para arquivo do repo fora da whitelist vai para o GitHub.
     const texto = readFileSync(destino, "utf8");
-    const reescrito = texto.replace(/\]\((?:\.\.\/)+adr\/([^)\s]+?)\.md\)/g, "](/decisoes-arquitetura/$1)")
-      .replace(/\]\((?:\.\.\/)*docs\/arquitetura\/([^)\s]+?)\.md\)/g, "](/gerenciador-eventos/docs/arquitetura/$1)");
+    const reescrito = texto.replace(/\]\(([^)\s#]+)(#[^)\s]*)?\)/g, (m, alvo, ancora = "") => {
+      if (/^(https?:|mailto:|\/)/.test(alvo)) return m;
+      const rel = path.posix.normalize(path.posix.join(path.posix.dirname(relativo), alvo));
+      if (rel.startsWith("..")) return m;
+      const adr = rel.match(/^docs\/adr\/(.+)\.md$/);
+      if (adr && adr[1] !== "README") return `](/decisoes-arquitetura/${adr[1]})`;
+      const arq = rel.match(/^docs\/arquitetura\/(.+)\.md$/);
+      if (arq) return `](/gerenciador-eventos/docs/arquitetura/${arq[1]}${ancora})`;
+      return WHITELIST_A.includes(rel) ? m : `](${GITHUB_BLOB}${rel}${ancora})`;
+    });
     if (reescrito !== texto) writeFileSync(destino, reescrito);
     contagem += 1;
   }
@@ -117,15 +121,163 @@ function sincronizarFonteA() {
   console.log(`[sync-docs] Fonte A (gerenciador-eventos): ${contagem} arquivo(s) copiado(s).`);
 }
 
-// ---- Fonte C: testes (manuais + carga) do mesmo repo -> docs/testes/ (seção dedicada) ----
+// ---- Fonte C: testes (manuais + carga + artigo) do mesmo repo -> docs/testes/, agrupados por ponto ----
+// A série do experimento tem 3 pontos (ADR Microservices-Split): 1 = monólito CRUD pelo pooler (#22),
+// 2 = monólito CQRS + ES (#31), 3 = distribuído (#34). O que rodou antes do pooler é referência pré-série
+// (a #22 refez tudo pelo pooler). Método (setup, tipos de teste, harness, testes manuais) não é de um ponto.
+// A situação de cada ponto é escrita aqui: ao fechar um ponto, atualize `situacao` e `texto` dele.
+
+const PONTOS = [
+  {
+    pasta: "pre-serie",
+    rotulo: "Referência pré-série",
+    titulo: "Referência pré-série: monólito sem pooler (Fase 2)",
+    config: "Monólito CRUD, Postgres direto (sem pooler), read model com lag sintético",
+    issues: "#12–#14",
+    situacao: "feito (referência)",
+    texto: "Rodadas 1a/1b (matriz CAS × ingênuo) e escada do limiar X da Fase 2, antes do Supabase. Não entram na série de 3 pontos: a #22 refez o protocolo pelo pooler. Ficam como referência do custo do pooler.",
+  },
+  {
+    pasta: "ponto-1",
+    rotulo: "Ponto 1: monólito CRUD",
+    titulo: "Ponto 1: monólito CRUD pelo pooler (#22)",
+    config: "Monólito CRUD, Supabase Postgres + Supavisor (Fase 4), read model com lag sintético",
+    issues: "#22",
+    situacao: "feito",
+    artigo: "ponto-1-pós-pooler-overselling--lag-e-latência",
+    texto: "Baseline oficial da série. Matriz CAS × ingênuo pelo pooler, isolamento do custo do Supavisor e escada do limiar X pelo pooler.",
+  },
+  {
+    pasta: "ponto-2",
+    rotulo: "Ponto 2: monólito CQRS + ES",
+    titulo: "Ponto 2: monólito CQRS + Event Sourcing (Rodada 2, #31)",
+    config: "Monólito modular, `catalog` e wallet de `reservation` event-sourced, Redpanda; o ingênuo lê a projeção real",
+    issues: "#31",
+    situacao: "feito",
+    artigo: "ponto-2-cqrs--es-no-monólito-rodada-2-2026-10-19",
+    texto: "Mesmo protocolo do ponto 1, agora com a Fase 6. O braço ingênuo lê a projeção alimentada pelo consumer do tópico: o lag é medido, não controlado. O limiar X é medido por camada (append + relay, consumer).",
+  },
+  {
+    pasta: "ponto-3",
+    rotulo: "Ponto 3: distribuído",
+    titulo: "Ponto 3: sistema distribuído (Rodada 3, #34)",
+    config: "`reservation` como serviço próprio atrás do `gateway`; a checagem de disponibilidade cruza a rede",
+    issues: "#34",
+    situacao: "feito",
+    artigo: "ponto-3-serviços-separados-rodada-3-2026-10-24",
+    texto: "Mesmo protocolo dos pontos 1 e 2, agora com `reservation` e `notification` extraídos (Fase 7), no cabo e com o banco em SSD. CAS com overselling 0 em 20 de 20; o ingênuo oversella no teto. O limiar X ficou em torno de 58k RPM, contra 56k (Wi-Fi) e pelo menos 60k (cabo) do ponto 2 refeito no cabo (etapa `04b`). O aleatório de 45 min teve 0 erros, com p95 de reserva de 6,6 ms. Ressalvas: o Hikari do monólito, o pool HTTP e o timeout mudaram junto com a arquitetura. O `catalog` virou serviço depois (#35) e não entrou nessa rodada: o custo do salto extra só foi medido num A/B local sequencial (+1,0 ms na reserva com o cache de `exists` frio, +1,5 ms na busca de 10 eventos; a listagem de 1000 caiu 72% por tirar o `image_data` das listas, não pelo salto), sem rodada de carga.",
+  },
+  // Rodadas 4 e 5: fora da série de 3 pontos, medem a camada de alta carga e a saga sobre a configuração final (etapa 06).
+  {
+    pasta: "rodada-4",
+    rotulo: "Rodada 4: admission",
+    titulo: "Rodada 4: admission acima do X, com e sem autoescala (#179)",
+    config: "Configuração da etapa 06 mais o `admission` (contador no Redis, fila RabbitMQ, gatilho 80/70, 202) e a autoescala por compose + HAProxy",
+    issues: "#179",
+    situacao: "feito",
+    texto: "Escada sequencial de 20k a 98k RPM, nos dois braços. Sem autoescala, ficou estável até 98k (0 5xx, a fila drenando) e o CAS manteve overselling 0. O braço C (com autoescala) parou em 32k e em 38k, pelos 5xx do health check do `lb` (#207).",
+  },
+  {
+    pasta: "rodada-5",
+    rotulo: "Rodada 5: saga",
+    titulo: "Rodada 5: saga stock + wallet sobre a configuração da R4 (#180)",
+    config: "Configuração da Rodada 4 mais a saga `stock` + `wallet` (serviço `stock` com hold e CAS, `reservation` orquestrador, compensação e reaper)",
+    issues: "#180",
+    situacao: "feito",
+    texto: "Mesma escada e mesmos parâmetros da Rodada 4; só a saga muda. Sem autoescala, ficou estável até 98k: 0 5xx, 0 órfãs, 0 compensações, e lag de devolução da vaga com p95 de 448 ms. O braço C parou em 44k (na R4, 38k), de novo pelo health check do `lb` (#207). O CAS manteve overselling 0.",
+  },
+];
+const GRUPOS_C = [...PONTOS, { pasta: "metodo", rotulo: "Método e ferramentas" }, { pasta: "artigo", rotulo: "Artigo" }];
+
+// Etapa de Projeto/carga/results (prefixo NN-) -> pasta do ponto. Etapa sem entrada cai no ponto 3
+// (05 e 06); ao abrir uma rodada nova, mapear a etapa aqui.
+const PONTO_ETAPA = { "01": "pre-serie", "02": "pre-serie", "03": "ponto-1", "04": "ponto-2", "07": "rodada-4", "08": "rodada-5" };
+const pastaEtapa = (nn) => PONTO_ETAPA[nn] ?? "ponto-3";
+
+// Resultado em docs/carga/ -> pasta do ponto. O que não estiver aqui é método (vai para metodo/).
+const PONTO_DOC = {
+  "resultados-matriz-2026-10-16.md": "pre-serie",
+  "resultados-escada-2026-10-16.md": "pre-serie",
+  "resultados-matriz-pospooler-2026-10-16.md": "ponto-1",
+  "resultados-isolamento-escada-pospooler-2026-10-17.md": "ponto-1",
+};
+
+// Caminho no repo ("docs/carga/x.md") -> destino em docs/testes/; preenchido por sincronizarFonteC().
+const MAPA_C = new Map();
+
+function destinoC(rel) {
+  if (rel.startsWith("docs/testes-manuais/")) return `metodo/${rel.slice("docs/".length)}`;
+  if (rel.startsWith("docs/artigo/")) return rel.slice("docs/".length);
+  const nome = rel.slice("docs/carga/".length);
+  return `${PONTO_DOC[nome] ?? "metodo"}/${nome}`;
+}
+
+// Rota do site de um destino em docs/testes/ (o Docusaurus tira o prefixo "NN-" e o index/README).
+function rotaC(destino) {
+  const partes = destino.replace(/\.md$/, "").split("/").map((p) => p.replace(/^\d+[-_.]\s*/, ""));
+  if (/^(index|readme)$/i.test(partes.at(-1))) partes.pop();
+  return `/testes/${partes.join("/")}`;
+}
+
+function listarMd(relDir) {
+  const dir = path.join(TCC_ROOT, relDir);
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+    e.isDirectory() ? listarMd(`${relDir}/${e.name}`) : e.name.endsWith(".md") ? [`${relDir}/${e.name}`] : []);
+}
+
+// Os arquivos mudam de pasta (agrupados por ponto): link relativo entre eles vira rota absoluta.
+function linksC(texto, rel) {
+  return texto.replace(/\]\(([^)\s#]+\.md)(#[^)\s]*)?\)/g, (m, alvo, ancora = "") => {
+    if (/^(https?:|\/)/.test(alvo)) return m;
+    const destino = MAPA_C.get(path.posix.join(path.posix.dirname(rel), alvo));
+    return destino ? `](${rotaC(destino)}${ancora})` : m;
+  });
+}
 
 function sincronizarFonteC() {
   limparDestino(DEST_C);
-  const contagem =
-    copiarMdRecursivo(path.join(TCC_ROOT, "docs", "testes-manuais"), path.join(DEST_C, "testes-manuais")) +
-    copiarMdRecursivo(path.join(TCC_ROOT, "docs", "carga"), path.join(DEST_C, "carga")) +
-    copiarMdRecursivo(path.join(TCC_ROOT, "docs", "artigo"), path.join(DEST_C, "artigo"));
-  console.log(`[sync-docs] Fonte C (testes): ${contagem} arquivo(s) copiado(s).`);
+  for (const rel of ["testes-manuais", "carga", "artigo"].flatMap((d) => listarMd(`docs/${d}`))) MAPA_C.set(rel, destinoC(rel));
+  for (const [rel, destino] of MAPA_C) {
+    const arquivo = path.join(DEST_C, destino);
+    copiarArquivo(path.join(TCC_ROOT, rel), arquivo);
+    writeFileSync(arquivo, linksC(readFileSync(arquivo, "utf8"), rel));
+  }
+  // Figuras e dados do artigo: o .md aponta para `graficos/...` por caminho relativo.
+  const graficos = path.join(TCC_ROOT, "docs", "artigo", "graficos");
+  if (existsSync(graficos)) cpSync(graficos, path.join(DEST_C, "artigo", "graficos"), { recursive: true });
+  console.log(`[sync-docs] Fonte C (testes): ${MAPA_C.size} arquivo(s) copiado(s).`);
+}
+
+// Página de entrada de cada grupo + visão geral. Roda por último: lista o que já foi gravado em cada pasta.
+function gravarPontos() {
+  GRUPOS_C.forEach(({ pasta, rotulo }, i) => {
+    const dir = path.join(DEST_C, pasta);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(path.join(dir, "_category_.json"),
+      JSON.stringify({ label: rotulo, position: i + 2, collapsible: true, collapsed: pasta === "metodo" }, null, 2));
+  });
+  for (const p of PONTOS) {
+    const dir = path.join(DEST_C, p.pasta);
+    const paginas = readdirSync(dir).filter((f) => f.endsWith(".md")).sort().map((f) => {
+      const titulo = readFileSync(path.join(dir, f), "utf8").match(/^#\s+(.+)$/m)?.[1] ?? f;
+      return `- [${titulo}](${rotaC(`${p.pasta}/${f}`)})`;
+    });
+    const corpo = [
+      `# ${p.titulo}`, "", `**Configuração:** ${p.config}.`, "", p.texto, "",
+      ...(p.artigo ? [`Seção no artigo: [${p.rotulo}](/testes/artigo/experimento-monolito#${p.artigo}).`, ""] : []),
+      ...(paginas.length ? ["## Páginas", "", ...paginas, ""] : []),
+    ];
+    writeFileSync(path.join(dir, "index.md"), escaparChavesForaDeCodigo(corpo.join("\n")));
+  }
+  const visao = [
+    "---", "sidebar_position: 1", 'sidebar_label: "Visão geral"', "---", "", "# Testes", "",
+    "A série do experimento roda o mesmo protocolo (matriz CAS × ingênuo para o overselling e escada de carga para o limiar X) em três configurações da arquitetura. As Rodadas 4 e 5 vêm depois da série e medem, sobre a configuração final, a camada de alta carga (`admission` e autoescala) e a saga `stock` + `wallet`. Cada ponto e cada rodada tem a própria seção, com as etapas de `Projeto/carga/results/` e os relatórios dela.", "",
+    "| Grupo | Configuração | Issue | Situação |", "|---|---|---|---|",
+    ...PONTOS.map((p) => `| [${p.rotulo}](${rotaC(`${p.pasta}/index.md`)}) | ${p.config} | ${p.issues} | ${p.situacao} |`), "",
+    "O que vale para todos os pontos fica em [Método e ferramentas](/testes/metodo/setup) (setup do gerador, tipos de teste, harness e testes manuais). A seção do artigo está em [Artigo](/testes/artigo/experimento-monolito), e o índice das etapas em [Índice das etapas](/testes/etapas).", "",
+  ];
+  writeFileSync(path.join(DEST_C, "index.md"), escaparChavesForaDeCodigo(visao.join("\n")));
 }
 
 // ---- Fonte B: vault Obsidian -> docs/decisoes-arquitetura/ (flatten) ----
@@ -232,7 +384,7 @@ function reescreverWikilinks(corpo, mapaSlugs, nomeArquivoOrigem, prefixo = "./"
       console.warn(`[sync-docs] ${nomeArquivoOrigem}: wikilink fora do escopo sincronizado, degradado pra texto: [[${alvoLimpo}]]`);
       return texto;
     }
-    if (alvoLimpo === NOTA_RESULTADOS) return `[${texto}](${prefixo === "./" ? "../testes" : "."}/resultados/index.md)`;
+    if (alvoLimpo === NOTA_RESULTADOS) return `[${texto}](${prefixo === "./" ? "../testes/pre-serie" : "."}/resultados-de-carga.md)`;
     return `[${texto}](${prefixo}${mapaSlugs.get(alvoLimpo)}.md)`;
   });
 }
@@ -369,7 +521,7 @@ const RESULTS_DIR = path.join(TCC_ROOT, "Projeto", "carga", "results");
 function pastasResultados() {
   if (!existsSync(RESULTS_DIR)) return [];
   const etapas = readdirSync(RESULTS_DIR, { withFileTypes: true })
-    .filter((e) => e.isDirectory() && /^\d\d-/.test(e.name)).map((e) => path.join(RESULTS_DIR, e.name)).sort();
+    .filter((e) => e.isDirectory() && /^\d\d[a-z]?-/.test(e.name)).map((e) => path.join(RESULTS_DIR, e.name)).sort();
   return [RESULTS_DIR, ...etapas];
 }
 function acharResultado(nome) {
@@ -424,12 +576,12 @@ function linksEtapa(texto, ehIndice) {
   return texto.replace(/\]\(([^)\s]+)\)/g, (m, alvo) => {
     if (/^(https?:|#|\/)/.test(alvo)) return m;
     let t = alvo.replace(/^(\.\.\/)+docs\//, "docs/");
-    if (t.startsWith("docs/carga/")) return `](/testes/carga/${t.slice("docs/carga/".length).replace(/\.md$/, "")})`;
-    if (t.startsWith("docs/artigo/")) return `](/testes/artigo/${t.slice("docs/artigo/".length).replace(/\.md$/, "")})`;
+    const [arq, ancora = ""] = t.split(/(?=#)/);
+    if (MAPA_C.has(arq)) return `](${rotaC(MAPA_C.get(arq))}${ancora})`;
     if (t.startsWith("docs/")) return `](${GITHUB_BLOB}${t})`;
-    if (/(^|\/)ANALISE\.md$/.test(t)) return "](/testes/resultados/analise)";
-    const etapa = t.match(/^(?:\.\.\/)?\d\d-([^/]+)\/?$/);
-    if (etapa) return `](/testes/resultados/etapas/${etapa[1]})`;
+    if (/(^|\/)ANALISE\.md$/.test(t)) return "](/testes/pre-serie/analise)";
+    const etapa = t.match(/^(?:\.\.\/)?(\d\d)([a-z]?)-([^/]+)\/?$/);
+    if (etapa) return `](/testes/${pastaEtapa(etapa[1])}/${etapa[2] ? `${etapa[1]}${etapa[2]}-` : ""}${etapa[3]})`;
     return m;
   });
 }
@@ -495,34 +647,29 @@ function sincronizarResultados() {
     );
   }
 
-  const resultadosDir = path.join(DEST_C, "resultados");
-  mkdirSync(resultadosDir, { recursive: true });
-  writeFileSync(
-    path.join(resultadosDir, "_category_.json"),
-    JSON.stringify({ label: "Resultados", position: 3, collapsible: true, collapsed: false }, null, 2),
-  );
-  writeFileSync(path.join(resultadosDir, "index.md"), escaparChavesForaDeCodigo(linhas.join("\n")));
+  // A página consolidada (nota do vault + CSVs de 04/10) e a análise são da Fase 2: referência pré-série.
+  const preSerie = path.join(DEST_C, "pre-serie");
+  mkdirSync(preSerie, { recursive: true });
+  writeFileSync(path.join(preSerie, "resultados-de-carga.md"), escaparChavesForaDeCodigo(linhas.join("\n")));
   const notaVault = path.join(VAULT_ROOT, `${NOTA_RESULTADOS}.md`);
-  if (existsSync(notaVault)) registrar(notaVault, path.join(resultadosDir, "index.md"));
+  if (existsSync(notaVault)) registrar(notaVault, path.join(preSerie, "resultados-de-carga.md"));
   const analise = acharResultado("ANALISE.md");
   if (existsSync(analise)) {
     const corpo = readFileSync(analise, "utf8").replace(/^﻿/, "");
-    registrar(analise, path.join(resultadosDir, "analise.md"));
-    writeFileSync(path.join(resultadosDir, "analise.md"), escaparChavesForaDeCodigo(`---\nsidebar_label: "Análise dos Resultados"\nsidebar_position: 11\n---\n\n${corpo}`));
+    registrar(analise, path.join(preSerie, "analise.md"));
+    writeFileSync(path.join(preSerie, "analise.md"), escaparChavesForaDeCodigo(`---\nsidebar_label: "Análise dos Resultados"\nsidebar_position: 11\n---\n\n${corpo}`));
   }
-  // Uma página por etapa (README.md de cada NN-etapa/ + o índice da raiz de results/).
-  const etapasDir = path.join(resultadosDir, "etapas");
-  mkdirSync(etapasDir, { recursive: true });
-  writeFileSync(path.join(etapasDir, "_category_.json"),
-    JSON.stringify({ label: "Resultados por etapa", position: 12, collapsible: true, collapsed: false }, null, 2));
+  // Uma página por etapa (README.md de cada NN-etapa/, na pasta do ponto dela) + o índice da raiz de results/.
   let nEtapas = 0;
   for (const d of pastasResultados()) {
     const readme = path.join(d, "README.md");
     if (!existsSync(readme)) continue;
-    const nome = d === RESULTS_DIR ? "index" : path.basename(d);
-    const destino = path.join(etapasDir, `${nome}.md`);
+    const nome = path.basename(d);
+    const destino = d === RESULTS_DIR ? path.join(DEST_C, "etapas.md") : path.join(DEST_C, pastaEtapa(nome.slice(0, 2)), `${nome}.md`);
+    const frontmatter = d === RESULTS_DIR ? '---\nsidebar_label: "Índice das etapas"\nsidebar_position: 20\n---\n\n' : "";
+    mkdirSync(path.dirname(destino), { recursive: true });
     registrar(readme, destino);
-    writeFileSync(destino, escaparChavesForaDeCodigo(linksEtapa(readFileSync(readme, "utf8").replace(/^﻿/, ""), d === RESULTS_DIR)));
+    writeFileSync(destino, frontmatter + escaparChavesForaDeCodigo(linksEtapa(readFileSync(readme, "utf8").replace(/^﻿/, ""), d === RESULTS_DIR)));
     nEtapas++;
   }
   console.log(`[sync-docs] Fonte C (resultados): ${contagem} run(s) consolidado(s), ${nEtapas} página(s) de etapa.`);
@@ -532,4 +679,5 @@ sincronizarFonteA();
 sincronizarFonteB();
 sincronizarFonteC();
 sincronizarResultados();
+gravarPontos();
 gravarAlteracoes();

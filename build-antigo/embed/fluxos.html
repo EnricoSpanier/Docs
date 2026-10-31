@@ -1,0 +1,900 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fluxos do Gerenciador de Eventos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+</head>
+<body>
+<style>
+/* Layout: cabeçalho curto, abas (Hoje / Final / Alta demanda), cada aba = diagrama largo + coluna de passos; tabela comparativa no fim. */
+:root{
+  --bg:#eef1f5; --surface:#ffffff; --surface-2:#f6f8fb; --ink:#152030; --muted:#5a6678; --line:#c5cedb;
+  --c-req:#2f5fb3; --c-cas:#b86200; --c-read:#0d7c83; --c-evt:#b0306f; --c-bad:#c0352a; --c-ok:#2e8649;
+  --accent:#b86200;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0e131b; --surface:#161e29; --surface-2:#1b2532; --ink:#e4eaf2; --muted:#96a2b4; --line:#2f3b4c;
+  --c-req:#7ea6f0; --c-cas:#f2a541; --c-read:#3fc3c9; --c-evt:#ea6fac; --c-bad:#f06b5f; --c-ok:#5fc47c;
+  --accent:#f2a541; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0e131b; --surface:#161e29; --surface-2:#1b2532; --ink:#e4eaf2; --muted:#96a2b4; --line:#2f3b4c;
+  --c-req:#7ea6f0; --c-cas:#f2a541; --c-read:#3fc3c9; --c-evt:#ea6fac; --c-bad:#f06b5f; --c-ok:#5fc47c;
+  --accent:#f2a541; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0}
+[hidden]{display:none!important}
+body{background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:15px; line-height:1.55}
+.wrap{max-width:1280px; margin:0 auto; padding-block:28px 56px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px));
+  display:grid; gap:22px}
+header{display:grid; gap:8px; max-width:78ch}
+.eyebrow{font-family:var(--f-mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+h1{font-family:var(--f-display); font-weight:700; font-size:clamp(28px, 4.2vw, 44px); line-height:1.08; margin:0; text-wrap:balance; letter-spacing:-.01em}
+h2{font-family:var(--f-display); font-weight:700; font-size:22px; margin:0; text-wrap:balance}
+h3{font-family:var(--f-display); font-weight:600; font-size:16px; margin:0}
+p{margin:0}
+.lede{color:var(--muted); max-width:72ch}
+code,.mono{font-family:var(--f-mono); font-size:.88em}
+
+.tabs{display:flex; gap:6px; flex-wrap:wrap; border-bottom:1px solid var(--line)}
+.tab{font:600 15px var(--f-body); color:var(--muted); background:none; border:0; border-bottom:3px solid transparent;
+  padding:10px 14px 9px; cursor:pointer; margin-bottom:-1px}
+.tab[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--accent)}
+.tab:focus-visible,.chip:focus-visible,.btn:focus-visible,input:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.tab small{font:400 12px var(--f-mono); margin-left:6px; color:var(--muted)}
+
+.panel{display:grid; gap:16px}
+.panel-head{display:flex; gap:12px 24px; flex-wrap:wrap; align-items:baseline; justify-content:space-between}
+.panel-head p{color:var(--muted); max-width:70ch}
+.note{font-size:13px; color:var(--muted); border-left:3px solid var(--line); padding:2px 0 2px 10px; max-width:90ch}
+.note strong{color:var(--ink); font-weight:600}
+
+.toolbar{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+.chip{font:500 13px var(--f-body); color:var(--ink); background:var(--surface); border:1px solid var(--line);
+  border-radius:999px; padding:6px 12px; cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.btn{font:600 13px var(--f-body); color:var(--ink); background:var(--surface-2); border:1px solid var(--line);
+  border-radius:8px; padding:7px 12px; cursor:pointer}
+.btn.primary{background:var(--accent); border-color:var(--accent); color:var(--bg)}
+.spacer{flex:1}
+
+.stage{display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:16px; align-items:start}
+@media (max-width:980px){ .stage{grid-template-columns:minmax(0,1fr)} }
+.canvas{background:var(--surface); border:1px solid var(--line); border-radius:12px; overflow-x:auto; min-width:0}
+.canvas svg{display:block; width:100%; height:auto}
+.side{display:grid; gap:10px; min-width:0}
+.flow-desc{font-size:14px; color:var(--muted)}
+ol.steps{margin:0; padding:0; list-style:none; display:grid; gap:4px; counter-reset:s}
+ol.steps li{counter-increment:s; display:grid; grid-template-columns:26px 1fr; gap:8px; padding:6px 8px; border-radius:8px; font-size:13.5px; line-height:1.45}
+ol.steps li::before{content:counter(s); font:500 12px var(--f-mono); color:var(--muted); border:1px solid var(--line); border-radius:50%;
+  width:22px; height:22px; display:grid; place-items:center}
+ol.steps li.on{background:var(--surface)}
+ol.steps li.on::before{background:var(--sc, var(--accent)); border-color:var(--sc, var(--accent)); color:var(--bg)}
+ol.steps li.done{color:var(--muted)}
+
+.legend{display:flex; gap:6px 16px; flex-wrap:wrap; font-size:12.5px; color:var(--muted)}
+.legend span{display:inline-flex; align-items:center; gap:6px}
+.legend i{width:10px; height:10px; border-radius:50%; display:inline-block}
+
+/* SVG */
+.grp{fill:var(--surface-2); stroke:var(--line); stroke-dasharray:5 4}
+.grp-l{font:500 11.5px var(--f-mono); fill:var(--muted); letter-spacing:.04em}
+.edge{stroke:var(--line); stroke-width:1.6; fill:none}
+.edge.live{stroke-width:3}
+.node rect{fill:var(--surface); stroke:var(--line); stroke-width:1.4; transition:stroke .2s}
+.node.ext rect{stroke-dasharray:4 3; fill:var(--surface-2)}
+.node.hit rect{stroke:var(--hc); stroke-width:2.6}
+.nl{font:600 14.5px var(--f-display); fill:var(--ink)}
+.ns{font:400 10.5px var(--f-mono); fill:var(--muted)}
+.pk{stroke:var(--surface); stroke-width:2}
+.pk-h{fill:none; stroke-width:2; opacity:.45}
+.tag{font:500 10.5px var(--f-mono); fill:var(--c-cas)}
+
+/* Simulação */
+.tiles{display:grid; grid-template-columns:repeat(auto-fit, minmax(128px,1fr)); gap:8px}
+.tile{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:9px 12px; display:grid; gap:2px}
+.tile b{font:600 20px var(--f-display); font-variant-numeric:tabular-nums}
+.tile span{font:500 11px var(--f-mono); color:var(--muted); text-transform:uppercase; letter-spacing:.06em}
+.pill{display:inline-block; font:600 12px var(--f-mono); padding:1px 8px; border-radius:999px; border:1px solid currentColor; width:max-content}
+.slider{display:flex; align-items:center; gap:10px; font-size:13px; color:var(--muted); flex-wrap:wrap}
+.slider input[type=range]{width:220px; max-width:60vw; accent-color:var(--accent)}
+.slider output{font:600 13px var(--f-mono); color:var(--ink); min-width:54px}
+.rep rect.box{fill:var(--surface); stroke:var(--line); stroke-width:1.4; transition:fill .3s, stroke .3s}
+.rep,.lane{transition:opacity .4s}
+.rep.off,.lane.hid{opacity:0}
+.rep.on rect.box{stroke:var(--c-req)}
+.rep.hot rect.box{stroke:var(--c-bad); stroke-width:2.2}
+.rep.sb rect.box{fill:none; stroke:var(--c-ok); stroke-dasharray:6 3}
+.rep.new rect.box{stroke:var(--c-ok); stroke-width:3}
+.rep .tick{stroke:var(--muted); stroke-width:1}
+.rep .bar{fill:var(--c-req); opacity:.25; transition:width .3s}
+.rep.hot .bar{fill:var(--c-bad)}
+.rl{font:600 13px var(--f-display); fill:var(--ink)}
+.rs{font:400 10px var(--f-mono); fill:var(--muted)}
+.wk{fill:none; stroke:var(--line); stroke-width:1.4; transition:fill .15s, stroke .2s}
+.wk.on{stroke:var(--c-evt); fill:var(--surface-2)}
+.wk.busy{fill:var(--c-evt)}
+.node .qfill{fill:var(--c-evt); opacity:.75; transition:width .25s}
+.capbox{fill:var(--surface); stroke:var(--c-cas); stroke-width:1.8; transition:stroke-width .15s}
+.capbox.flash{stroke-width:4}
+.lane{stroke:var(--line); stroke-width:1.4; fill:none}
+.lane.sync{stroke-dasharray:6 5}
+.lane.act{stroke:var(--c-req); stroke-width:2.2}
+.lane.qact{stroke:var(--c-evt); stroke-width:2.2}
+.pt{stroke:none}
+.chart .grid{stroke:var(--line); stroke-width:1}
+.chart .xline{stroke:var(--c-bad); stroke-width:1.4; stroke-dasharray:5 4}
+.chart .area{fill:var(--c-cas); opacity:.16}
+.chart .ln{stroke:var(--c-cas); stroke-width:2; fill:none}
+.chart text{font:400 11px var(--f-mono); fill:var(--muted)}
+.chart .end{fill:var(--c-cas)}
+.sim-grid{display:grid; grid-template-columns:minmax(0,1fr) 280px; gap:16px; align-items:start}
+@media (max-width:980px){ .sim-grid{grid-template-columns:minmax(0,1fr)} }
+.svc-grid{display:grid; gap:6px}
+.svc{display:grid; grid-template-columns:110px 90px 56px minmax(0,1fr); gap:6px 12px; align-items:center; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:7px 12px; font-size:13px}
+.svc b{font:600 14px var(--f-display)}
+.svc .slots{display:flex; gap:4px}
+.svc .slots i:not(.on):not(.sb){visibility:hidden}
+.svc .slots i{width:18px; height:18px; border-radius:4px; border:1.4px dashed var(--line)}
+.svc .slots i.on{background:var(--c-req); border:1.4px solid var(--c-req)}
+.svc .slots i.sb{border:1.4px dashed var(--c-ok); background:none}
+.svc .slots i.hot{background:var(--c-bad); border-color:var(--c-bad)}
+.svc .u{font:600 12.5px var(--f-mono); font-variant-numeric:tabular-nums}
+.svc .sig{color:var(--muted); font-size:12.5px; min-width:0}
+@media (max-width:560px){ .svc{grid-template-columns:100px 90px 56px} .svc .sig{grid-column:1/-1} }
+ul.log{list-style:none; margin:0; padding:0; display:grid; gap:4px; font-size:13px}
+ul.log li{display:grid; grid-template-columns:62px 1fr; gap:8px; padding:5px 8px; background:var(--surface); border:1px solid var(--line); border-radius:8px}
+ul.log li time{font:500 12px var(--f-mono); color:var(--muted); font-variant-numeric:tabular-nums}
+ul.log li.up b{color:var(--c-ok)} ul.log li.down b{color:var(--muted)} ul.log li.warn b{color:var(--c-bad)}
+
+/* Comparativo */
+.tbl-wrap{overflow-x:auto; background:var(--surface); border:1px solid var(--line); border-radius:12px}
+table{border-collapse:collapse; width:100%; min-width:680px; font-size:14px}
+th,td{text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); vertical-align:top}
+th{font:500 11.5px var(--f-mono); text-transform:uppercase; letter-spacing:.06em; color:var(--muted); background:var(--surface-2)}
+td:first-child{font-weight:600; white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td .mono{color:var(--muted)}
+
+@media (prefers-reduced-motion: reduce){
+  .pt{display:none}
+  *{transition:none!important}
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">TCC · Gerenciador de Eventos · main · 25/10/2026</span>
+    <h1>Como os dados atravessam o sistema, hoje e no fim do projeto</h1>
+    <p class="lede">Hoje o <code>gateway</code> chama os serviços <code>catalog</code> e <code>reservation</code> por API interna, e uma reserva termina numa linha do <code>eventcap</code>. No fim do projeto o <code>identity</code> também sai do gateway e entra o serviço de admissão. A terceira aba simula um pico de reservas num único evento.</p>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Visões do sistema">
+    <button class="tab" role="tab" id="t-hoje" aria-controls="hoje" aria-selected="true">Hoje <small>serviços (Fase 7)</small></button>
+    <button class="tab" role="tab" id="t-final" aria-controls="final" aria-selected="false">Fim do projeto <small>microsserviços</small></button>
+    <button class="tab" role="tab" id="t-pico" aria-controls="pico" aria-selected="false">Alta demanda <small>réplicas + fila</small></button>
+  </nav>
+
+  <section class="panel" id="hoje" role="tabpanel" aria-labelledby="t-hoje">
+    <div class="panel-head">
+      <h2>Hoje: serviços separados atrás do gateway (Fase 7)</h2>
+      <p>Onze containers no <code>docker compose</code>: <code>frontend</code> (Nginx :8088), <code>backend</code> (gateway + identity, :8081), <code>catalog</code> (:8083), <code>reservation</code> (:8082) e <code>notification</code>, mais Supavisor, Postgres (:5433), Redpanda e a stack do Supabase Studio. Os serviços internos só aceitam o <code>X-Internal-Token</code> e não têm porta no host. Escolha um fluxo para ver o caminho de uma requisição.</p>
+    </div>
+    <div class="toolbar"><div class="chips toolbar"></div><span class="spacer"></span>
+      <button class="btn play" type="button">Pausar</button><button class="btn next" type="button">Passo →</button></div>
+    <div class="stage">
+      <div class="canvas"><svg class="dg" role="img" aria-label="Diagrama da arquitetura atual, com os serviços separados"></svg></div>
+      <div class="side"><h3 class="flow-name"></h3><p class="flow-desc"></p><ol class="steps"></ol></div>
+    </div>
+    <div class="legend"></div>
+  </section>
+
+  <section class="panel" id="final" role="tabpanel" aria-labelledby="t-final" hidden>
+    <div class="panel-head">
+      <h2>Fim do projeto: microsserviços, CQRS + ES</h2>
+      <p>Opção B do split: <code>gateway</code>, <code>identity</code>, <code>catalog</code>, <code>reservation</code>, <code>notification</code> e <code>admission</code>, sobre Supabase self-hosted e um backbone de eventos. O contrato que o Flutter consome não muda.</p>
+    </div>
+    <p class="note"><strong>Parcialmente implementado.</strong> <code>catalog</code>, <code>reservation</code>, <code>notification</code>, Supabase self-hosted e Redpanda já existem (aba Hoje). Faltam o <code>identity</code> como serviço (#36), o <code>admission</code> com Redis e fila (Fase 9) e a autoescala.</p>
+    <div class="toolbar"><div class="chips toolbar"></div><span class="spacer"></span>
+      <button class="btn play" type="button">Pausar</button><button class="btn next" type="button">Passo →</button></div>
+    <div class="stage">
+      <div class="canvas"><svg class="dg" role="img" aria-label="Diagrama da arquitetura final"></svg></div>
+      <div class="side"><h3 class="flow-name"></h3><p class="flow-desc"></p><ol class="steps"></ol></div>
+    </div>
+    <div class="legend"></div>
+  </section>
+
+  <section class="panel" id="pico" role="tabpanel" aria-labelledby="t-pico" hidden>
+    <div class="panel-head">
+      <h2>Alta demanda: um evento recebe um pico</h2>
+      <p>A carga é medida em múltiplos de <b>X</b>, o RPM por evento em que o fluxo síncrono de uma instância degrada (preliminar na #13, definitivo na #39). O uso do <code>reservation</code> é RPM ÷ (X × réplicas ativas). Com uso acima de <b>50%</b> sobe uma réplica em stand-by, ainda sem tráfego. Acima de <b>80%</b>, uma margem antes de chegar a X, o <code>admission</code> redireciona as reservas para a fila, e a fila entrega ao serviço pelo worker pool, já contando com a réplica que estava em stand-by. Quando o uso volta abaixo de 70% e a fila esvazia, a reserva volta ao caminho síncrono. Serviços sem fila na frente (<code>gateway</code>, <code>identity</code>, <code>catalog</code>) passam o tráfego direto à réplica em stand-by acima de 80%. O primeiro diagrama mostra <code>gateway</code> e <code>reservation</code>; o segundo, os outros quatro serviços com a mesma regra; a grade resume todos.</p>
+    </div>
+    <div class="toolbar">
+      <button class="btn primary" id="sim-peak" type="button">Simular pico</button>
+      <label class="slider" for="sim-load">Carga <input id="sim-load" type="range" min="0" max="3" step="0.05" value="0.3"><output id="sim-load-o">0,3·X</output></label>
+      <span class="spacer"></span>
+      <label class="slider" for="sim-row"><input id="sim-row" type="checkbox"> Gargalo na linha do <code>eventcap</code></label>
+      <button class="btn" id="sim-reset" type="button">Repor vagas</button>
+    </div>
+    <div class="tiles">
+      <div class="tile"><span>Modo</span><b id="k-mode"><span class="pill">síncrono</span></b></div>
+      <div class="tile"><span>Fila</span><b id="k-q">0</b></div>
+      <div class="tile"><span>Workers</span><b id="k-w">1</b></div>
+      <div class="tile"><span>Réplicas gateway</span><b id="k-gw">1</b></div>
+      <div class="tile"><span>Réplicas reservation</span><b id="k-rs">1</b></div>
+      <div class="tile"><span>Vagas livres</span><b id="k-cap">500 / 500</b></div>
+      <div class="tile"><span>Evento lotado</span><b id="k-full">0</b></div>
+      <div class="tile"><span>Descartadas (TTL)</span><b id="k-drop">0</b></div>
+      <div class="tile"><span>Vazão no eventcap</span><b id="k-thr">0</b></div>
+      <div class="tile"><span>Overselling</span><b id="k-over" style="color:var(--c-ok)">0</b></div>
+    </div>
+    <div class="sim-grid">
+      <div style="display:grid; gap:10px; min-width:0">
+        <div class="canvas"><svg class="sim" viewBox="0 0 1100 470" style="min-width:860px" role="img" aria-label="Simulação de pico com réplicas, fila e worker pool"></svg></div>
+        <h3>Os outros serviços sob o mesmo pico</h3>
+        <div class="canvas"><svg class="sim2" viewBox="0 0 1100 262" style="min-width:860px" role="img" aria-label="Réplicas de admission, identity, catalog e notification sob o pico"></svg></div>
+        <h3>Réplicas por serviço</h3>
+        <div class="svc-grid" id="svc-grid"></div>
+        <div class="canvas"><svg class="chart" viewBox="0 0 1100 130" style="min-width:860px" role="img" aria-label="Carga nos últimos 60 segundos"></svg></div>
+      </div>
+      <div class="side">
+        <h3>Eventos de escala</h3>
+        <ul class="log" id="sim-log"></ul>
+      </div>
+    </div>
+    <p class="note"><strong>Planejado, não implementado.</strong> A autorreplicação de <code>gateway</code> e <code>reservation</code> é o item 47 do BACKLOG (issue #111); a dos demais serviços é o item 48 (issue #112). Os limiares de 50% e 80% são frações de X, o limiar medido. Com o interruptor desligado, a simulação supõe que a capacidade cresce com o número de réplicas. Ligado, toda reserva do evento disputa a mesma linha do <code>eventcap</code>, que o Postgres atualiza uma de cada vez: a vazão fica em X por mais réplicas que subam, a fila segura o excesso e descarta o que passa do TTL. Nesse cenário, réplicas do <code>reservation</code> ajudam com muitos eventos em paralelo, não no pico de um só. Qual dos dois vale é hipótese a medir na #111. A carga dos outros serviços na grade é uma proporção ilustrativa, não um número medido. Postgres, Redis e o backbone guardam estado e não escalam por réplica. A fila e o worker pool vêm do modo de alta carga do <code>admission</code> (#40 a #42). Réplicas a mais não causam overselling porque a garantia está no <code>UPDATE</code> condicional sobre uma única linha do <code>eventcap</code>, não na memória de cada instância.</p>
+  </section>
+
+  <section class="panel" aria-labelledby="cmp-h">
+    <h2 id="cmp-h">O que muda, camada por camada</h2>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Camada</th><th>Hoje</th><th>Fim do projeto</th><th>Issues</th></tr></thead>
+      <tbody>
+        <tr><td>Entrada</td><td>Nginx faz proxy de <code>/bff/</code> para o <code>gateway</code> (mesmo processo do <code>identity</code>)</td><td>BFF vira o serviço <code>gateway</code>, com o mesmo contrato</td><td class="mono">#24</td></tr>
+        <tr><td>Autenticação</td><td><code>JwtAuthenticationFilter</code> deny-by-default no <code>gateway</code>; os serviços internos aceitam só o <code>X-Internal-Token</code></td><td><code>identity</code> emite JWT; os demais validam sem estado</td><td class="mono">#35</td></tr>
+        <tr><td>Reserva de vaga</td><td>CAS no <code>eventcap</code> dentro do serviço <code>reservation</code>; wallet em event sourcing</td><td>Mesmo CAS dentro do <code>reservation</code>; wallet vira stream de eventos</td><td class="mono">#28, #32</td></tr>
+        <tr><td>Leitura do catálogo</td><td><code>catalog</code> em CQRS + ES; o gateway lê pelo <code>catalog-client</code></td><td>Projeções CQRS alimentadas pelo backbone</td><td class="mono">#27, #34</td></tr>
+        <tr><td>Eventos de domínio</td><td>Redpanda: <code>catalog.event</code>, <code>reservation.wallet</code> e <code>identity.notification</code>; <code>notification</code> consome e envia o e-mail</td><td>Kafka ou Redpanda; <code>notification</code> consome e envia</td><td class="mono">#26, #31</td></tr>
+        <tr><td>Banco</td><td>Supabase Postgres, schema por serviço, Supavisor e Studio</td><td>Supabase Postgres, schema por serviço, Supavisor, Studio</td><td class="mono">#17 a #20</td></tr>
+        <tr><td>Alta carga</td><td>Tudo síncrono; X medido (≈ 58k RPM no ponto 3)</td><td><code>admission</code>: réplica em stand-by acima de 50% de X × réplicas; fila e worker pool acima de 80%</td><td class="mono">#39 a #43, #111</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+</div>
+
+<script>
+(() => {
+const NS = 'http://www.w3.org/2000/svg';
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const fmt = v => v.toFixed(1).replace('.', ',');
+const pct = u => Math.round(u * 100) + '%';
+// Embutida no site de docs (mesma origem): segue o tema claro/escuro do Docusaurus.
+try { const ph = parent !== window && parent.document.documentElement;
+  if (ph) { const sync = () => { const t = ph.getAttribute('data-theme'); if (t) document.documentElement.setAttribute('data-theme', t); };
+    sync(); new MutationObserver(sync).observe(ph, { attributes: true, attributeFilter: ['data-theme'] }); } } catch (e) {}
+const COLORS = { req: 'requisição', cas: 'escrita da vaga (CAS)', read: 'leitura', evt: 'evento / fila', bad: 'caminho que oversella' };
+
+function seg(a, b) {
+  const acx = a.x + a.w / 2, acy = a.y + a.h / 2, bcx = b.x + b.w / 2, bcy = b.y + b.h / 2;
+  if (b.x >= a.x + a.w) return [[a.x + a.w, acy], [b.x, bcy]];
+  if (a.x >= b.x + b.w) return [[a.x, acy], [b.x + b.w, bcy]];
+  if (b.y >= a.y + a.h) return [[acx, a.y + a.h], [bcx, b.y]];
+  return [[acx, a.y], [bcx, b.y + b.h]];
+}
+
+/* ---------- Diagramas de fluxo (abas 1 e 2) ---------- */
+function Diagram(root, cfg) {
+  const svg = root.querySelector('svg.dg');
+  svg.setAttribute('viewBox', cfg.vb); svg.style.minWidth = cfg.minW + 'px';
+  const N = cfg.nodes;
+  const gGr = el('g', {}, svg), gEd = el('g', {}, svg), gNo = el('g', {}, svg), gPk = el('g', {}, svg);
+  (cfg.groups || []).forEach(g => {
+    el('rect', { x: g.x, y: g.y, width: g.w, height: g.h, rx: 14, class: 'grp' }, gGr);
+    el('text', { x: g.x + 14, y: g.y + 20, class: 'grp-l' }, gGr).textContent = g.label;
+  });
+  const key = (a, b) => a < b ? a + '|' + b : b + '|' + a;
+  const edges = new Map();
+  const addEdge = (a, b) => { const k = key(a, b); if (edges.has(k)) return; const [p, q] = seg(N[a], N[b]);
+    edges.set(k, el('line', { x1: p[0], y1: p[1], x2: q[0], y2: q[1], class: 'edge' }, gEd)); };
+  cfg.flows.forEach(f => f.steps.forEach(s => { for (let i = 0; i < s.p.length - 1; i++) addEdge(s.p[i], s.p[i + 1]); }));
+  (cfg.extra || []).forEach(([a, b]) => addEdge(a, b));
+  const nodeEl = {};
+  for (const id in N) {
+    const n = N[id]; if (n.kind === 'via') continue;
+    const g = el('g', { class: 'node ' + (n.kind || '') }, gNo);
+    el('rect', { x: n.x, y: n.y, width: n.w, height: n.h, rx: 9 }, g);
+    const subs = [].concat(n.sub || []);
+    const y0 = n.y + (n.h - (16 + subs.length * 14)) / 2 + 13;
+    el('text', { x: n.x + 12, y: y0, class: 'nl' }, g).textContent = n.label;
+    subs.forEach((s, i) => { el('text', { x: n.x + 12, y: y0 + 17 + i * 14, class: 'ns' }, g).textContent = s; });
+    if (n.tag) el('text', { x: n.x + n.w - 8, y: n.y + 14, class: 'tag', 'text-anchor': 'end' }, g).textContent = n.tag;
+    nodeEl[id] = g;
+  }
+  const halo = el('circle', { r: 13, cx: -40, cy: -40, class: 'pk-h' }, gPk);
+  const dot = el('circle', { r: 7, cx: -40, cy: -40, class: 'pk' }, gPk);
+
+  const chips = root.querySelector('.chips'), list = root.querySelector('.steps');
+  const nameEl = root.querySelector('.flow-name'), descEl = root.querySelector('.flow-desc');
+  const playBtn = root.querySelector('.play'), nextBtn = root.querySelector('.next');
+  const chipEls = cfg.flows.map((f, i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = f.name;
+    b.setAttribute('aria-pressed', 'false'); b.onclick = () => { auto = false; select(i); }; chips.appendChild(b); return b;
+  });
+  const legend = root.querySelector('.legend');
+  [...new Set(cfg.flows.flatMap(f => f.steps.map(s => s.c)))].forEach(c => {
+    legend.insertAdjacentHTML('beforeend', `<span><i style="background:var(--c-${c})"></i>${COLORS[c]}</span>`);
+  });
+
+  const SPEED = 0.42, DWELL = 1100, END = 1600;
+  let fi = 0, si = -1, anim = null, playing = !RM, auto = true, active = false, endAt = 0;
+  playBtn.textContent = playing ? 'Pausar' : 'Reproduzir';
+
+  function clearMarks() {
+    edges.forEach(l => { l.classList.remove('live'); l.style.stroke = ''; });
+    Object.values(nodeEl).forEach(g => g.classList.remove('hit'));
+  }
+  function select(i) {
+    fi = i; si = -1; anim = null; endAt = 0;
+    chipEls.forEach((b, j) => b.setAttribute('aria-pressed', j === i ? 'true' : 'false'));
+    const f = cfg.flows[i]; nameEl.textContent = f.name; descEl.textContent = f.desc;
+    list.innerHTML = '';
+    f.steps.forEach(s => { const li = document.createElement('li'); li.style.setProperty('--sc', `var(--c-${s.c})`); li.textContent = s.t; list.appendChild(li); });
+    clearMarks(); dot.setAttribute('cx', -40); halo.setAttribute('cx', -40);
+    if (playing) go(0, performance.now());
+  }
+  function go(j, now) {
+    const f = cfg.flows[fi], s = f.steps[j]; si = j; endAt = 0;
+    [...list.children].forEach((li, k) => { li.classList.toggle('on', k === j); li.classList.toggle('done', k < j); });
+    clearMarks();
+    const col = `var(--c-${s.c})`, pts = [];
+    for (let i = 0; i < s.p.length - 1; i++) {
+      const l = edges.get(key(s.p[i], s.p[i + 1])); l.classList.add('live'); l.style.stroke = col;
+      const [p, q] = seg(N[s.p[i]], N[s.p[i + 1]]); pts.push(p, q);
+    }
+    const last = nodeEl[s.p[s.p.length - 1]];
+    if (last) { last.classList.add('hit'); last.style.setProperty('--hc', col); }
+    const lens = [0]; for (let i = 1; i < pts.length; i++) lens.push(lens[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+    anim = { pts, lens, total: lens[lens.length - 1], t0: now };
+    dot.style.fill = col; halo.style.stroke = col;
+  }
+  function place(d) {
+    const { pts, lens } = anim; let i = 1; while (i < lens.length - 1 && lens[i] < d) i++;
+    const span = lens[i] - lens[i - 1] || 1, t = Math.min(1, Math.max(0, (d - lens[i - 1]) / span));
+    const x = pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * t, y = pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * t;
+    dot.setAttribute('cx', x); dot.setAttribute('cy', y); halo.setAttribute('cx', x); halo.setAttribute('cy', y);
+  }
+  function update(now) {
+    if (!active || !playing) return;
+    if (!anim) { go(0, now); return; }
+    const t = now - anim.t0, moveT = anim.total / SPEED;
+    place(Math.min(anim.total, t * SPEED));
+    if (t < moveT + DWELL) return;
+    const steps = cfg.flows[fi].steps;
+    if (si < steps.length - 1) { go(si + 1, now); return; }
+    if (!endAt) { endAt = now; [...list.children].forEach(li => { li.classList.remove('on'); li.classList.add('done'); }); return; }
+    if (now - endAt > END) { if (auto) select((fi + 1) % cfg.flows.length); else select(fi); }
+  }
+  playBtn.onclick = () => {
+    playing = !playing; playBtn.textContent = playing ? 'Pausar' : 'Reproduzir';
+    if (playing && anim) anim.t0 = performance.now() - anim.total / SPEED;
+  };
+  nextBtn.onclick = () => {
+    playing = false; playBtn.textContent = 'Reproduzir';
+    const steps = cfg.flows[fi].steps; go((si + 1) % steps.length, performance.now()); place(anim.total);
+  };
+  select(0);
+  if (!playing) { go(0, performance.now()); place(anim.total); }
+  return { update, setActive(v) { active = v; } };
+}
+
+/* ---------- Hoje ---------- */
+const HOJE = {
+  vb: '0 0 1140 620', minW: 880,
+  groups: [
+    { x: 262, y: 24, w: 250, h: 320, label: 'backend :8081 · gateway + identity' },
+    { x: 545, y: 24, w: 240, h: 520, label: 'serviços internos · X-Internal-Token' },
+    { x: 925, y: 110, w: 205, h: 390, label: 'db · Postgres :5433' },
+  ],
+  nodes: {
+    browser: { x: 15, y: 60, w: 105, h: 60, label: 'Navegador', sub: 'app Flutter Web' },
+    recaptcha: { x: 15, y: 250, w: 105, h: 56, label: 'reCAPTCHA', sub: 'Google', kind: 'ext' },
+    nginx: { x: 140, y: 60, w: 100, h: 60, label: 'Nginx', sub: [':8088', 'proxy de /bff/'] },
+    jwt: { x: 272, y: 54, w: 230, h: 50, label: 'JwtAuthenticationFilter', sub: 'valida o JWT; rotas públicas' },
+    bff: { x: 272, y: 116, w: 230, h: 50, label: 'Controllers bff/*', sub: 'events · event-wallets · users' },
+    gw: { x: 272, y: 178, w: 230, h: 64, label: 'Clientes e caches', sub: ['CatalogClient · ReservationClient', 'exists 30 s · creator_name 45 s'] },
+    ident: { x: 272, y: 256, w: 230, h: 64, label: 'identity', sub: ['users · login · MFA · e-mail', 'Hikari 350'] },
+    catalog: { x: 555, y: 54, w: 220, h: 64, label: 'catalog :8083', sub: ['CQRS + ES · eventos', 'Hikari 100'] },
+    reservation: { x: 555, y: 150, w: 220, h: 96, label: 'reservation :8082', sub: ['CAS no eventcap · ES na wallet', 'expiração (job) · projeção naive', 'Hikari 1000'] },
+    notification: { x: 555, y: 460, w: 220, h: 60, label: 'notification', sub: ['consumer idempotente', 'Hikari 3'] },
+    smtp: { x: 262, y: 470, w: 150, h: 56, label: 'Gmail SMTP', sub: 'código por e-mail', kind: 'ext' },
+    pooler: { x: 805, y: 130, w: 100, h: 330, label: 'Supavisor', sub: ['pooler', 'transaction', 'mode'] },
+    t_catalog: { x: 935, y: 136, w: 185, h: 50, label: 'event · presenter', sub: 'schema catalog · ES' },
+    t_cap: { x: 935, y: 196, w: 185, h: 50, label: 'eventcap', sub: 'schema reservation · CAS' },
+    t_wallet: { x: 935, y: 256, w: 185, h: 50, label: 'walletevent', sub: 'schema reservation · ES' },
+    t_avail: { x: 935, y: 316, w: 185, h: 50, label: 'event_availability', sub: 'projeção do braço naive' },
+    t_core: { x: 935, y: 376, w: 185, h: 50, label: 'users', sub: 'schema public · contas' },
+    t_notif: { x: 935, y: 436, w: 185, h: 50, label: 'processed_event', sub: 'schema notification' },
+    redpanda: { x: 805, y: 535, w: 325, h: 66, label: 'Redpanda', sub: ['catalog.event · reservation.wallet', 'identity.notification'] },
+  },
+  flows: [
+    { name: 'Reservar vaga (CAS)', desc: 'O gateway confere o evento no catalog (com cache) e chama o reservation numa só chamada. A vaga é garantida por um UPDATE condicional atômico; não há lock em memória nem leitura antes de escrever.',
+      steps: [
+        { p: ['browser', 'nginx', 'jwt', 'bff', 'gw'], t: 'POST /bff/event-wallets com o JWT; o gateway valida e chega aos clientes internos', c: 'req' },
+        { p: ['gw', 'catalog'], t: 'Confere o evento: GET /internal/events/{id}/exists (positivo cacheado por 30 s)', c: 'read' },
+        { p: ['catalog', 'pooler', 't_catalog'], t: 'SELECT 1 em catalog.event', c: 'read' },
+        { p: ['gw', 'reservation'], t: 'POST /internal/reservations?path=cas, com X-Internal-Token', c: 'req' },
+        { p: ['reservation', 'pooler', 't_cap'], t: 'UPDATE eventcap SET quant = quant − 1 WHERE quant ≥ 1', c: 'cas' },
+        { p: ['reservation', 'pooler', 't_wallet'], t: '1 linha afetada = vaga garantida (0 = "Evento lotado"); walletevent pending com expires_at e SlotReserved no event store, na mesma transação', c: 'cas' },
+        { p: ['reservation', 'redpanda'], t: 'O relay publica SlotReserved em reservation.wallet', c: 'evt' },
+        { p: ['reservation', 'gw', 'bff', 'jwt', 'nginx', 'browser'], t: 'Resposta: reserva pending com prazo para confirmar', c: 'req' },
+      ] },
+    { name: 'Expirar reserva (job)', desc: 'Reservas pending não confirmadas devolvem a vaga sozinhas, sem pisar numa confirmação concorrente. O job roda dentro do reservation.',
+      steps: [
+        { p: ['reservation', 'pooler', 't_wallet'], t: 'ReservationExpiryService marca expired quem passou de expires_at e ainda está pending', c: 'cas' },
+        { p: ['reservation', 'pooler', 't_cap'], t: 'quant + 1 na mesma transação, junto do ReservationExpired no event store', c: 'cas' },
+        { p: ['reservation', 'redpanda'], t: 'O relay publica ReservationExpired', c: 'evt' },
+      ] },
+    { name: 'Caminho ingênuo (experimento)', desc: 'Braço de controle, atrás de RESERVATION_READPATH=naive. São duas chamadas HTTP: a primeira lê a disponibilidade na projeção, a segunda reserva sem CAS. A janela entre elas inclui a rede, e por isso oversella.',
+      steps: [
+        { p: ['redpanda', 'reservation'], t: 'O consumer de reservation.wallet alimenta a projeção (o lag é medido, não controlado)', c: 'evt' },
+        { p: ['reservation', 'pooler', 't_avail'], t: 'Grava event_availability com os ativos de cada evento', c: 'read' },
+        { p: ['browser', 'nginx', 'jwt', 'bff', 'gw'], t: 'Mesma requisição POST /bff/event-wallets', c: 'req' },
+        { p: ['gw', 'reservation'], t: 'Chamada 1: GET /internal/events/{id}/availability', c: 'read' },
+        { p: ['reservation', 'pooler', 't_avail'], t: 'Lê a projeção: "ainda tem vaga"', c: 'read' },
+        { p: ['gw', 'reservation'], t: 'Chamada 2: POST /internal/reservations?path=naive', c: 'req' },
+        { p: ['reservation', 'pooler', 't_wallet'], t: 'Insere a reserva sem UPDATE condicional: mais reservas que vagas', c: 'bad' },
+      ] },
+    { name: 'Listar e buscar eventos', desc: 'O gateway compõe a resposta: o catalog devolve os eventos sem image_data, com a capacidade vinda do reservation; o nome do criador vem do identity, em lote, com cache.',
+      steps: [
+        { p: ['browser', 'nginx', 'jwt', 'bff', 'gw'], t: 'GET /bff/events/search?term=…', c: 'req' },
+        { p: ['gw', 'catalog'], t: 'GET /internal/events/search', c: 'req' },
+        { p: ['catalog', 'pooler', 't_catalog'], t: 'SELECT em catalog.event, sem image_data', c: 'read' },
+        { p: ['catalog', 'reservation'], t: 'Hidrata a capacidade em lote: POST /internal/eventcaps/batch (reservation fora = erro, nunca quantity 0)', c: 'read' },
+        { p: ['reservation', 'pooler', 't_cap'], t: 'Lê o eventcap dos eventos da lista', c: 'read' },
+        { p: ['gw', 'ident'], t: 'creator_name em lote (findNames), com cache de 45 s', c: 'read' },
+        { p: ['ident', 'pooler', 't_core'], t: 'SELECT em users, só contas ativas', c: 'read' },
+        { p: ['gw', 'bff', 'jwt', 'nginx', 'browser'], t: 'Lista em JSON para o app', c: 'read' },
+      ] },
+    { name: 'Criar evento (CQRS/ES)', desc: 'O creator_id vem do token, nunca do corpo. O catalog grava o evento e a projeção na mesma transação; a capacidade é criada no reservation depois do commit.',
+      steps: [
+        { p: ['browser', 'nginx', 'jwt', 'bff'], t: 'POST /bff/events: o gateway exige host e força creator_id = usuário do token', c: 'req' },
+        { p: ['bff', 'gw', 'catalog'], t: 'POST /internal/events', c: 'req' },
+        { p: ['catalog', 'pooler', 't_catalog'], t: 'Na mesma transação: grava event e eventpresenter e dá append de EventCreated (versão otimista)', c: 'cas' },
+        { p: ['catalog', 'reservation'], t: 'Depois do commit: PUT /internal/eventcaps/{id} cria a capacidade', c: 'req' },
+        { p: ['reservation', 'pooler', 't_cap'], t: 'INSERT do eventcap, idempotente por event_id', c: 'cas' },
+        { p: ['catalog', 'redpanda'], t: 'O relay publica EventCreated em catalog.event; se a chamada falhou, o reservation reconcilia o eventcap por esse evento', c: 'evt' },
+      ] },
+    { name: 'Cadastro + e-mail', desc: 'Rotas públicas. O reCAPTCHA é validado pelo gateway. O e-mail não sai mais direto: o identity publica um evento e o notification envia. Se o notification cair, cadastro e login seguem e o e-mail sai quando ele volta.',
+      steps: [
+        { p: ['browser', 'recaptcha'], t: 'O widget do Google gera o token', c: 'req' },
+        { p: ['browser', 'nginx', 'jwt', 'bff'], t: 'POST /bff/users/verify-recaptcha (rota pública)', c: 'req' },
+        { p: ['bff', 'recaptcha'], t: 'O controller confere o token no siteverify do Google', c: 'req' },
+        { p: ['bff', 'ident', 'pooler', 't_core'], t: 'POST /bff/users: INSERT em users (e-mail e fone únicos)', c: 'cas' },
+        { p: ['ident', 'redpanda'], t: 'request-verification: append em identity.notification (event store + outbox na mesma transação); o relay publica', c: 'evt' },
+        { p: ['redpanda', 'notification'], t: 'O notification consome o tópico', c: 'evt' },
+        { p: ['notification', 'pooler', 't_notif'], t: 'Registra o processed_event (idempotência)', c: 'cas' },
+        { p: ['notification', 'smtp'], t: 'Monta e envia o código de verificação por SMTP', c: 'evt' },
+      ] },
+    { name: 'Login (JWT)', desc: 'Rota pública. O token é emitido pelo gateway (identity) e validado a cada requisição pelo JwtAuthenticationFilter; os serviços internos só aceitam o X-Internal-Token.',
+      steps: [
+        { p: ['browser', 'nginx', 'jwt', 'bff'], t: 'POST /bff/users/login', c: 'req' },
+        { p: ['bff', 'ident', 'pooler', 't_core'], t: 'Confere as credenciais (e o MFA, quando ativo)', c: 'read' },
+        { p: ['ident', 'bff', 'jwt', 'nginx', 'browser'], t: 'JWT assinado, usado nas próximas requisições', c: 'req' },
+      ] },
+    { name: 'Catalog fora do ar (503)', desc: 'Falha do catalog nunca vira "evento não existe" nem capacidade 0: o gateway responde 503 genérico. A reserva só segue se o evento já foi conferido há menos de 30 s (cache de exists).',
+      steps: [
+        { p: ['browser', 'nginx', 'jwt', 'bff', 'gw'], t: 'GET /bff/events/1 com o container catalog parado', c: 'req' },
+        { p: ['gw', 'catalog'], t: 'CatalogClient: conexão recusada ou timeout de 15 s, sem retry', c: 'req' },
+        { p: ['gw', 'bff', 'jwt', 'nginx', 'browser'], t: '503 com corpo genérico (nunca 404). Quando o catalog volta, a próxima requisição já funciona', c: 'req' },
+      ] },
+  ],
+};
+
+/* ---------- Fim do projeto ---------- */
+const FINAL = {
+  vb: '0 0 1080 620', minW: 900,
+  groups: [
+    { x: 350, y: 24, w: 300, h: 580, label: 'serviços' },
+    { x: 875, y: 60, w: 195, h: 330, label: 'Supabase Postgres' },
+  ],
+  nodes: {
+    browser: { x: 15, y: 270, w: 125, h: 64, label: 'Flutter Web', sub: 'Nginx :8088' },
+    gateway: { x: 180, y: 270, w: 135, h: 64, label: 'gateway', sub: ['ex-BFF', 'valida JWT'] },
+    redis: { x: 180, y: 410, w: 135, h: 56, label: 'Redis', sub: 'RPM por bucket' },
+    identity: { x: 370, y: 56, w: 260, h: 58, label: 'identity', sub: 'CRUD · emite JWT · MFA' },
+    catalog: { x: 370, y: 140, w: 260, h: 58, label: 'catalog', sub: 'CQRS + Event Sourcing' },
+    reservation: { x: 370, y: 224, w: 260, h: 66, label: 'reservation', sub: ['CAS síncrono no eventcap', 'ES no lado wallet'] },
+    admission: { x: 370, y: 316, w: 260, h: 58, label: 'admission', sub: 'conta RPM e escolhe o caminho' },
+    queue: { x: 370, y: 410, w: 120, h: 58, label: 'fila', sub: ['RabbitMQ', 'ou Kafka'] },
+    workers: { x: 510, y: 410, w: 120, h: 58, label: 'workers', sub: 'pool controlado' },
+    via1: { x: 641, y: 439, w: 0, h: 0, kind: 'via' },
+    via2: { x: 641, y: 257, w: 0, h: 0, kind: 'via' },
+    notification: { x: 370, y: 510, w: 260, h: 58, label: 'notification', sub: 'consome eventos, envia e-mail' },
+    pooler: { x: 700, y: 140, w: 140, h: 64, label: 'Supavisor', sub: 'pooler :6543' },
+    kafka: { x: 700, y: 330, w: 140, h: 70, label: 'backbone', sub: ['Kafka ou Redpanda', 'log de eventos'] },
+    smtp: { x: 700, y: 510, w: 140, h: 58, label: 'SMTP', sub: 'e-mail', kind: 'ext' },
+    s_identity: { x: 890, y: 96, w: 165, h: 56, label: 'identity', sub: 'users (CRUD)' },
+    s_catalog: { x: 890, y: 164, w: 165, h: 56, label: 'catalog', sub: 'streams + projeções' },
+    s_res: { x: 890, y: 232, w: 165, h: 64, label: 'reservation', sub: ['eventcap (CAS)', 'streams da wallet'] },
+    studio: { x: 890, y: 420, w: 165, h: 56, label: 'Studio', sub: 'inspeção visual', kind: 'ext' },
+  },
+  extra: [['studio', 's_res']],
+  flows: [
+    { name: 'Reserva síncrona (uso ≤ 80%)', desc: 'Com o reservation abaixo de 80% de uso, a reserva segue o caminho curto. O CAS é o mesmo de hoje, agora dentro do reservation.',
+      steps: [
+        { p: ['browser', 'gateway'], t: 'POST /bff/event-wallets (mesmo contrato de hoje)', c: 'req' },
+        { p: ['gateway', 'admission'], t: 'Toda reserva passa pela admissão', c: 'req' },
+        { p: ['admission', 'redis'], t: 'INCR + EXPIRE no bucket: RPM ≤ 80% de X × réplicas', c: 'read' },
+        { p: ['admission', 'reservation'], t: 'Chamada síncrona à API interna', c: 'req' },
+        { p: ['reservation', 'pooler', 's_res'], t: 'CAS: UPDATE eventcap … WHERE available ≥ 1', c: 'cas' },
+        { p: ['reservation', 'kafka'], t: 'Append de SlotReserved no stream da wallet', c: 'evt' },
+        { p: ['reservation', 'admission', 'gateway', 'browser'], t: 'pending com expires_at', c: 'req' },
+      ] },
+    { name: 'Reserva via fila (uso > 80%)', desc: 'Modo de alta carga (#42). A requisição volta na hora com "aguardando"; o worker pool controla quantas reservas chegam ao banco ao mesmo tempo.',
+      steps: [
+        { p: ['browser', 'gateway', 'admission'], t: 'POST /bff/event-wallets', c: 'req' },
+        { p: ['admission', 'redis'], t: 'RPM acima de 80% de X × réplicas', c: 'read' },
+        { p: ['admission', 'queue'], t: 'Enfileira com TTL e dead-letter', c: 'evt' },
+        { p: ['admission', 'gateway', 'browser'], t: 'App mostra "aguardando confirmação"', c: 'req' },
+        { p: ['queue', 'workers'], t: 'Um worker livre puxa a próxima da fila', c: 'evt' },
+        { p: ['workers', 'via1', 'via2', 'reservation'], t: 'Worker chama a API interna do reservation', c: 'req' },
+        { p: ['reservation', 'pooler', 's_res'], t: 'O mesmo CAS: a fila não muda a garantia', c: 'cas' },
+        { p: ['reservation', 'kafka'], t: 'SlotReserved; expires_at = now + max_time_in_line', c: 'evt' },
+      ] },
+    { name: 'Criar evento (CQRS/ES)', desc: 'O lado de escrita só acrescenta eventos. As tabelas de consulta são projeções reconstruíveis por replay.',
+      steps: [
+        { p: ['browser', 'gateway', 'catalog'], t: 'POST /bff/events', c: 'req' },
+        { p: ['catalog', 'pooler', 's_catalog'], t: 'Append de EventCreated com versão otimista do agregado', c: 'cas' },
+        { p: ['catalog', 'kafka'], t: 'Publica depois do append', c: 'evt' },
+        { p: ['kafka', 'catalog'], t: 'O projetor consome (idempotente)', c: 'evt' },
+        { p: ['catalog', 'pooler', 's_catalog'], t: 'Atualiza as tabelas de consulta', c: 'read' },
+      ] },
+    { name: 'Consultar catálogo', desc: 'Leitura pela projeção. É aqui que existe lag entre escrita e leitura, e por isso a reserva nunca decide vaga por ela.',
+      steps: [
+        { p: ['browser', 'gateway', 'catalog'], t: 'GET /bff/events', c: 'req' },
+        { p: ['catalog', 'pooler', 's_catalog'], t: 'SELECT no read model', c: 'read' },
+        { p: ['s_catalog', 'pooler', 'catalog', 'gateway', 'browser'], t: 'Lista para o app', c: 'read' },
+      ] },
+    { name: 'Cadastro → e-mail', desc: 'O e-mail deixa de ser chamado direto: identity publica, notification consome. Se notification cair, cadastro e login seguem funcionando.',
+      steps: [
+        { p: ['browser', 'gateway', 'identity'], t: 'POST /bff/users', c: 'req' },
+        { p: ['identity', 'pooler', 's_identity'], t: 'INSERT em users (CRUD, sem ES)', c: 'cas' },
+        { p: ['identity', 'kafka'], t: 'Evento de ciclo de vida da conta', c: 'evt' },
+        { p: ['kafka', 'notification'], t: 'notification consome', c: 'evt' },
+        { p: ['notification', 'smtp'], t: 'Envia o código de verificação', c: 'evt' },
+      ] },
+    { name: 'Login (JWT)', desc: 'Só identity emite o token. Os demais serviços validam o JWT localmente, sem chamar identity.',
+      steps: [
+        { p: ['browser', 'gateway', 'identity'], t: 'POST /bff/users/login', c: 'req' },
+        { p: ['identity', 'pooler', 's_identity'], t: 'Confere credenciais', c: 'read' },
+        { p: ['identity', 'gateway', 'browser'], t: 'JWT assinado', c: 'req' },
+      ] },
+  ],
+};
+
+/* ---------- Simulação de pico ---------- */
+function Sim(root) {
+  const svg = root.querySelector('svg.sim'), chart = root.querySelector('svg.chart');
+  const SLOTS = [110, 170, 230, 290], RH = 44, GW = { x: 175, w: 130 }, RS = { x: 800, w: 130 };
+  const ADM = { x: 375, y: 28, w: 190, h: 62 }, Q = { x: 375, y: 214, w: 200, h: 58 }, CAP = { x: 965, y: 176, w: 125, h: 118 };
+  const QMAX = 60, CAPACITY = 500, GW_CAP = 6, RS_CAP = 6, WORK_T = 0.6, UP_D = 1.2, DOWN_D = 3.5, SPEED = 620;
+  const SB_ON = 0.5, REDIR = 0.8, SB_OFF = 0.4, WARM_T = 1.5;
+  const gL = el('g', {}, svg), gN = el('g', {}, svg), gP = el('g', {}, svg);
+  const WK = []; for (let r = 0; r < 2; r++) for (let c = 0; c < 4; c++) WK.push([636 + c * 30, 236 + r * 32]);
+
+  // pistas
+  const usersR = [126, 235];
+  // Pistas de cada réplica ficam ocultas junto com ela (só aparecem a partir do stand-by).
+  const gwL = SLOTS.map(y => [el('line', { x1: usersR[0], y1: usersR[1], x2: GW.x, y2: y + RH / 2, class: 'lane' }, gL),
+    el('line', { x1: GW.x + GW.w, y1: y + RH / 2, x2: ADM.x, y2: ADM.y + ADM.h / 2, class: 'lane' }, gL)]);
+  const laneSync = el('path', { d: `M${ADM.x + ADM.w} ${ADM.y + 31} H775`, class: 'lane sync' }, gL);
+  const rsL = SLOTS.map(y => [el('line', { x1: 775, y1: ADM.y + 31, x2: RS.x, y2: y + RH / 2, class: 'lane sync' }, gL)]);
+  el('text', { x: 590, y: ADM.y + 22, class: 'rs' }, gL).textContent = 'síncrono (uso ≤ 80%)';
+  const laneQ = el('line', { x1: 470, y1: ADM.y + ADM.h, x2: 470, y2: Q.y, class: 'lane' }, gL);
+  el('text', { x: 478, y: 160, class: 'rs' }, gL).textContent = 'uso > 80%';
+  el('line', { x1: Q.x + Q.w, y1: Q.y + 29, x2: 618, y2: Q.y + 29, class: 'lane' }, gL);
+  SLOTS.forEach((y, i) => rsL[i].push(el('line', { x1: 750, y1: 251, x2: RS.x, y2: y + RH / 2, class: 'lane' }, gL),
+    el('line', { x1: RS.x + RS.w, y1: y + RH / 2, x2: CAP.x, y2: CAP.y + CAP.h / 2, class: 'lane' }, gL)));
+
+  // nós fixos
+  const box = (n, label, sub, cls) => { const g = el('g', { class: 'node ' + (cls || '') }, gN);
+    el('rect', { x: n.x, y: n.y, width: n.w, height: n.h, rx: 9 }, g);
+    el('text', { x: n.x + 12, y: n.y + 24, class: 'nl' }, g).textContent = label;
+    const s = el('text', { x: n.x + 12, y: n.y + 42, class: 'ns' }, g); s.textContent = sub; return s; };
+  box({ x: 16, y: 190, w: 110, h: 90 }, 'Usuários', 'app Flutter');
+  const admSub = box(ADM, 'admission', 'RPM = 0,3·X');
+  el('text', { x: ADM.x + 12, y: ADM.y + 56, class: 'ns' }, gN).textContent = 'Redis: INCR + EXPIRE';
+  const qg = el('g', { class: 'node' }, gN);
+  el('rect', { x: Q.x, y: Q.y, width: Q.w, height: Q.h, rx: 9 }, qg);
+  const qLabel = el('text', { x: Q.x + 12, y: Q.y + 22, class: 'nl' }, qg); qLabel.textContent = 'fila · 0';
+  el('rect', { x: Q.x + 10, y: Q.y + 32, width: Q.w - 20, height: 16, rx: 4, fill: 'none', stroke: 'var(--line)' }, qg);
+  const qFill = el('rect', { x: Q.x + Q.w - 10, y: Q.y + 32, width: 0, height: 16, rx: 4, class: 'qfill' }, qg);
+  const wg = el('g', { class: 'node' }, gN);
+  el('rect', { x: 618, y: 200, width: 132, height: 102, rx: 9 }, wg);
+  el('text', { x: 630, y: 220, class: 'nl' }, wg).textContent = 'worker pool';
+  const wkEl = WK.map(([x, y]) => el('circle', { cx: x, cy: y, r: 10, class: 'wk' }, wg));
+  const cg = el('g', {}, gN);
+  const capRect = el('rect', { x: CAP.x, y: CAP.y, width: CAP.w, height: CAP.h, rx: 9, class: 'capbox' }, cg);
+  el('text', { x: CAP.x + 12, y: CAP.y + 24, class: 'nl' }, cg).textContent = 'eventcap';
+  el('text', { x: CAP.x + 12, y: CAP.y + 40, class: 'ns' }, cg).textContent = '1 linha · CAS';
+  const capTxt = el('text', { x: CAP.x + 12, y: CAP.y + 70, class: 'nl', style: 'font-size:20px' }, cg);
+  el('text', { x: CAP.x + 12, y: CAP.y + 88, class: 'ns' }, cg).textContent = 'vagas livres';
+  el('text', { x: CAP.x + 12, y: CAP.y + 106, class: 'ns' }, cg).textContent = 'de 500';
+  const repSet = (x, w, name) => SLOTS.map((y, i) => {
+    const g = el('g', { class: 'rep off' }, gN);
+    el('rect', { x, y, width: w, height: RH, rx: 8, class: 'box' }, g);
+    const bar = el('rect', { x: x + 1, y: y + RH - 6, width: 0, height: 5, rx: 2, class: 'bar' }, g);
+    [SB_ON, REDIR].forEach(f => el('line', { x1: x + 1 + f * (w - 2), x2: x + 1 + f * (w - 2), y1: y + RH - 8, y2: y + RH, class: 'tick' }, g));
+    el('text', { x: x + 10, y: y + 18, class: 'rl' }, g).textContent = `${name} #${i + 1}`;
+    const st = el('text', { x: x + 10, y: y + 33, class: 'rs' }, g); st.textContent = 'parada';
+    return { g, bar, st, x, w };
+  });
+  const gwRep = repSet(GW.x, GW.w, 'gateway'), rsRep = repSet(RS.x, RS.w, 'reservation');
+  el('text', { x: GW.x, y: SLOTS[0] - 10, class: 'rs' }, gN).textContent = 'réplicas (item 47)';
+  el('text', { x: RS.x, y: SLOTS[0] - 10, class: 'rs' }, gN).textContent = 'réplicas (item 47)';
+
+  // estado
+  const S = { t: 0, L: 0.3, acc: 0, queue: 0, avail: CAPACITY, full: 0, drop: 0, served: 0,
+    gw: { cur: 1, max: 4, sb: false, warm: 0, low: 0, idle: 0, name: 'gateway' },
+    rs: { cur: 1, max: 4, sb: false, warm: 0, low: 0, idle: 0, name: 'reservation' },
+    ad: { cur: 1, max: 4, sb: false, warm: 0, low: 0, idle: 0, name: 'admission' },
+    id: { cur: 1, max: 4, sb: false, warm: 0, low: 0, idle: 0, name: 'identity' },
+    ca: { cur: 1, max: 4, sb: false, warm: 0, low: 0, idle: 0, name: 'catalog' },
+    no: { cur: 1, max: 3, sb: false, warm: 0, low: 0, idle: 0, name: 'notification' },
+    wk: { cur: 1, up: 0, down: 0, min: 1, max: 8, name: 'worker' },
+    busy: new Array(8).fill(0), qMode: false, row: false, lag: 0, tok: 0, casN: 0, thrT: 0, thr: 0, rrG: 0, rrR: 0, scen: null, hist: [], histT: 0, lastUi: 0, hot: false };
+  // Carga de cada serviço derivada da taxa de reservas (lam). Proporções ilustrativas, não medidas.
+  const SV = [
+    { r: S.gw, cap: GW_CAP, reps: gwRep, over: 'excesso recusado (429)', load: lam => lam, sig: 'uso de CPU / req/s · toda requisição passa aqui' },
+    { r: S.ad, cap: 6, over: 'excesso recusado (429)', load: lam => lam, sig: 'req/s · stateless, o contador fica no Redis' },
+    { r: S.id, cap: 3, over: 'excesso recusado (429)', load: lam => lam * 0.5, sig: 'logins e renovação de JWT no começo das vendas' },
+    { r: S.ca, cap: 8, over: 'excesso recusado (429)', load: lam => lam * 1.5, sig: 'leituras da projeção (página do evento)' },
+    { r: S.rs, cap: RS_CAP, reps: rsRep, over: 'o excesso espera na fila', load: lam => lam * S.rs.cur * RS_CAP / rsCap(),
+      act: (lam, rsRate) => rsRate * S.rs.cur * RS_CAP / rsCap(), sig: 'demanda de reservas · acima de 80% vai para a fila' },
+    { r: S.no, cap: 2.5, over: 'o excesso vira lag no tópico', load: (lam, rsRate) => (S.avail > 0 ? rsRate : 0), sig: 'lag do consumer · máx. = partições do tópico (3)' },
+  ];
+  const grid = root.querySelector('#svc-grid');
+  SV.forEach(v => {
+    const row = document.createElement('div'); row.className = 'svc';
+    row.innerHTML = `<b>${v.r.name}</b><span class="slots">${'<i></i>'.repeat(v.r.max)}</span><span class="u"></span><span class="sig">${v.sig}</span>`;
+    grid.appendChild(row); v.slots = [...row.querySelectorAll('i')]; v.u = row.querySelector('.u'); v.sg = row.querySelector('.sig');
+  });
+  // Mesmo desenho de réplicas para os outros serviços: origem → 4 réplicas → destino.
+  const svg2 = root.querySelector('svg.sim2');
+  const g2L = el('g', {}, svg2), g2N = el('g', {}, svg2), g2P = el('g', {}, svg2);
+  const S2 = [36, 92, 148, 204], RH2 = 44;
+  const COLS = [
+    { v: SV[1], from: 'gateway', sub: 'reservas', to: ['reserva', 'CAS / fila'] },
+    { v: SV[2], from: 'gateway', sub: 'logins', to: ['Postgres', 'identity'] },
+    { v: SV[3], from: 'gateway', sub: 'leituras', to: ['projeção', 'read model'] },
+    { v: SV[5], from: 'backbone', sub: 'lag 0', to: ['SMTP', 'e-mail'], lag: true },
+  ];
+  COLS.forEach((c, i) => {
+    const x0 = 10 + i * 274, o = { x: x0, y: 120, w: 66, h: 56 }, d = { x: x0 + 190, y: 120, w: 76, h: 56 };
+    Object.assign(c, { x0, o, d, acc: 0, rj: 0, rr: 0 });
+    el('text', { x: x0, y: 20, class: 'nl' }, g2N).textContent = c.v.r.name;
+    c.lanes = S2.map(y => [el('line', { x1: o.x + o.w, y1: o.y + 28, x2: x0 + 84, y2: y + RH2 / 2, class: 'lane' }, g2L),
+      el('line', { x1: x0 + 176, y1: y + RH2 / 2, x2: d.x, y2: d.y + 28, class: 'lane' }, g2L)]);
+    const og = el('g', { class: 'node' }, g2N); el('rect', { x: o.x, y: o.y, width: o.w, height: o.h, rx: 8 }, og);
+    el('text', { x: o.x + 7, y: o.y + 23, class: 'rl' }, og).textContent = c.from;
+    c.subT = el('text', { x: o.x + 7, y: o.y + 40, class: 'rs' }, og); c.subT.textContent = c.sub;
+    const dg = el('g', { class: 'node' }, g2N); el('rect', { x: d.x, y: d.y, width: d.w, height: d.h, rx: 8 }, dg);
+    el('text', { x: d.x + 7, y: d.y + 23, class: 'rl' }, dg).textContent = c.to[0];
+    el('text', { x: d.x + 7, y: d.y + 40, class: 'rs' }, dg).textContent = c.to[1];
+    c.v.reps = S2.map((y, j) => {
+      const g = el('g', { class: 'rep off' }, g2N), x = x0 + 84, w = 92;
+      el('rect', { x, y, width: w, height: RH2, rx: 8, class: 'box' }, g);
+      const bar = el('rect', { x: x + 1, y: y + RH2 - 6, width: 0, height: 5, rx: 2, class: 'bar' }, g);
+      [SB_ON, REDIR].forEach(f => el('line', { x1: x + 1 + f * (w - 2), x2: x + 1 + f * (w - 2), y1: y + RH2 - 8, y2: y + RH2, class: 'tick' }, g));
+      el('text', { x: x + 8, y: y + 18, class: 'rl' }, g).textContent = `#${j + 1}`;
+      const st = el('text', { x: x + 8, y: y + 33, class: 'rs' }, g); st.textContent = 'parada';
+      return { g, bar, st, x, w };
+    });
+  });
+  // Partículas: processadas vão ao destino; acima da capacidade, as do gateway voltam recusadas (429)
+  // e as do notification ficam no lag do tópico.
+  function flow(c, bad) {
+    c.rr = (c.rr + 1) % c.v.r.cur; const y = S2[c.rr] + RH2 / 2, a = [c.o.x + c.o.w, c.o.y + 28 + (Math.random() - .5) * 20];
+    if (bad) spawn([a, [c.x0 + 84, y], [c.o.x + c.o.w, c.o.y + 46]], 'bad', () => {}, g2P);
+    else spawn([a, [c.x0 + 84, y], [c.x0 + 176, y], [c.d.x, c.d.y + 28]], c.lag ? 'evt' : 'req', () => {}, g2P);
+  }
+  const parts = [];
+  const slider = root.querySelector('#sim-load'), out = root.querySelector('#sim-load-o'), logEl = root.querySelector('#sim-log');
+  const K = id => root.querySelector('#' + id);
+
+  function log(msg, cls) {
+    const li = document.createElement('li'); li.className = cls || '';
+    li.innerHTML = `<time>t=${fmt(S.t)}s</time><span>${msg}</span>`;
+    logEl.prepend(li); while (logEl.children.length > 9) logEl.lastChild.remove();
+  }
+  log('<b>1 réplica</b> de cada serviço; carga 0,3·X');
+
+  function spawn(pts, color, onEnd, parent = gP) {
+    const lens = [0]; for (let i = 1; i < pts.length; i++) lens.push(lens[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+    const c = el('circle', { r: 4.5, cx: pts[0][0], cy: pts[0][1], class: 'pt', fill: `var(--c-${color})` }, parent);
+    parts.push({ pts, lens, d: 0, c, onEnd });
+  }
+  const slotY = i => SLOTS[i] + RH / 2;
+  const pick = (r, k) => { S[k] = (S[k] + 1) % r.cur; return S[k]; };
+  // Capacidade efetiva do reservation: com o gargalo ligado, a linha do eventcap limita tudo a X.
+  const ROW_CAP = 6;
+  const rsCap = () => S.row ? Math.min(S.rs.cur * RS_CAP, ROW_CAP) : S.rs.cur * RS_CAP;
+  function cas() {
+    S.casN++;
+    capRect.classList.add('flash'); setTimeout(() => capRect.classList.remove('flash'), 120);
+    if (S.avail > 0) { S.avail--; S.served++; } else S.full++;
+  }
+  function arrival() {
+    const g = pick(S.gw, 'rrG'), y = slotY(g), j = (Math.random() - .5) * 30;
+    const head = [[usersR[0], usersR[1] + j], [GW.x, y], [GW.x + GW.w, y], [ADM.x, ADM.y + 31], [470, ADM.y + 31]];
+    if (S.qMode) {
+      spawn([...head, [470, ADM.y + ADM.h], [470, Q.y + 10]], 'evt', () => { if (S.queue < QMAX) S.queue++; else S.drop++; });
+    } else {
+      const r = pick(S.rs, 'rrR'), ry = slotY(r);
+      spawn([...head, [ADM.x + ADM.w, ADM.y + 31], [775, ADM.y + 31], [RS.x, ry], [RS.x + RS.w, ry], [CAP.x, CAP.y + CAP.h / 2]], 'req', cas);
+    }
+  }
+  function work(k) {
+    const r = pick(S.rs, 'rrR'), ry = slotY(r), [wx, wy] = WK[k];
+    spawn([[Q.x + Q.w, Q.y + 29], [wx, wy], [750, 251], [RS.x, ry], [RS.x + RS.w, ry], [CAP.x, CAP.y + CAP.h / 2]], 'cas', cas);
+  }
+  function scale(r, want, dt, reps) {
+    want = Math.max(r.min, Math.min(r.max, want));
+    if (want > r.cur) { r.up += dt; r.down = 0; if (r.up >= UP_D) { r.cur++; r.up = 0;
+        if (reps) { const g = reps[r.cur - 1].g; g.classList.add('new'); setTimeout(() => g.classList.remove('new'), 900); }
+        log(`<b>+1 ${r.name}</b> → ${r.cur}`, 'up'); } }
+    else if (want < r.cur) { r.down += dt; r.up = 0; if (r.down >= DOWN_D) { r.cur--; r.down = 0; log(`<b>−1 ${r.name}</b> → ${r.cur}`, 'down'); } }
+    else { r.up = 0; r.down = 0; }
+  }
+  // Réplicas: uso > 50% sobe uma em stand-by (sem tráfego); uso > 80% redireciona tráfego para ela.
+  function replicas(r, load, cap, dt, reps) {
+    const u = load / (r.cur * cap);
+    if (r.sb && r.warm > 0) { r.warm -= dt; if (r.warm <= 0) log(`${r.name} #${r.cur + 1} pronta em stand-by`); }
+    if (!r.sb && u > SB_ON && r.cur < r.max) { r.sb = true; r.warm = WARM_T; r.idle = 0;
+      log(`uso ${pct(u)} &gt; 50%: <b>${r.name} #${r.cur + 1}</b> sobe em stand-by`, 'up'); }
+    if (r.sb && r.warm <= 0 && u > REDIR) { r.cur++; r.sb = false;
+      if (reps) { const g = reps[r.cur - 1].g; g.classList.add('new'); setTimeout(() => g.classList.remove('new'), 900); }
+      log(r === S.rs ? `a fila passa a entregar também ao <b>reservation #${r.cur}</b>` : `uso ${pct(u)} &gt; 80%: tráfego redirecionado para <b>${r.name} #${r.cur}</b>`, 'up'); return; }
+    if (r.cur > 1 && load / ((r.cur - 1) * cap) < SB_ON) { r.low += dt;
+      if (r.low >= DOWN_D) { r.low = 0; r.cur--; r.sb = true; r.warm = 0; r.idle = 0;
+        log(`${r.name} #${r.cur + 1} sem tráfego, volta a stand-by`, 'down'); } }
+    else r.low = 0;
+    if (r.sb && u < SB_OFF) { r.idle += dt; if (r.idle >= DOWN_D) { r.idle = 0; r.sb = false; log(`${r.name} #${r.cur + 1} em stand-by desligada`, 'down'); } }
+    else r.idle = 0;
+  }
+  const SCEN = [[0, null], [2, 0.3], [7, 2.4], [17, 2.4], [23, 0.4], [26, 0.4]];
+  function scenL(t) {
+    for (let i = 1; i < SCEN.length; i++) if (t <= SCEN[i][0]) {
+      const [t0, a0] = SCEN[i - 1], [t1, a1] = SCEN[i]; return a0 + (a1 - a0) * (t - t0) / (t1 - t0);
+    }
+    return null;
+  }
+  function setL(v) { S.L = v; slider.value = v; out.textContent = fmt(v) + '·X'; }
+
+  function step(dt) {
+    S.t += dt;
+    if (S.scen) { const v = scenL(S.t - S.scen.t0); if (v === null) { S.scen = null; log('pico encerrado'); } else setL(v); }
+    const lam = S.L * 6;
+    S.acc += lam * dt; while (S.acc >= 1) { S.acc -= 1; arrival(); }
+    S.tok = Math.min(1, S.tok + ROW_CAP * dt);
+    S.thrT += dt; if (S.thrT >= 1) { S.thr = 0.7 * S.thr + 0.3 * S.casN / S.thrT; S.casN = 0; S.thrT = 0; }
+    // workers
+    for (let k = 0; k < 8; k++) {
+      if (S.busy[k] > 0) S.busy[k] -= dt;
+      if (k < S.wk.cur && S.busy[k] <= 0 && S.queue > 0 && (!S.row || S.tok >= 1)) { S.queue--; S.busy[k] = WORK_T; if (S.row) S.tok -= 1; work(k); }
+    }
+    // autoescala
+    const uD = lam / rsCap();
+    if (!S.qMode && uD > REDIR) log(`uso ${pct(uD)} &gt; 80%: <b>admission redireciona para a fila</b>`, 'warn');
+    if (S.qMode && !(uD > 0.7 || S.queue > 0)) log('uso abaixo de 70% e fila vazia: <b>volta ao síncrono</b>', 'down');
+    S.qMode = uD > REDIR || (S.qMode && (uD > 0.7 || S.queue > 0));
+    const qMode = S.qMode;
+    const rsRate = Math.min(qMode ? Math.min(lam, S.wk.cur / WORK_T) : lam, S.row ? ROW_CAP : Infinity);
+    SV.forEach(v => replicas(v.r, v.load(lam, rsRate), v.cap, dt, v.reps));
+    COLS.forEach(c => { const cap = c.v.r.cur * c.v.cap, dem = c.v.load(lam, rsRate);
+      if (c.lag) S.lag = Math.max(0, S.lag + (dem - cap) * dt);
+      c.acc += Math.min(dem, cap) * 0.5 * dt; while (c.acc >= 1) { c.acc--; flow(c, false); }
+      if (!c.lag && dem > cap) { c.rj += (dem - cap) * 0.5 * dt; while (c.rj >= 1) { c.rj--; flow(c, true); } } });
+    scale(S.wk, (qMode || S.queue > 0) ? Math.ceil(S.queue / 5) + 2 : 1, dt, null);
+    const hot = lam / (S.gw.cur * GW_CAP) > 1;
+    if (hot && !S.hot) log('<b>demanda do gateway acima da capacidade</b>', 'warn');
+    S.hot = hot;
+    // partículas
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const p = parts[i]; p.d += SPEED * dt; const tot = p.lens[p.lens.length - 1];
+      if (p.d >= tot) { p.c.remove(); parts.splice(i, 1); p.onEnd(); continue; }
+      let s = 1; while (p.lens[s] < p.d) s++;
+      const u = (p.d - p.lens[s - 1]) / ((p.lens[s] - p.lens[s - 1]) || 1);
+      p.c.setAttribute('cx', p.pts[s - 1][0] + (p.pts[s][0] - p.pts[s - 1][0]) * u);
+      p.c.setAttribute('cy', p.pts[s - 1][1] + (p.pts[s][1] - p.pts[s - 1][1]) * u);
+    }
+    S.histT += dt; if (S.histT >= 0.2) { S.histT = 0; S.hist.push(S.L); if (S.hist.length > 300) S.hist.shift(); drawChart(); }
+  }
+
+  function ui() {
+    const qMode = S.qMode, lam = S.L * 6;
+    const rsRate = Math.min(qMode ? Math.min(lam, S.wk.cur / WORK_T) : lam, S.row ? ROW_CAP : Infinity);
+    // d = demanda ÷ capacidade (pode passar de 100%); a = uso real, nunca acima de 100%.
+    const util = v => { const c = v.r.cur * v.cap, d = v.load(lam, rsRate) / c; return { d, a: Math.min(1, (v.act || v.load)(lam, rsRate) / c) }; };
+    const paint = (reps, v, lanes) => { const r = v.r, { d, a } = util(v); reps.forEach((o, i) => {
+      const on = i < r.cur, sb = !on && r.sb && i === r.cur;
+      lanes[i].forEach(l => l.classList.toggle('hid', !on && !sb));
+      o.g.classList.toggle('off', !on && !sb); o.g.classList.toggle('on', on); o.g.classList.toggle('sb', sb);
+      o.g.classList.toggle('hot', on && d > 1);
+      o.bar.setAttribute('width', on ? a * (o.w - 2) : 0);
+      const nw = o.w < 110, suf = v.r === S.rs ? 'fila' : v.r === S.no ? 'lag' : '429';
+      o.st.textContent = on ? (d > 1 ? `${nw ? '' : 'uso '}${pct(a)} · ${suf}` : `uso ${pct(a)}`) : sb ? (r.warm > 0 ? 'subindo…' : nw ? 'stand-by' : 'stand-by, sem tráfego') : 'parada';
+    }); };
+    paint(gwRep, SV[0], gwL); paint(rsRep, SV[4], rsL); COLS.forEach(c => paint(c.v.reps, c.v, c.lanes));
+    COLS[3].subT.textContent = `lag ${Math.round(S.lag)}`;
+    K('k-thr').textContent = fmt(S.thr / ROW_CAP) + '·X';
+    wkEl.forEach((c, k) => { c.classList.toggle('on', k < S.wk.cur); c.classList.toggle('busy', k < S.wk.cur && S.busy[k] > 0); });
+    const w = (Q.w - 20) * Math.min(1, S.queue / QMAX); qFill.setAttribute('width', w); qFill.setAttribute('x', Q.x + Q.w - 10 - w);
+    qLabel.textContent = `fila · ${S.queue}`;
+    admSub.textContent = `RPM = ${fmt(S.L)}·X`;
+    laneSync.classList.toggle('act', !qMode); laneQ.classList.toggle('qact', qMode);
+    capTxt.textContent = S.avail;
+    K('k-mode').innerHTML = qMode ? '<span class="pill" style="color:var(--c-evt)">fila</span>' : '<span class="pill" style="color:var(--c-req)">síncrono</span>';
+    K('k-q').textContent = S.queue; K('k-w').textContent = S.wk.cur; K('k-gw').textContent = S.gw.cur; K('k-rs').textContent = S.rs.cur;
+    K('k-cap').textContent = `${S.avail} / ${CAPACITY}`; K('k-full').textContent = S.full; K('k-drop').textContent = S.drop;
+    K('k-over').textContent = Math.max(0, S.served - CAPACITY);
+    SV.forEach(v => { const r = v.r, { d, a } = util(v);
+      v.slots.forEach((sl, i) => { sl.className = i < r.cur ? (d > 1 ? 'on hot' : 'on') : (r.sb && i === r.cur ? 'sb' : ''); });
+      v.u.textContent = pct(a);
+      v.sg.innerHTML = d > 1 ? `<b style="color:var(--c-bad)">demanda ${pct(Math.min(d, 9.99))}</b>: ${v.over}` : v.sig; });
+  }
+
+  // gráfico
+  const P = { l: 46, r: 1086, t: 12, b: 108 }, Y = v => P.b - (v / 3) * (P.b - P.t);
+  [0, 1, 2, 3].forEach(v => { el('line', { x1: P.l, x2: P.r, y1: Y(v), y2: Y(v), class: v === 1 ? 'xline' : 'grid' }, chart);
+    el('text', { x: P.l - 8, y: Y(v) + 4, 'text-anchor': 'end' }, chart).textContent = v === 0 ? '0' : (v === 1 ? 'X' : v + 'X'); });
+  el('text', { x: P.r, y: 125, 'text-anchor': 'end' }, chart).textContent = 'carga nos últimos 60 s · X = limiar medido (#39) · uso do reservation = carga ÷ (X × réplicas)';
+  const area = el('path', { class: 'area' }, chart), line = el('path', { class: 'ln' }, chart), end = el('circle', { r: 4, class: 'end', cx: -10, cy: -10 }, chart);
+  function drawChart() {
+    const h = S.hist; if (h.length < 2) return;
+    const X = i => P.r - (h.length - 1 - i) * ((P.r - P.l) / 299);
+    let d = ''; h.forEach((v, i) => { d += (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); });
+    line.setAttribute('d', d); area.setAttribute('d', d + `L${P.r} ${P.b}L${X(0).toFixed(1)} ${P.b}Z`);
+    end.setAttribute('cx', P.r); end.setAttribute('cy', Y(h[h.length - 1]));
+  }
+  for (let i = 0; i < 300; i++) S.hist.push(0.3); drawChart();
+
+  slider.addEventListener('input', () => { if (S.scen) { S.scen = null; log('pico interrompido: carga manual'); } setL(+slider.value); });
+  root.querySelector('#sim-peak').onclick = () => { S.scen = { t0: S.t }; SCEN[0][1] = S.L; log('<b>pico iniciado</b>: carga sobe até 2,4·X'); };
+  root.querySelector('#sim-row').addEventListener('change', e => { S.row = e.target.checked;
+    log(S.row ? '<b>gargalo ligado</b>: a linha do eventcap limita o evento a X' : '<b>gargalo desligado</b>: capacidade cresce com as réplicas', S.row ? 'warn' : ''); });
+  root.querySelector('#sim-reset').onclick = () => { S.avail = CAPACITY; S.served = 0; S.full = 0; S.drop = 0; log('vagas repostas: 500'); };
+  ui();
+
+  let active = false;
+  return { update(now, dt) { if (!active) return; step(dt); if (now - S.lastUi > 120) { S.lastUi = now; ui(); } }, setActive(v) { active = v; } };
+}
+
+/* ---------- abas + loop ---------- */
+const views = { hoje: Diagram(document.getElementById('hoje'), HOJE), final: Diagram(document.getElementById('final'), FINAL), pico: Sim(document.getElementById('pico')) };
+const tabs = [...document.querySelectorAll('.tab')];
+function show(id) {
+  tabs.forEach(t => { const on = t.getAttribute('aria-controls') === id; t.setAttribute('aria-selected', on); document.getElementById(t.getAttribute('aria-controls')).hidden = !on; });
+  for (const k in views) views[k].setActive(k === id);
+}
+tabs.forEach(t => t.addEventListener('click', () => show(t.getAttribute('aria-controls'))));
+const start = (location.hash || '').slice(1);
+show(views[start] ? start : 'hoje');
+let last = performance.now();
+function frame(now) { const dt = Math.min(0.05, (now - last) / 1000); last = now; for (const k in views) views[k].update(now, dt); requestAnimationFrame(frame); }
+requestAnimationFrame(frame);
+})();
+</script>
+
+</body>
+</html>

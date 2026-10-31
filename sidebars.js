@@ -5,6 +5,7 @@ const sidebars = {
   docsSidebar: [
     "index",
     "fluxos",
+    "batch2",
     {
       type: "category",
       label: "Gerenciador de Eventos",

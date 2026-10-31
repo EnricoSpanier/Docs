@@ -1,0 +1,43 @@
+metrica,configuracao,valor,unidade,fonte,trecho_literal_na_fonte
+x_seq,P0-pre-pooler-ref,97000,RPM,docs/artigo/experimento-monolito.md,X = 97.000
+x_seq,P1-crud-pooler-03,78000,RPM,Projeto/carga/results/03-supabase-pooler/README.md,X pelo pooler ≈ 78k RPM
+x_seq,P2-es-wifi-04,56000,RPM,Projeto/carga/results/04-fase6-es/README.md,X ≈ 56k RPM
+x_seq_piso,P2-es-cabo-04b,60000,RPM (limite inferior),Projeto/carga/results/04b-fase6-es-cabo/README.md,X ≥ 60k
+x_seq,P3-intermediario-05,58000,RPM,Projeto/carga/results/05-distribuido/README.md,X ≈ 58k RPM
+x_seq,R-final-06,56000,RPM,Projeto/carga/results/06-batch1-final/README.md,X sequencial ≈ 56k RPM
+x_seq_ultimo_limpo,R-final-06,54000,RPM,Projeto/carga/results/06-batch1-final/README.md,Último degrau limpo **54k**
+x_intercalado,R-final-06,86000,RPM (teto do host; não comparável com x_seq),Projeto/carga/results/06-batch1-final/README.md,X intercalado ≈ 86k RPM
+x_intercalado_ultimo_limpo,R-final-06,84000,RPM,Projeto/carga/results/06-batch1-final/README.md,Último degrau limpo **84k**
+oversell_cas,P1-crud-pooler-03,0 em 10/10,eventos,docs/artigo/experimento-monolito.md,`oversell = 0` nas 10 linhas
+oversell_naive,P1-crud-pooler-03,teto em 36/40 (15 a 180),eventos,docs/artigo/experimento-monolito.md,Em 36 das 40 repetições o overselling ficou no teto
+oversell_cas,P2-es-wifi-04,0 em 10/10,eventos,Projeto/carga/results/04-fase6-es/README.md,Oversell 0 em todas as repetições
+oversell_naive,P2-es-wifi-04,teto em 10/10 (80/180),eventos,Projeto/carga/results/04-fase6-es/README.md,Oversell máximo em todas as repetições (80 em N=100; 180 em N=200)
+oversell_naive,P2-es-cabo-04b,teto em 10/10 (80/180),eventos,Projeto/carga/results/04b-fase6-es-cabo/README.md,Oversell 80 em N=100 e 180 em N=200 em todas as repetições
+oversell_cas,P2-es-cabo-04b,não medido,—,Projeto/carga/results/04b-fase6-es-cabo/README.md,Overselling do braço `cas`: não medido aqui
+oversell_cas,P3-intermediario-05,0 em 20/20,eventos,Projeto/carga/results/05-distribuido/README.md,CAS: 0 em 20 de 20
+oversell_naive,P3-intermediario-05,teto em 19/20 (168 na rep 1 de N=200),eventos,Projeto/carga/results/05-distribuido/README.md,no teto (80 / 180) em 19 de 20
+oversell_cas,R-final-06,0 em 20/20 e 0 no aleatório,eventos,Projeto/carga/results/06-batch1-final/README.md,CAS: 0 em 20 de 20 na matriz e 0 no aleatório
+oversell_naive,R-final-06,teto em 20/20 (80/180),eventos,Projeto/carga/results/06-batch1-final/README.md,no teto (80 / 180) em 20 de 20
+reserva_p50_p95_p99,P1-crud-pooler-03 (Ale-29057),3.9/5.7/10.7,ms,Projeto/carga/results/04-fase6-es/README.md + 03-supabase-pooler/resultados-aleatorio-109.csv,"(era 3.9 / 5.7 / 10.7) [README 04 usa vírgula: 3,9 / 5,7 / 10,7]"
+confirma_p50_p95_p99,P1-crud-pooler-03 (Ale-29057),2.1/5.0/8.8,ms,Projeto/carga/results/04-fase6-es/README.md,"(2,1 / 5,0 / 8,8)"
+reserva_p50_p95_p99,P2-es-wifi-04 (Ale-190276),10.8/36.2/62.0,ms,Projeto/carga/results/04-fase6-es/README.md,"reserva 10,8 / 36,2 / 62,0"
+confirma_p50_p95_p99,P2-es-wifi-04 (Ale-190276),8.7/29.7/56.0,ms,Projeto/carga/results/04-fase6-es/README.md,"confirma 8,7 / 29,7 / 56,0"
+reserva_p50_p95_p99,P3-intermediario-05 (Ale-644172),4.8/6.6/9.3,ms,Projeto/carga/results/05-distribuido/README.md,"reserva 4,8 / 6,6 / 9,3"
+confirma_p50_p95_p99,P3-intermediario-05 (Ale-644172),3.1/4.5/6.9,ms,Projeto/carga/results/05-distribuido/README.md,"confirma 3,1 / 4,5 / 6,9"
+reserva_p50_p95_p99,R-final-06 (Ale-939580),4.7/6.7/8.0,ms,Projeto/carga/results/06-batch1-final/README.md,"reserva 4,7 / 6,7 / 8,0"
+confirma_p50_p95_p99,R-final-06 (Ale-939580),3.1/5.5/8.1,ms,Projeto/carga/results/06-batch1-final/README.md,"confirma 3,1 / 5,5 / 8,1"
+leitura_p95_busca_evento_carteira,P1-crud-pooler-03 (Ale-29057),15.0/3.4/12.6,ms,docs/artigo/experimento-monolito.md,"tabela Ale-29057 × Ale-190276 (Busca 15,0; Evento 3,4; Carteira 12,6)"
+leitura_p95_busca_evento_carteira,P2-es-wifi-04 (Ale-190276),128.3/32.7/56.9,ms,Projeto/carga/results/04-fase6-es/README.md,"busca 58,8 / 128,3; evento 7,9 / 32,7; carteira 16,6 / 56,9"
+leitura_p95_busca_evento_carteira,P3-intermediario-05 (Ale-644172),19.9/3.7/10.1,ms,Projeto/carga/results/05-distribuido/README.md,"busca 16,0 / 19,9; evento 2,4 / 3,7; carteira 4,6 / 10,1"
+leitura_p95_busca_evento_carteira,R-final-06 (Ale-939580),32/5/8,ms,Projeto/carga/results/06-batch1-final/README.md,"p95 por endpoint: evento 5, carteira 8, busca 32"
+aleatorio_aceitas_5xx,todas,146400 aceitas; 0 erros 5xx; 0 descartes,—,READMEs 04/05/06 + artigo (Ale-29057),146.400 aceitas
+lag,P1-crud-pooler-03,timer configurado 500–10000 ms; lag_obs_disparo médio 241–6211 ms,ms (variável independente),docs/artigo/experimento-monolito.md,tabela do braço ingênuo do Ponto 1 (coluna lag_obs_disparo médio)
+lag,P2-es-wifi-04,"lag_obs_max 19–280 ms (13 de 20 linhas); offset lag do consumer no aleatório média 2,9 máx 49 mensagens; backlog na escada 362.342 (grossa) / 578.674 (refino)",ms e mensagens,Projeto/carga/results/04-fase6-es/README.md + artigo,"lag do consumer em média 2,9 mensagens (máx. 49)"
+lag,P2-es-cabo-04b,lag_obs_max = -1 em 9 de 10 linhas (projeção mais rápida que o polling de 250 ms),ms,Projeto/carga/results/04b-fase6-es-cabo/README.md,`lag_obs_max` = -1 (sem amostra) em 9 de 10 linhas
+lag,P3-intermediario-05,lag_obs_* = -1 quase sempre (projeção mais rápida que o polling),ms,Projeto/carga/results/05-distribuido/README.md,`lag_obs_*` = -1 quase sempre
+lag,R-final-06,lag_obs_max lido em poucas linhas (máx 79–158 ms); nas outras a projeção foi mais rápida que o polling de 250 ms,ms,Projeto/carga/results/06-batch1-final/README.md,`lag_obs_max` lido em poucas linhas (máx 79–158 ms)
+rede,P1-crud-pooler-03,cabo,—,docs/artigo/experimento-monolito.md,
+rede,P2-es-wifi-04,"Wi-Fi (baseline HTTP p50 26,6 / p95 42,9 ms)",—,Projeto/carga/results/04-fase6-es/README.md,
+rede,P2-es-cabo-04b,cabo + SSD,—,Projeto/carga/results/04b-fase6-es-cabo/README.md,
+rede,P3-intermediario-05,cabo + SSD,—,Projeto/carga/results/05-distribuido/README.md,
+rede,R-final-06,"cabo + SSD (baseline HTTP p50 13,9 / p95 15,6 ms)",—,Projeto/carga/results/06-batch1-final/README.md,

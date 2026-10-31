@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="pt-BR" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-decisoes-arquitetura/Architecture-Decision-Event-Backbone-Event-Store" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.10.2">
+<title data-rh="true">Decisão de Arquitetura — Backbone de eventos, event store e contrato do evento de domínio | Docs</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://docs.enricospanier.com.br/decisoes-arquitetura/Architecture-Decision-Event-Backbone-Event-Store"><meta data-rh="true" property="og:locale" content="pt_BR"><meta data-rh="true" name="docusaurus_locale" content="pt-BR"><meta data-rh="true" name="docsearch:language" content="pt-BR"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Decisão de Arquitetura — Backbone de eventos, event store e contrato do evento de domínio | Docs"><meta data-rh="true" name="description" content="Status: decidido, NÃO implementado. Fase 6 do roadmap (issue #26). Implementação nas"><meta data-rh="true" property="og:description" content="Status: decidido, NÃO implementado. Fase 6 do roadmap (issue #26). Implementação nas"><link data-rh="true" rel="canonical" href="https://docs.enricospanier.com.br/decisoes-arquitetura/Architecture-Decision-Event-Backbone-Event-Store"><link data-rh="true" rel="alternate" href="https://docs.enricospanier.com.br/decisoes-arquitetura/Architecture-Decision-Event-Backbone-Event-Store" hreflang="pt-BR"><link data-rh="true" rel="alternate" href="https://docs.enricospanier.com.br/decisoes-arquitetura/Architecture-Decision-Event-Backbone-Event-Store" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Decisão de Arquitetura — Backbone de eventos, event store e contrato do evento de domínio","item":"https://docs.enricospanier.com.br/decisoes-arquitetura/Architecture-Decision-Event-Backbone-Event-Store"}]}</script><link rel="stylesheet" href="/assets/css/styles.a3250200.css">
+<script src="/assets/js/runtime~main.3672d3fa.js" defer="defer"></script>
+<script src="/assets/js/main.f5a7271d.js" defer="defer"></script>
+</head>
+<body>
+<svg style="display: none;"><defs>
+<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
+</defs></svg>
+<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||"dark"),document.documentElement.setAttribute("data-theme-choice",t||"dark")}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Pular para o conteúdo principal"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Pular para o conteúdo principal</a></div><nav aria-label="Navegação principal" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Alternar painel de navegação" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/"><b class="navbar__title text--truncate">Docs</b></a><a class="navbar__item navbar__link" href="/gerenciador-eventos/">Gerenciador de Eventos</a><a class="navbar__item navbar__link" href="/testes/">Testes</a><a class="navbar__item navbar__link" href="/decisoes-arquitetura/visao-geral">Decisões de Arquitetura</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="modo do sistema" aria-label="Mudar entre modo claro e escuro (modo do sistema está ativo)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div><div class="navbarSearchContainer_Bca1"><div class="navbar__search searchBarContainer_NW3z" dir="ltr"><svg aria-hidden="true" class="searchIcon_T3tP" focusable="false" viewBox="0 0 16 16"><path fill="currentColor" d="M6.02945 10.20327a4.17382 4.17382 0 1 1 4.17382-4.17382 4.15609 4.15609 0 0 1-4.17382 4.17382Zm9.69195 4.2199-4.8225-4.82338A5.88021 5.88021 0 0 0 12.058 6.02856 6.00467 6.00467 0 1 0 9.59979 10.8989l4.82338 4.82338a.89729.89729 0 0 0 1.29912 0 .89749.89749 0 0 0-.00087-1.29909Z"></path></svg><input placeholder="Search" aria-label="Search" class="navbar__search-input searchInput_YFbd" value=""><div class="loadingRing_RJI3 searchBarLoadingRing_YnHq"><div></div><div></div><div></div><div></div></div></div></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class="docsWrapper_hBAB"><button aria-label="Voltar para o topo" class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type="button"></button><div class="docRoot_UBD9"><aside class="theme-doc-sidebar-container docSidebarContainer_YfHR"><div class="sidebarViewport_aRkj"><div class="sidebar_njMd"><nav aria-label="Painel lateral de documentos" class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/"><span class="linkLabel_WmDU">Documentação</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/fluxos"><span class="linkLabel_WmDU">Fluxo de Dados</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/batch2"><span class="linkLabel_WmDU">Tempo restante do Batch 2</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/gerenciador-eventos/BACKLOG"><span class="categoryLinkLabel_W154">Gerenciador de Eventos</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/testes/"><span class="categoryLinkLabel_W154">Testes</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" href="/decisoes-arquitetura/visao-geral"><span class="categoryLinkLabel_W154">Decisões de Arquitetura</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/decisoes-arquitetura/visao-geral"><span class="linkLabel_WmDU">Visão Geral</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/decisoes-arquitetura/Backend-Architecture"><span class="linkLabel_WmDU">Arquitetura de Backend</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/decisoes-arquitetura/Database-Schema"><span class="linkLabel_WmDU">Schema do Banco</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/decisoes-arquitetura/Architecture-Decision-Stock-Isolation"><span class="linkLabel_WmDU">ADR: Estoque Isolado</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/decisoes-arquitetura/Architecture-Decision-Async-Checkout-Queue"><span class="linkLabel_WmDU">ADR: Fila Assíncrona de Checkout</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/decisoes-arquitetura/Architecture-Decision-Microservices-Split"><span class="linkLabel_WmDU">ADR: Split em Microsserviços</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/decisoes-arquitetura/Architecture-Decision-Supabase-Self-Host"><span class="linkLabel_WmDU">ADR: Supabase Self-Hosted</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/decisoes-arquitetura/Implementacao-EventCap-e-Reserva-CAS"><span class="linkLabel_WmDU">Implementação: EventCap + CAS</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/decisoes-arquitetura/Roadmap-e-Issues"><span class="linkLabel_WmDU">Roadmap e Issues</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/decisoes-arquitetura/References"><span class="linkLabel_WmDU">Referências</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/decisoes-arquitetura/Architecture-Decision-Event-Backbone-Event-Store"><span class="linkLabel_WmDU">Decisão de Arquitetura — Backbone de eventos, event store e contrato do evento de domínio</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/decisoes-arquitetura/Plano-2-Batches-ate-04-11"><span class="linkLabel_WmDU">Plano de 2 batches até 03–04/11</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/decisoes-arquitetura/Validacao-e-Pendencias-2026-10-26"><span class="linkLabel_WmDU">Validação do estado e pendências (2026-10-26)</span></a></li></ul></li></ul></nav></div></div></aside><main class="docMainContainer_TBSr"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_VOVn"><div class="docItemContainer_Djhp"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_Z_bl" aria-label="Trilha"><ul class="breadcrumbs"><li class="breadcrumbs__item"><a aria-label="Página Inicial" class="breadcrumbs__link" href="/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_YNFT"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">Decisões de Arquitetura</span></li><li class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link">Decisão de Arquitetura — Backbone de eventos, event store e contrato do evento de domínio</span></li></ul></nav><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_ITEo"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">Nesta página</button></div><div class="theme-doc-markdown markdown"><header><h1>Decisão de Arquitetura — Backbone de eventos, event store e contrato do evento de domínio</h1></header>
+<blockquote>
+<p><strong>Status: decidido, NÃO implementado.</strong> Fase 6 do roadmap (issue #26). Implementação nas
+issues #27 (broker + infra de event store), #28 (<code>catalog</code>), #29 (lado wallet de <code>reservation</code>)
+e #30 (checkpoint); a Rodada 2 (#31) mede o resultado. Resolve as questões em aberto &quot;Kafka vs.
+Redpanda&quot;, &quot;event store&quot;, &quot;formato do evento&quot; e &quot;admissão: RabbitMQ vs. tópico&quot; do
+<a class="" href="/decisoes-arquitetura/Architecture-Decision-Microservices-Split">Architecture-Decision-Microservices-Split</a>.</p>
+</blockquote>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="contexto">Contexto<a href="#contexto" class="hash-link" aria-label="Link direto para Contexto" title="Link direto para Contexto" translate="no">​</a></h2>
+<p>A Fase 5 deixou o monólito em módulos (<code>identity</code>, <code>catalog</code>, <code>reservation</code>, <code>notification</code>,
+<code>shared</code>, <code>gateway</code>), mesmo processo e schema <code>public</code>. A Fase 6 converte <code>catalog</code> e o lado
+wallet/order de <code>reservation</code> para CQRS + Event Sourcing <strong>ainda dentro do monólito</strong>; <code>eventcap</code>
+fica relacional com o <code>UPDATE</code> condicional (CAS) — a tese do TCC
+(<a class="" href="/decisoes-arquitetura/Backend-Architecture">Backend-Architecture</a>, <a class="" href="/decisoes-arquitetura/Architecture-Decision-Stock-Isolation">Architecture-Decision-Stock-Isolation</a>).</p>
+<p>A Rodada 2 (#31) re-executa o braço de controle lendo a <strong>projeção ES real</strong>, com <strong>lag de consumer
+de verdade</strong> em vez do timer sintético da Fase 2. A escolha do event store decide o que ela mede.</p>
+<p>Restrições que vêm do código atual:</p>
+<ul>
+<li class="">Reserva = uma transação JDBC manual (<code>setAutoCommit(false)</code>): claim da <code>Idempotency-Key</code> → CAS em
+<code>eventcap</code> → <code>walletevent</code>. O evento <code>SlotReserved</code> precisa entrar <strong>nessa</strong> transação.</li>
+<li class="">A decisão de estado da reserva é o <code>UPDATE</code> condicional em <code>walletevent</code> (<code>reservePending</code>,
+<code>confirm</code>, <code>cancelIfActive</code>, <code>expireIfStale</code>, rowcount = 1); é ele que impede devolver a vaga duas
+vezes.</li>
+<li class="">Contrato <code>/bff/**</code> inalterado (<code>HttpContractTest</code>): vários testes escrevem e leem em seguida.</li>
+<li class="">O backend fala com o Postgres pelo Supavisor em transaction mode: nada de estado de sessão.</li>
+<li class="">FKs atuais para <code>event</code>: <code>eventcap</code> e <code>event_availability</code> com <code>ON DELETE CASCADE</code>, <code>walletevent</code>
+com <code>RESTRICT</code>.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="decisão">Decisão<a href="#decisão" class="hash-link" aria-label="Link direto para Decisão" title="Link direto para Decisão" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="1-broker-redpanda">1. Broker: <strong>Redpanda</strong><a href="#1-broker-redpanda" class="hash-link" aria-label="Link direto para 1-broker-redpanda" title="Link direto para 1-broker-redpanda" translate="no">​</a></h3>
+<p>Redpanda (binário único, API Kafka, sem JVM), um nó no compose, imagem com tag fixa escolhida na #27.
+Cliente: <code>spring-kafka</code>. Trocar por Apache Kafka (KRaft) depois é troca de imagem, sem mudar código.</p>
+<p><strong>Por quê:</strong> a máquina host já roda Supabase (db, pooler, Studio, meta, kong), backend e frontend
+durante a carga; um broker JVM disputaria memória/CPU com o que está sendo medido.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="2-event-store-tabela-de-streams-no-postgres--outbox--redpanda">2. Event store: <strong>tabela de streams no Postgres + outbox → Redpanda</strong><a href="#2-event-store-tabela-de-streams-no-postgres--outbox--redpanda" class="hash-link" aria-label="Link direto para 2-event-store-tabela-de-streams-no-postgres--outbox--redpanda" title="Link direto para 2-event-store-tabela-de-streams-no-postgres--outbox--redpanda" translate="no">​</a></h3>
+<p><strong>Fonte de verdade = <code>event_store</code> no Postgres, imutável</strong> (nenhuma linha é atualizada depois do
+append). Colunas do envelope (seção 3) + <code>UNIQUE (stream_type, stream_id, version)</code>.</p>
+<p><strong>Append e concorrência otimista.</strong> Mesmo padrão do <code>claim</code>/<code>tryReserve</code>:
+<code>INSERT ... ON CONFLICT DO NOTHING</code> + rowcount. A versão esperada vem do estado lido <strong>na mesma
+transação</strong> (coluna <code>version</code> da projeção inline do agregado). Rowcount 0 = outra transação gravou
+essa versão antes:</p>
+<ul>
+<li class="">na reserva → rollback e a mesma resposta da corrida atual (&quot;Vínculo já existente&quot;);</li>
+<li class="">em comandos de <code>catalog</code> → rollback e o command é repetido numa transação nova (o
+<code>unique_violation</code> não é usado como controle de fluxo porque aborta a transação inteira, CAS e
+claim inclusive).</li>
+</ul>
+<p>Por stream, as versões <strong>comitam em ordem</strong>: a versão n+1 só pode ser calculada depois que a n
+comitou, porque a versão esperada é lida do estado comitado. Na reserva, a versão sai da <strong>própria
+guarda</strong>: <code>UPDATE walletevent ... SET version = version + 1 ... RETURNING version</code> em
+<code>reservePending</code>/<code>confirm</code>/<code>cancelIfActive</code>/<code>expireIfStale</code>, sem <code>SELECT</code> separado. Isso evita que uma
+reserva concorrente com a expiração do mesmo par leia uma versão velha, e economiza uma ida ao banco.</p>
+<p><strong>Outbox = tabela <code>event_outbox</code></strong> (só <code>global_position</code> do evento), inserida na mesma transação do
+append e <strong>apagada</strong> depois de publicar. Mantém o <code>event_store</code> imutável e sem <code>UPDATE</code> não-HOT na
+tabela mais quente. Custo por reserva: +1 <code>INSERT</code> em <code>event_store</code>, +1 <code>INSERT</code> em <code>event_outbox</code> na
+transação do request, +1 <code>DELETE</code> assíncrono no relay. O <code>INSERT</code>+<code>DELETE</code> contínuo gera tuplas mortas; a #27
+configura autovacuum mais agressivo na <code>event_outbox</code> (<code>autovacuum_vacuum_scale_factor</code> baixo). Entra na seção de latência do
+<code>Backend/CLAUDE.md</code> e na leitura da #31.</p>
+<p><strong>Relay outbox → Redpanda.</strong> <code>@Scheduled</code> com intervalo curto (default <strong>50 ms</strong>), drena até esvaziar.
+Uma transação por lote:</p>
+<ol>
+<li class=""><code>pg_try_advisory_xact_lock(&lt;constante&gt;)</code> — um relay por vez, inclusive com vários contextos Spring
+ou réplicas (lock de <strong>transação</strong>, compatível com o Supavisor em transaction mode); quem não
+pega o lock sai;</li>
+<li class="">lê o lote <code>event_outbox ⋈ event_store ORDER BY global_position LIMIT n</code> (<strong>sem</strong> <code>SKIP LOCKED</code>:
+pular linhas quebraria a ordem por stream);</li>
+<li class="">envia ao Redpanda e espera o ack (producer idempotente, <code>acks=all</code>, <code>max.block.ms</code>/
+<code>delivery.timeout.ms</code> curtos para não segurar a conexão do pooler com o broker fora);</li>
+<li class="">apaga o lote do <code>event_outbox</code> e comita. Falha no envio → rollback, o lote volta no próximo tick.</li>
+</ol>
+<p>Publicação <strong>at-least-once</strong> (rollback depois de enviar = reenvio). <code>LISTEN/NOTIFY</code> foi descartado
+porque exigiria uma conexão de sessão dedicada, fora do pooler, só para isso.</p>
+<p><strong><code>global_position</code> não é cursor.</strong> É alocado na ordem do <code>INSERT</code>, não na do commit: com escrita
+concorrente, uma posição menor pode comitar depois de uma maior. Ninguém lê o <code>event_store</code> &quot;a partir
+da posição X&quot; para acompanhar novidades; o acompanhamento é pelo broker e o replay é completo.</p>
+<p><strong>Projeções em duas classes:</strong></p>
+<ul>
+<li class=""><strong>inline</strong> — mesma transação do append: as tabelas que o contrato HTTP lê logo depois de escrever
+(<code>event</code>, <code>eventpresenter</code>, <code>walletevent</code>/&quot;minhas reservas&quot;). Read-your-writes; <code>HttpContractTest</code>
+sem mudança de expectativa. Em <code>walletevent</code>, o <code>UPDATE</code> condicional <strong>continua sendo a guarda</strong>: o
+append só acontece quando ele afeta 1 linha, na mesma transação.</li>
+<li class=""><strong>assíncronas</strong> — consumer do Redpanda: o read model de disponibilidade que o braço
+<code>reservation.readpath=naive</code> lê. Consome <strong>só</strong> o tópico <code>reservation.wallet</code> e guarda <strong>só o nº de
+reservas ativas por evento</strong> (+ <code>applied_at</code> e o <code>occurredAt</code> do último evento aplicado). A
+disponibilidade é calculada <strong>na leitura</strong>: <code>eventcap LEFT JOIN projeção</code>, com
+<code>CASE WHEN capacity = -1 THEN -1 ELSE GREATEST(capacity - COALESCE(ativos, 0), 0) END</code>. Assim um
+evento sem nenhuma reserva já tem disponibilidade, e a mudança de capacidade por <code>updatePolicy</code>
+(que faz <code>UPDATE eventcap SET capacity</code>) vale na hora; a defasagem fica só em <code>ativos</code>, que é o que
+o experimento mede. Nunca lê <code>quant</code>, para não virar o CAS. O refresh por timer da Fase 2
+(<code>ReadModelRefreshService</code>, <code>READMODEL_AVAILABILITY_REFRESH_MS</code>) <strong>sai</strong>: os dados da Rodada 1 já
+estão medidos.</li>
+</ul>
+<p><strong>Consumer idempotente, por stream.</strong> Uma tabela de checkpoint guarda a última <code>version</code> aplicada de
+cada stream por projeção, e o avanço é atômico, no padrão CAS/rowcount do projeto:
+<code>UPDATE ... SET version = :v WHERE projecao = ? AND stream_id = ? AND version = :v - 1</code> (para a v1,
+<code>INSERT ... ON CONFLICT DO NOTHING</code>). A projeção só é aplicada se o rowcount for 1. Com isso, dois
+aplicadores concorrentes (rebalance, ou vários contextos de teste) nunca contam o mesmo evento duas
+vezes. Para cada mensagem, <strong>antes</strong> do avanço, confere-se que o <code>eventId</code> é o que está no
+<code>event_store</code> em <code>(stream_type, stream_id, version)</code>. É uma leitura pelo <code>UNIQUE</code> que já existe. Se
+o evento não existe ou é outro, a mensagem é descartada; isso elimina, por exemplo, a sobra de um
+teste anterior depois do <code>TRUNCATE ... RESTART IDENTITY</code>. Depois:</p>
+<ul>
+<li class="">avanço com rowcount 1 → aplica;</li>
+<li class=""><code>version ≤ última</code> → descarta (reenvio);</li>
+<li class=""><code>version &gt; última + 1</code> → buraco: aplica em ordem as versões que faltam daquele stream <strong>que
+existem no <code>event_store</code></strong> (já comitadas, pela ordem acima). Pela ordem por stream, a mensagem da v n+2 só existe
+depois que a n+1 comitou, então isso não deve faltar. Se ainda assim faltar, o consumer <strong>não
+avança</strong> o checkpoint nem o offset e lança erro para o retry com backoff do <code>spring-kafka</code>.
+Esgotado o retry, a mensagem vai para um dead-letter topic e o caso é logado.</li>
+</ul>
+<p><strong>Catch-up</strong> (o &quot;poller ou <code>pg_cron</code>&quot; do aceite da #27) = esse consumer: o que ficou para trás vem do broker, e o buraco é preenchido relendo o <code>event_store</code>. Para começar do zero, há o replay abaixo. Não há poller nem <code>pg_cron</code> à parte.</p>
+<p>Checkpoint + projeção na <strong>mesma transação de banco</strong>; o offset só é comitado depois desse commit
+(ack manual no <code>spring-kafka</code>).</p>
+<p><strong>Replay</strong> = reconstruir a projeção a partir do <code>event_store</code> (todos os eventos do tipo, em ordem de
+<code>version</code> por stream) em <strong>tabelas-sombra</strong> e comparar com a projeção viva. As tabelas-sombra ficam
+num schema de replay criado e derrubado pelo próprio replay. Não são <code>TEMP TABLE</code> (o
+<code>Backend/CLAUDE.md</code> proíbe por causa do Supavisor) e ficam fora do <code>SchemaValidationTest</code> e do
+<code>GlobalDbTruncator</code>. Não se reconstrói tabela viva no lugar: as FKs para <code>event</code> (<code>RESTRICT</code> em
+<code>walletevent</code>, <code>CASCADE</code> em <code>eventcap</code>) impedem, e o cascade apagaria o estado do CAS, que não vem do
+log. Eventos carregam os valores calculados no command (ex.: <code>expiresAt</code>), então o replay não chama
+<code>now()</code> e é determinístico.</p>
+<p><strong>Snapshots</strong> — tabela <code>event_snapshot (stream_type, stream_id, version, state jsonb)</code>, política &quot;a
+cada N eventos do stream&quot; com N alto por default (ex.: 100). É <strong>cache descartável</strong>: mudou o formato
+do estado → apaga e reconstrói. Não usado nos streams de reserva (2–4 eventos). Teste: snapshot +
+cauda == replay completo.</p>
+<p><strong>Isto contraria a inclinação da ADR de microsserviços</strong> (&quot;Kafka como log de verdade casa melhor com o
+argumento de throughput/elasticidade&quot;). Decidido assim (confirmado pelo usuário em 2026-10-18) porque:</p>
+<ol>
+<li class=""><strong>Atomicidade com o CAS.</strong> CAS + <code>walletevent</code> + <code>SlotReserved</code> + outbox são uma transação. Com o
+Kafka como verdade, seria dual write e precisaria de saga para &quot;vaga tomada mas evento não
+publicado&quot; — a classe de bug que o TCC isola.</li>
+<li class=""><strong>Concorrência otimista por agregado.</strong> O Kafka não faz &quot;grave a versão 7 só se a última é 6&quot; por
+stream; a tabela faz com uma constraint.</li>
+<li class=""><strong>O argumento de throughput continua:</strong> fanout e projeções assíncronas passam pelo broker, e a
+Rodada 2 mede o caminho append → relay → tópico → consumer → projeção.</li>
+<li class=""><strong>Replay determinístico</strong> a partir do Postgres, sem depender de retenção de tópico.</li>
+</ol>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="3-contrato-do-evento-de-domínio">3. Contrato do evento de domínio<a href="#3-contrato-do-evento-de-domínio" class="hash-link" aria-label="Link direto para 3. Contrato do evento de domínio" title="Link direto para 3. Contrato do evento de domínio" translate="no">​</a></h3>
+<p>Envelope JSON, igual nas colunas do <code>event_store</code> e na mensagem do tópico:</p>
+<table><thead><tr><th>Campo</th><th>Tipo</th><th>Nota</th></tr></thead><tbody><tr><td><code>eventId</code></td><td>UUID</td><td>identidade do evento</td></tr><tr><td><code>streamType</code></td><td>texto</td><td><code>catalog.event</code>, <code>reservation.wallet</code></td></tr><tr><td><code>streamId</code></td><td>texto</td><td>id do agregado (id do evento; <code>userId:eventId</code> da reserva)</td></tr><tr><td><code>version</code></td><td>int</td><td>versão no stream, começa em 1; base da idempotência do consumer</td></tr><tr><td><code>globalPosition</code></td><td>bigint</td><td>identidade/ordem de alocação no <code>event_store</code> (não é ordem de commit)</td></tr><tr><td><code>eventType</code></td><td>texto</td><td><code>EventCreated</code>, <code>SlotReserved</code>, ...</td></tr><tr><td><code>schemaVersion</code></td><td>int</td><td>versão do formato do <code>payload</code> daquele <code>eventType</code></td></tr><tr><td><code>occurredAt</code></td><td>timestamptz (ISO-8601)</td><td>instante do append; início da medição de lag</td></tr><tr><td><code>payload</code></td><td>objeto JSON</td><td>dados do evento, com os valores já calculados</td></tr><tr><td><code>metadata</code></td><td>objeto JSON</td><td><code>correlationId</code>, <code>idempotencyKey</code> quando houver</td></tr></tbody></table>
+<ul>
+<li class=""><strong>Sem Avro e sem schema registry</strong>: mais um serviço no compose, sem ganho no monólito. JSON é lido
+no Studio e no <code>psql</code>.</li>
+<li class=""><strong>Versionamento (política):</strong> mudança compatível (campo opcional novo) não muda <code>schemaVersion</code>;
+mudança incompatível incrementa e o leitor ganha um <em>upcaster</em>. Nada a construir até a primeira
+mudança incompatível. Evento gravado nunca é reescrito.</li>
+<li class=""><strong>Tópicos:</strong> um por <code>streamType</code> (<code>catalog.event</code>, <code>reservation.wallet</code>). <strong>Chave = <code>event_id</code> do
+domínio</strong> (o id do evento do catálogo, coluna <code>event.event_id</code>; <strong>não</strong> o <code>eventId</code> do envelope, que é
+único por mensagem): as reservas de um mesmo evento caem na mesma partição, em ordem <strong>dentro do tópico</strong>
+(não há ordem entre tópicos — por isso a disponibilidade não depende de <code>catalog.event</code>). Efeito
+para a #31: o evento quente fica numa partição e num consumer; o lag dele é limitado a um consumer,
+e mais partições não ajudam.</li>
+<li class="">O relay acrescenta o header <code>publishedAt</code> à mensagem.</li>
+<li class=""><strong>Sem dado pessoal no <code>payload</code>:</strong> o <code>event_store</code> é imutável e não dá para apagar o que entra nele.
+Eventos levam ids (<code>userId</code>, <code>event_id</code>) e dados do domínio do evento, nunca e-mail, telefone,
+senha ou documento. Por isso <code>identity</code> não é event-sourced (ver a ADR de microsserviços).</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="4-medição-de-lag-para-a-rodada-2">4. Medição de lag (para a Rodada 2)<a href="#4-medição-de-lag-para-a-rodada-2" class="hash-link" aria-label="Link direto para 4. Medição de lag (para a Rodada 2)" title="Link direto para 4. Medição de lag (para a Rodada 2)" translate="no">​</a></h3>
+<p>Pontos: <code>occurredAt</code> (append) → <code>publishedAt</code> (header do relay) → <code>applied_at</code> (commit do consumer).
+A linha da projeção de disponibilidade guarda <code>applied_at</code> e o <code>occurredAt</code> do último evento
+aplicado. <code>occurredAt</code> e <code>applied_at</code> são gravados com <code>clock_timestamp()</code>, não <code>now()</code>. O <code>now()</code> é
+o início da transação e, no braço <code>cas</code>, incluiria a espera pelo lock da linha quente de <code>eventcap</code>.
+Como o append é o último comando antes do commit, ali <code>clock_timestamp()</code> ≈ commit. Métricas:</p>
+<ul>
+<li class=""><strong>lag por evento</strong> = <code>applied_at − occurredAt</code>, separável em relay (<code>publishedAt − occurredAt</code>) e
+consumer (<code>applied_at − publishedAt</code>), registrado pelo consumer (log/histograma);</li>
+<li class=""><strong>offset lag</strong> do consumer group (<code>rpk group describe</code>) durante a carga.</li>
+</ul>
+<p>O antigo <code>now() − refreshed_at</code> deixa de servir (sob carga contínua ficaria perto de 0 com eventos
+atrasados). Na #31 o lag passa de <strong>variável controlada</strong> (<code>lag_ms</code> da matriz) a <strong>variável medida</strong>;
+a variável independente é a carga (N concorrentes / RPM).</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="5-papéis-fixados">5. Papéis fixados<a href="#5-papéis-fixados" class="hash-link" aria-label="Link direto para 5. Papéis fixados" title="Link direto para 5. Papéis fixados" translate="no">​</a></h3>
+<table><thead><tr><th>Peça</th><th>Papel</th><th>Quando</th></tr></thead><tbody><tr><td>Redpanda (API Kafka)</td><td>log/fanout de eventos de domínio; alimenta projeções assíncronas</td><td>Fase 6</td></tr><tr><td>Postgres <code>event_store</code> + <code>event_outbox</code></td><td>fonte de verdade dos streams; outbox; replay</td><td>Fase 6</td></tr><tr><td>RabbitMQ</td><td>fila de admissão (ack/nack, TTL, dead-letter) — <a class="" href="/decisoes-arquitetura/Architecture-Decision-Async-Checkout-Queue">Architecture-Decision-Async-Checkout-Queue</a></td><td>Fase 9</td></tr><tr><td>Redis</td><td>sinal de carga (RPM por evento)</td><td>Fase 9</td></tr></tbody></table>
+<p>Esta ADR fecha a questão &quot;admissão: RabbitMQ vs. tópico Kafka&quot; a favor do RabbitMQ (TTL de mensagem
+e dead-letter nativos); o Kafka fica só com eventos de domínio.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="impacto--o-que-muda-na-implementação">Impacto — o que muda na implementação<a href="#impacto--o-que-muda-na-implementação" class="hash-link" aria-label="Link direto para Impacto — o que muda na implementação" title="Link direto para Impacto — o que muda na implementação" translate="no">​</a></h2>
+<ul>
+<li class=""><strong>#27:</strong> serviço <code>redpanda</code> no compose (rede <code>gerenciador-net</code>); init-script com <code>event_store</code>,
+<code>event_outbox</code>, <code>event_snapshot</code> + migração idempotente; em <code>shared</code>: append/read por stream com
+concorrência otimista, relay, base de consumer idempotente (regra de versão acima) e replay em
+tabela-sombra; teste de replay. Tudo em <code>public</code> agora; vira uma por schema de serviço na extração
+(Fase 7). <code>run-tests.sh</code> passa a exigir <code>db</code> <strong>e</strong> <code>redpanda</code> no ar.</li>
+<li class=""><strong>#28:</strong> <code>catalog</code> grava <code>EventCreated</code>, <code>EventUpdated</code>, <code>PresenterAdded</code>, <code>PresenterRemoved</code>,
+<code>EventCancelled</code> e projeta <code>event</code>/<code>eventpresenter</code> inline (com coluna <code>version</code>).</li>
+<li class=""><strong>#29:</strong> reserva appenda <code>SlotReserved</code> na transação do CAS; confirm/expire/cancel emitem
+<code>ReservationConfirmed</code>/<code>ReservationExpired</code>/<code>ReservationCancelled</code> só quando o <code>UPDATE</code>
+condicional afeta 1 linha; <code>walletevent</code> vira projeção inline; a disponibilidade do braço <code>naive</code>
+vira projeção assíncrona com as métricas da seção 4; o <code>ReadModelRefreshService</code> sai. Pela regra dos
+3 lados:<!-- -->
+<ul>
+<li class="">o schema de <code>event_availability</code> muda: sai <code>refreshed_at</code>, entram <code>ativos</code>, <code>applied_at</code> e
+<code>occurredAt</code> do último evento. Atualizar <code>db/CLAUDE.md</code>, <code>SchemaValidationTest</code> e a amostra de lag
+do harness de carga (<code>Get-AmostraLag</code> em <code>Projeto/carga/rodar-matriz.ps1</code>);</li>
+<li class=""><code>READMODEL_AVAILABILITY_REFRESH_MS</code> sai do <code>Backend/CLAUDE.md</code> e do compose.</li>
+</ul>
+</li>
+<li class=""><strong>#30:</strong> checkpoint ponta a ponta e diagrama command → evento → projeção em <code>docs/</code>.</li>
+<li class=""><strong>Testes:</strong>
+<ul>
+<li class="">relay e consumer ligados por flag (<code>events.relay.enabled</code>, <code>events.consumer.enabled</code>) só nos
+contextos que precisam;</li>
+<li class="">um único <code>group.id</code>: o checkpoint atômico torna seguro um rebalance entre contextos em cache, que
+só custa latência;</li>
+<li class="">helper &quot;drenar e aguardar&quot; com timeout no lugar das chamadas diretas a <code>refresh()</code>. Ele espera
+primeiro a atribuição de partição (com <code>auto.offset.reset=latest</code>, um evento appendado antes
+disso seria pulado);</li>
+<li class="">as mensagens que sobram de testes anteriores morrem na conferência do <code>eventId</code> contra o
+<code>event_store</code>, feita em toda mensagem.</li>
+</ul>
+</li>
+<li class=""><strong>Pooler:</strong> a auditoria de estado de sessão no <code>Backend/CLAUDE.md</code> (&quot;nenhum advisory lock&quot;) passa a
+registrar que o <code>pg_try_advisory_xact_lock</code> do relay é permitido, porque é de transação e não de
+sessão.</li>
+<li class="">Config nova (env var com default de dev): endereço do broker, intervalo e lote do relay, N do
+snapshot, as duas flags. Nada de segredo novo.</li>
+<li class="">Fica igual: JDBC puro (sem JPA), schema em init-scripts, Tomcat 300 / Hikari 1000 / pool 245,
+virtual threads OFF, contrato <code>/bff/**</code>.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="alternativas-descartadas">Alternativas descartadas<a href="#alternativas-descartadas" class="hash-link" aria-label="Link direto para Alternativas descartadas" title="Link direto para Alternativas descartadas" translate="no">​</a></h2>
+<ul>
+<li class=""><strong>Kafka/Redpanda como log de verdade:</strong> dual write com o CAS, sem concorrência otimista por
+agregado, replay dependente de retenção.</li>
+<li class=""><strong><code>published_at</code> no próprio <code>event_store</code>:</strong> muta a tabela imutável e faz <code>UPDATE</code> não-HOT por
+evento na tabela mais quente.</li>
+<li class=""><strong>Relays concorrentes com <code>FOR UPDATE SKIP LOCKED</code>:</strong> um relay pode publicar a v2 de um stream
+enquanto outro ainda segura a v1, e um consumer que descarta &quot;versão ≤ última&quot; perderia a v1.</li>
+<li class=""><strong>Cursor incremental por <code>global_position</code>:</strong> perde eventos que comitam fora da ordem de alocação.</li>
+<li class=""><strong>Apache Kafka em vez de Redpanda:</strong> mesma API, mais pesado para a máquina de carga.</li>
+<li class=""><strong>Event store dedicado (EventStoreDB etc.):</strong> mais um banco, e o CAS continuaria no Postgres.</li>
+<li class=""><strong>Avro + schema registry:</strong> mais infra; o ganho não existe no TCC.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="relacionado">Relacionado<a href="#relacionado" class="hash-link" aria-label="Link direto para Relacionado" title="Link direto para Relacionado" translate="no">​</a></h2>
+<ul>
+<li class=""><a class="" href="/decisoes-arquitetura/Architecture-Decision-Microservices-Split">Architecture-Decision-Microservices-Split</a> — escopo do ES, ordem &quot;converter antes de extrair&quot;.</li>
+<li class=""><a class="" href="/decisoes-arquitetura/Backend-Architecture">Backend-Architecture</a> — capacidade isolada (CAS) + resto event-sourced.</li>
+<li class=""><a class="" href="/decisoes-arquitetura/Architecture-Decision-Async-Checkout-Queue">Architecture-Decision-Async-Checkout-Queue</a> — RabbitMQ/Redis da Fase 9.</li>
+<li class=""><a class="" href="/decisoes-arquitetura/Database-Schema">Database-Schema</a> — impacto de CQRS/ES no schema (schema por serviço na extração).</li>
+</ul>
+<hr>
+<p><em>Sincronizado automaticamente de <code>Architecture-Decision-Event-Backbone-Event-Store.md</code> em 2026-10-30T14:58:55.474Z.</em></p></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-tags-row"><div class="col"><b>Etiquetas:</b><ul class="tags_jXut padding--none margin-left--sm"><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/tags/architecture">architecture</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/tags/decision">decision</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/tags/adr">adr</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/tags/cqrs">cqrs</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/tags/event-sourcing">event-sourcing</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/tags/kafka">kafka</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/tags/redpanda">redpanda</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/tags/postgres">postgres</a></li></ul></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Páginas de documento"><a class="pagination-nav__link pagination-nav__link--prev" href="/decisoes-arquitetura/References"><div class="pagination-nav__sublabel">Anterior</div><div class="pagination-nav__label">Referências</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/decisoes-arquitetura/Plano-2-Batches-ate-04-11"><div class="pagination-nav__sublabel">Próxima</div><div class="pagination-nav__label">Plano de 2 batches até 03–04/11</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#contexto" class="table-of-contents__link toc-highlight">Contexto</a></li><li><a href="#decisão" class="table-of-contents__link toc-highlight">Decisão</a><ul><li><a href="#1-broker-redpanda" class="table-of-contents__link toc-highlight">1. Broker: <strong>Redpanda</strong></a></li><li><a href="#2-event-store-tabela-de-streams-no-postgres--outbox--redpanda" class="table-of-contents__link toc-highlight">2. Event store: <strong>tabela de streams no Postgres + outbox → Redpanda</strong></a></li><li><a href="#3-contrato-do-evento-de-domínio" class="table-of-contents__link toc-highlight">3. Contrato do evento de domínio</a></li><li><a href="#4-medição-de-lag-para-a-rodada-2" class="table-of-contents__link toc-highlight">4. Medição de lag (para a Rodada 2)</a></li><li><a href="#5-papéis-fixados" class="table-of-contents__link toc-highlight">5. Papéis fixados</a></li></ul></li><li><a href="#impacto--o-que-muda-na-implementação" class="table-of-contents__link toc-highlight">Impacto — o que muda na implementação</a></li><li><a href="#alternativas-descartadas" class="table-of-contents__link toc-highlight">Alternativas descartadas</a></li><li><a href="#relacionado" class="table-of-contents__link toc-highlight">Relacionado</a></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="footer__bottom text--center"><div class="footer__copyright">Gerado automaticamente a partir do repositório GerenciadorEventos e do vault de arquitetura.</div></div></div></footer></div>
+</body>
+</html>
