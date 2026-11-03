@@ -20,7 +20,7 @@ na rede `gerenciador-net`) chamada pelo gateway e pelo `admission`. Imagem `rese
 - **Event sourcing:** o relay publica no tópico `reservation.wallet` e o consumer do group `reservation` mantém a projeção `event_availability`
   (o lag é medido, não configurado).
 - **Jobs:** expiração das reservas `pending` vencidas, retenção das chaves de idempotência (24 h) e o reaper da saga.
-- **Rodar:** `docker compose -f Projeto/docker-compose.yml up -d --build reservation` (depende do `stock`, que espera o one-shot `stock-seek`).
+- **Rodar:** `docker compose -f Projeto/docker-compose.yml up -d reservation` (depende do `stock`, que espera o one-shot `stock-seek`).
   Variáveis (só nomes): `INTERNAL_API_TOKEN`, `SPRING_DATASOURCE_*`, `SPRING_KAFKA_BOOTSTRAP_SERVERS`, `EVENTS_*`, `STOCK_SERVICE_URL`, `STOCK_CLIENT_*`,
   `RESERVATION_SAGA_*`. Sem o `stock` não há reserva (500 genérico no `/bff`; a saga se recompõe quando ele volta).
 - **Banco:** `Projeto/Backend/db/init-scripts/13-reservation.sql` (banco novo) ou as migrações `20261025`, `20261027` e `20261029` (ver [`../db/README.md`](../db/README.md)).

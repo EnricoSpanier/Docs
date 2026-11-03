@@ -12,7 +12,7 @@ HTTP.** Imagem `notification/Dockerfile`, container `gerenciador-notification`, 
   normais e os e-mails saem quando ele volta.
 - **1º `up`:** o one-shot `notification-seek` move o group `notification` para o fim do tópico só se o group ainda não existe (stack nova não manda
   e-mail de evento antigo); o serviço espera ele terminar.
-- **Rodar:** `docker compose -f Projeto/docker-compose.yml up -d --build notification`. Variáveis (só nomes): `SPRING_DATASOURCE_*`, `MAIL_USERNAME`,
+- **Rodar:** `docker compose -f Projeto/docker-compose.yml up -d notification`. Variáveis (só nomes): `SPRING_DATASOURCE_*`, `MAIL_USERNAME`,
   `MAIL_PASSWORD`, `SPRING_KAFKA_BOOTSTRAP_SERVERS`; opcionais `MAIL_HOST`, `MAIL_PORT`, `MAIL_SMTP_AUTH` e `MAIL_STARTTLS` (default Gmail; o e2e aponta
   para um captador). Sem default para `MAIL_USERNAME`/`MAIL_PASSWORD`: para rodar fora do Docker, exporte as duas.
 - **Banco:** `Projeto/Backend/db/init-scripts/12-notification.sql` (banco novo) ou a migração `20261024-notification-schema.sql` (ver [`../db/README.md`](../db/README.md)).

@@ -275,4 +275,4 @@ e dead-letter nativos); o Kafka fica só com eventos de domínio.
 
 ---
 
-*Sincronizado automaticamente de `Architecture-Decision-Event-Backbone-Event-Store.md` em 2026-10-30T19:11:52.864Z.*
+*Sincronizado automaticamente de `Architecture-Decision-Event-Backbone-Event-Store.md` em 2026-11-03T15:35:58.008Z.*

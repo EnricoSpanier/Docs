@@ -129,4 +129,4 @@ antes da PR #79 e ainda não envia JWT — adaptação pendente (ver o aviso no 
 
 ---
 
-*Sincronizado automaticamente de `Roadmap-e-Issues.md` em 2026-10-30T19:11:52.869Z.*
+*Sincronizado automaticamente de `Roadmap-e-Issues.md` em 2026-11-03T15:35:58.013Z.*

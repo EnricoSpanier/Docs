@@ -153,4 +153,4 @@ Supabase.
 
 ---
 
-*Sincronizado automaticamente de `Implementacao-EventCap-e-Reserva-CAS.md` em 2026-10-30T19:11:52.867Z.*
+*Sincronizado automaticamente de `Implementacao-EventCap-e-Reserva-CAS.md` em 2026-11-03T15:35:58.011Z.*

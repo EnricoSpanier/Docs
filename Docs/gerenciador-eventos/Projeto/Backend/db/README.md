@@ -38,7 +38,7 @@ volume; para recomeçar do zero (apaga todos os dados e a chave do JWT):
 
 ```bash
 docker compose -f Projeto/docker-compose.yml down -v
-docker compose -f Projeto/docker-compose.yml up -d --build --wait
+docker compose -f Projeto/docker-compose.yml up -d --wait
 ```
 
 Pré-requisito: `Projeto/supabase/.env` existir (ver [`../../supabase/README.md`](../../supabase/README.md)).

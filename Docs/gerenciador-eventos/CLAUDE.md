@@ -50,7 +50,7 @@ padrão do arquivo que você está editando.
 - Mensagens no estilo do histórico (Conventional Commits): `feat:`, `refactor:`, `fix:`,
   `chore:`, `docs:`. Uma mudança lógica por commit.
 - Feche a mensagem de commit com:
-  `Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>`
+  `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`
 - Corpo de PR termina com:
   `🤖 Generated with [Claude Code](https://claude.com/claude-code)`
 - **Nunca** versione: `Projeto/.env`, `**/target/`, `**/build/`, dumps de banco, relatórios
@@ -86,7 +86,8 @@ commitar ou registrar em log.
 
 - Pré-requisito: `Projeto/supabase/.env` existir (o `db` é o `supabase/postgres` e lê os segredos de lá;
   gerar conforme `Projeto/supabase/README.md`).
-- Stack completa: `docker compose -f Projeto/docker-compose.yml up -d --build`
+- Stack completa (desde a #197 os 7 serviços Java rodam as imagens `*.slim` por padrão, sem `build:`): gerar as imagens com `Projeto/slim/gerar-imagens-slim.sh`
+  (sem elas o `up` falha com "image not found", em vez de puxar do Docker Hub) e depois `docker compose -f Projeto/docker-compose.yml up -d`
   (frontend :8088, backend :8081, Postgres host :5433, Supabase Studio :8000 — login com
   `DASHBOARD_USERNAME`/`DASHBOARD_PASSWORD` de `Projeto/supabase/.env`; sobe junto `meta` e `kong`).
   O backend em Docker fala com o Postgres pelo `supabase-pooler` (Supavisor, sem porta no host);
@@ -98,7 +99,7 @@ commitar ou registrar em log.
   os testes usam Postgres real, PG17 do Supabase, banco `meu_banco`, Redpanda real, Redis real (#41) e RabbitMQ real (#42); o script aborta com mensagem
   clara se faltar um deles). **Pare o `gerenciador-backend` antes** (`docker stop gerenciador-backend`): desde a #28/#29 o
   relay e o consumer dele compartilham o `meu_banco` e drenam o `event_outbox` dos testes; o script aborta com
-  mensagem clara se o container estiver rodando. Desde a #32 o script roda o **reactor Maven inteiro** (`shared`, `reservation-client`,
+  mensagem clara se o container estiver rodando. Desde a #32 o script roda o **reactor Maven inteiro** (`shared`, `client-lb`, `reservation-client`,
   `stock-client`, `catalog-client`, `identity-client`, `admission-client`, `monolito`, `notification`, `reservation`, `stock`, `catalog`, `identity`, `admission`) e também aborta se o `gerenciador-notification`, o
   `gerenciador-reservation`, o `gerenciador-stock`, o `gerenciador-catalog`, o `gerenciador-identity` ou o `gerenciador-admission` estiverem rodando
   (`docker stop gerenciador-backend gerenciador-notification gerenciador-reservation gerenciador-stock gerenciador-catalog gerenciador-identity gerenciador-admission`; o notification
@@ -130,10 +131,10 @@ commitar ou registrar em log.
   exige usuário e senha, sem default. **Acrescente ao `Projeto/.env` (você mesmo; o repo nunca edita nem imprime o `.env`)** `RABBITMQ_USER=<nome>` e `RABBITMQ_PASSWORD=<valor aleatório>` (ex.: `openssl rand -hex 32`). Sem elas
   **qualquer `docker compose`** recusa com mensagem clara; até lá, exporte-as na shell só para o comando. O `run-tests.sh` usa as do `.env` ou, se exportadas, as da shell (`-e RABBITMQ_USER`, `-e RABBITMQ_PASSWORD`) e exige o
   `gerenciador-rabbitmq` no ar. O backend recebe as duas vazias (sobrepostas no compose). Os testes usam filas com prefixo próprio (nunca as `admission.*` do serviço).
-- O serviço `admission` (#41, container `gerenciador-admission`, API interna `:8085` só na rede `gerenciador-net`, sem datasource) sobe junto com `up -d --build` (depende do `redis` e, desde a #42, do `rabbitmq` e do `reservation`); o `backend`
+- O serviço `admission` (#41, container `gerenciador-admission`, API interna `:8085` só na rede `gerenciador-net`, sem datasource) sobe junto com o `up -d` (depende do `redis` e, desde a #42, do `rabbitmq` e do `reservation`); o `backend`
   **não** depende dele: o gateway conta cada tentativa de reserva por HTTP e, com o `admission` ou o Redis fora, faz fail-open (a reserva segue síncrona, com log). Desde a #42 ele também tem a fila de admissão e o worker pool, e desde a #43 o gatilho (uso de X por evento, histerese) os liga ao
   `POST /internal/admissions` (`ADMISSION_X_RPM`, `ADMISSION_RESERVATION_REPLICAS`, `ADMISSION_QUEUE_ON`, `ADMISSION_SYNC_BELOW`; o gateway responde `202` no modo fila). O e2e sobe `redis`, `rabbitmq` e `admission` isolados, com credenciais efêmeras e X baixo, e faz uma rajada concorrente (passo 4b).
-- O serviço `notification` sobe junto com `up -d --build` (container `gerenciador-notification`); o `backend` não depende dele. O serviço
+- O serviço `notification` sobe junto com o `up -d` (container `gerenciador-notification`); o `backend` não depende dele. O serviço
   `reservation` (container `gerenciador-reservation`, API interna `:8082` só na rede `gerenciador-net`) e o serviço `catalog` (#35, container
   `gerenciador-catalog`, API interna `:8083` só na rede `gerenciador-net`) e o serviço `identity` (#36, container `gerenciador-identity`, API interna `:8084` só na rede, chave do JWT no volume `identity-keys`) também sobem junto, e o `backend` **depende dos três**
   (`service_healthy`); o serviço `stock` (#47, container `gerenciador-stock`, API interna `:8086` só na rede, Hikari 250) também sobe junto e o `reservation` **depende dele** (`service_healthy`, que espera o one-shot `stock-seek`, análogo ao `notification-seek`: move o group `stock` para o fim de `reservation.wallet` só se o group não existe). `POST /bff/seed` fica **desligado** (404) no compose normal; o override de carga (`carga/docker-compose.carga.yml`)
@@ -142,18 +143,26 @@ commitar ou registrar em log.
   porta no host, e-mail num captador Mailpit — nenhum e-mail real), roda cadastro (código lido do e-mail) → evento → reserva → confirmação e o replay
   de `catalog.event` e `reservation.wallet`, e derruba só esse project no fim (`MANTER=1` mantém). Confere o isolamento por `config` antes do `up`.
   Detalhes no `Projeto/Backend/CLAUDE.md`, "Suíte e2e da stack inteira". Os serviços do compose agora têm healthcheck (`backend`, `notification`,
-  `frontend`), então `docker compose -f Projeto/docker-compose.yml up -d --build --wait` espera tudo ficar `healthy`.
-- **Imagens enxutas com o Slim (#177, opcional):** `Projeto/slim/gerar-imagens-slim.sh` gera `gerenciador-eventos-<serviço>.slim` (backend, identity,
-  catalog, reservation, stock, notification, admission) num project isolado `gerenciador-e2e-slim*` (nunca na stack real), e `docker-compose.slim.yml` as usa por
-  override (`-f docker-compose.yml -f docker-compose.slim.yml`); a imagem original (Dockerfile intocado) segue o padrão. `E2E_SLIM=1 Projeto/e2e/run-e2e.sh`
-  roda o e2e com elas. Tabela antes/depois, probe, includes e perfis Seccomp/AppArmor em `Projeto/slim/README.md`. A imagem slim envelhece quando o
-  código muda: regere antes de usar.
-- **Autoescala (#111/#112, opcional):** em `Projeto/`, `docker compose -f docker-compose.yml -f docker-compose.autoescala.yml up -d --build --wait` (réplicas sem
+  `frontend`), então `docker compose -f Projeto/docker-compose.yml up -d --wait` espera tudo ficar `healthy`.
+- **Imagens enxutas com o Slim (#177; padrão desde a #197):** `Projeto/slim/gerar-imagens-slim.sh` gera `gerenciador-eventos-<serviço>.slim:${SLIM_TAG:-latest}` (backend, identity,
+  catalog, reservation, stock, notification, admission) num project isolado `gerenciador-e2e-slim*` (nunca na stack real) e é o único jeito de gerá-las; o
+  `docker-compose.yml` as usa (`pull_policy: never`, sem `build:`). A imagem completa (Dockerfile intocado) fica no override `docker-compose.completa.yml`, para depurar:
+  `docker compose -f Projeto/docker-compose.yml -f Projeto/docker-compose.completa.yml up -d --build <serviço>`. **`up -d --build <serviço>` NÃO reconstrói mais os serviços
+  Java** (roda a slim que existir, possivelmente velha): depois de mudar código, `Projeto/slim/gerar-imagens-slim.sh <serviço>` e `up -d`. `SLIM_TAG` (opcional, default `latest`; vale da shell ou do `Projeto/.env`, como qualquer variável do compose) muda a tag gerada/usada, para um lote novo sem sobrescrever o `:latest`; os scripts perguntam ao próprio compose qual tag ele resolve e a mostram no log. `Projeto/e2e/run-e2e.sh` roda com as slim e confere o ID da imagem
+  de cada serviço (`E2E_COMPLETA=1` usa as completas). Tabela antes/depois, probe, includes e perfis Seccomp/AppArmor em `Projeto/slim/README.md`.
+- **Autoescala (#111/#112, opcional):** em `Projeto/`, `docker compose -f docker-compose.yml -f docker-compose.autoescala.yml up -d --wait` (réplicas sem
   nome fixo, HAProxy `lb` na 8081) e o scaler no host, `Projeto/autoescala/scaler.sh` (`--seco` só loga, `--uma-vez` roda um ciclo). **Irreversível na stack
   real:** o one-shot `particoes` leva `identity.notification` e `reservation.wallet` a 3 partições para sempre. Operação, volta ao compose base e dry-run em
   project isolado em `Projeto/autoescala/README.md`.
+- **Cluster Kubernetes (kind, #197; opcional):** `Projeto/k8s/cluster.sh up --trilha b1|c|nenhuma` (a trilha é obrigatória) cria o cluster `gerenciador` (um nó) com a stack inteira (7 serviços, frontend, Postgres +
+  Supavisor, Redpanda, Redis, RabbitMQ), a partir das `*.slim` (e da imagem do frontend: `docker compose -f Projeto/docker-compose.yml build frontend`); `down` o apaga. **Dados descartáveis**
+  (somem no `down`). **Autoescala (etapa 4a):** o `up` instala metrics-server e KEDA por helm (o `helm` também precisa estar no `PATH`, em toda trilha) e aplica 6 ScaledObjects (o `stock` é 1 réplica fixa, #231; reservation pelo `adm:hot` do `admission`, notification pelo lag, os demais por CPU; `K8S_<SVC>_MIN`/`_MAX` default 1/3, o `admission` 2/3 desde a #235);
+  o dry-run de carga com autoescala (etapa 4b) é `SLIM_TAG=k8s Projeto/k8s/dry-run.sh --trilha b1|c|nenhuma` (cluster próprio `gerenciador-e2e-dry`, k6 dentro do cluster, ~35 min, critérios automáticos; `Projeto/k8s/README.md`, "Dry-run de carga com autoescala"). Overlays `K8S_OVERLAY=base|e2e|completa|carga` (`Projeto/k8s/README.md`). **Trilhas de balanceamento (etapa 3):** `b1` = Istio 1.31.1 com sidecar (instalado por helm, que precisa estar no `PATH`), `c` = balanceamento no cliente (módulo Maven `client-lb`, ligado por `CLIENT_LB_ENABLED`, desligado por padrão no compose), `nenhuma` = o controle (Service L4); trocar de trilha = `down` + `up --trilha <outra>`. Publica 8081 e 8088: com ele no ar o compose completo não sobe, e **derrube-o antes de qualquer medição no
+  host** (disputa CPU e RAM). Todo `kubectl` leva `--context kind-<nome>` (nunca o `current-context`); quem roda `up`/`down` segue o lock Docker. Precisa de `kind` e `kubectl` no `PATH` (o kind em
+  `E:\TCC\claude-tooling\bin`). **Até a R5 terminar, SEMPRE `SLIM_TAG=k8s`** (gerar as slim e subir o cluster; as `*.slim:latest` da R5 não têm o actuator e só são regeradas depois; o `cluster.sh` aborta com `latest`, salvo `K8S_PERMITIR_LATEST=1`). e2e contra o cluster: `SLIM_TAG=k8s E2E_K8S=1 E2E_K8S_TRILHA=nenhuma|c|b1 Projeto/e2e/run-e2e.sh` (cluster próprio `gerenciador-e2e`, sem porta no host). Uso, recursos,
+  probes (porta de management 8090) e a conta do pool em `Projeto/k8s/README.md` e no `Projeto/Backend/CLAUDE.md`, "Cluster Kubernetes". **Rodada com o db remoto (#228):** `K8S_OVERLAY=rodada K8S_DB_REMOTO=<ip>:<porta> [K8S_POOLS=r5] Projeto/k8s/cluster.sh up --trilha ...`, depois `cluster.sh db-teste` (código 0 = ok; `K8S_DB_REMOTO` sem default, `K8S_POOLS=r5` só com a autoescala travada em 1; `Projeto/k8s/README.md`, "Rodada com o db remoto"). `run-tests.sh` e o e2e em compose não mudam. **Teste longo (soak, #232):** `K8S_OVERLAY=soak MAILPIT_AUTH=<usuário>:<senha> ADMISSION_X_RPM=<56000 no S1 | 4000 no S2> Projeto/k8s/cluster.sh up --trilha ...` = `rodada` + Mailpit no cluster com o SMTP do `notification` apontado para ele (nenhum e-mail real; `guarda`/`up` leem o render e abortam se um dos seis valores faltar ou errar; `MAILPIT_AUTH` é efêmera, vai só no ambiente e nunca é impressa; exige recriar o kind, porta 8025; o gatilho `ADMISSION_X_RPM` é do bloco e o alvo do KEDA do `reservation` sai dele; firewall do Mailpit = duas regras permanentes, um `Block` (todo o IPv4 menos o gerador + todo o IPv6) e um `Allow` só do gerador (as `Allow` do Docker valem só no perfil Public; o IP do gerador é por DHCP, vem do `GERADOR_IP`), criadas uma vez como administrador e só conferidas a cada bloco); kit em `Projeto/carga/soak/` (`Projeto/carga/README.md`, "Teste longo (soak)"; `Projeto/k8s/README.md`, "Teste longo (soak)"); só depois da #231.
 - **Kit de carga:** `Projeto/carga/README.md` (seções "Rodada 4" e "Rodada 5"); a limpeza entre blocos é o `Projeto/carga/limpar-banco.sh`
-  (`make limpar-banco`, ciente das réplicas).
+  (`make limpar-banco`, ciente das réplicas). Contra o cluster Kubernetes (#228): `CARGA_K8S=<contexto kubectl>` antes do `make limpar-banco | coleta-host | verificar-rpm` (README, "Modo cluster"; sem a variável nada muda).
 - **Primeiro `up` e o group `notification`:** o serviço one-shot `notification-seek` move o group `notification` para o fim de `identity.notification`
   SÓ se o group ainda não existe (stack nova não manda e-mail de evento antigo); o `notification` espera ele terminar. O SMTP do `notification` é
   parametrizável (`MAIL_HOST`/`MAIL_PORT`/`MAIL_SMTP_AUTH`/`MAIL_STARTTLS`; defaults = Gmail).
@@ -296,7 +305,7 @@ o e2e ganhou o passo 4b (rajada concorrente, fila drenada, overselling 0 contra 
 contagem), `rejected` ou `timed_out`. O fluxo síncrono não mudou. PR #196; detalhes no `Projeto/frontend/CLAUDE.md`; follow-ups #195 (pending vencido bloqueia nova
 reserva até a varredura do job) e #198 (`Idempotency-Key` gerada no cliente).
 
-**Implementado (issue #177, 2026-10-28, Batch 2):** imagens enxutas com o Slim, por override opcional (`docker-compose.slim.yml`; Dockerfiles intocados), hoje para
+**Implementado (issue #177, 2026-10-28, Batch 2):** imagens enxutas com o Slim, por override opcional (`docker-compose.slim.yml`; Dockerfiles intocados; desde a #197 são o padrão do `docker-compose.yml` e o override virou o `docker-compose.completa.yml`, que devolve a imagem completa), hoje para
 as 7 imagens de serviço (o `admission` entrou na #178 e o `stock` na #47), de −23% a −27%, com a chave do JWT fora da `identity.slim`. PR #189; tabela, probe e perfis em
 `Projeto/slim/README.md` e no `Projeto/Backend/CLAUDE.md`, "Imagens enxutas (Slim)". Follow-up #210 (a sonda do `admission` ainda cria o `eventcap` no `reservation`).
 
@@ -309,7 +318,7 @@ corretude e segurança (#56, #57, #58, #59, #60, #61, #89, #133; #81 fechada sem
 degrau já alto, a frio, enfileira na linha do `eventcap` e não se recupera (ver o README da etapa 06).
 
 **Implementado (issue #111, 2026-10-28, Batch 2):** autoescala de `gateway` (`backend`) e `reservation` pela regra 50/80, opção A da ADR `docs/adr/Architecture-Decision-Autoescala.md` — um override
-**opcional** `Projeto/docker-compose.autoescala.yml` (réplicas sem `container_name`/porta, HAProxy `lb` que publica a 8081 e balanceia `lb:8082` para o reservation, Hikari 300 por réplica: 3×300 + 3×10 + 3 + 100 + 100 = 1133 &lt;= 1500)
+**opcional** `Projeto/docker-compose.autoescala.yml` (réplicas sem `container_name`/porta, HAProxy `lb` que publica a 8081 e balanceia `lb:8082` para o reservation, Hikari 300 por réplica: 3×300 + 3×10 + 3 + 100 + 100 = 1133 &lt;= 1500; com a #112, 1239)
 e um scaler em bash no host (`Projeto/autoescala/scaler.sh`: stand-by com peso 0 no lb, promoção a 0,80, drain antes de descer, CSV réplicas × tempo, selftest sem Docker). O `admission` lê as réplicas ativas da chave
 `adm:replicas` (escrita pelo scaler, com TTL; sem ela vale `ADMISSION_RESERVATION_REPLICAS`) no mesmo script Lua do gatilho e publica o RPM do evento mais quente em `adm:hot`. O compose base, o `run-tests.sh` (que agora também vê as
 réplicas pelo label), o kit de carga e o braço sem autoescala não mudam; jobs com 2+ réplicas (expiração, retenção, relay) provados em teste (`Projeto/Backend/CLAUDE.md`, "Réplicas: estado em memória e jobs" e "Autoescala"). Operação em
@@ -331,7 +340,7 @@ parou em 32k/38k pelos 5xx do health check do `lb` (#207) e pela limitação do 
 
 **Implementado (issue #47, 2026-10-29, Batch 2):** a saga `stock` + `wallet` — o `reservation` foi dividido: o `eventcap` (CAS), um ledger de holds (`stock.hold`) e a API `/internal/eventcaps/**` viraram o serviço **`stock`** (módulos Maven `stock` e `stock-client`, Dockerfile, imagem e container `gerenciador-stock`, `:8086` só na rede, schema `stock`, **uma réplica fixa**, Hikari 250 literal; migração `20261029-stock-schema.sql`), e o `reservation` (mesmo nome, container e porta) é o lado `wallet` e o **orquestrador síncrono** da reserva: tx1 (chave `reserving`), `POST /internal/holds` no `stock` **sem conexão aberta**, tx2 (`reserved` + `walletevent` + `SlotReserved{holdId}`), com compensação inline (`release(holdId)`, lápide contra o "reservar" atrasado) e um **reaper** de órfãs (`reserving`/`compensating` velhas, `FOR UPDATE SKIP LOCKED`). Cancelar e expirar só appendam o evento com o `holdId`; a vaga volta pelo `StockReleaseConsumer` do `stock` (group `stock`, idempotente por `holdId`). `/bff/**` inalterado (`HttpContractTest`), `admission` sem mudança de código, a reconciliação do `eventcap` mudou para o `stock` (group `stock-catalog`). Soma do Supavisor 1463 (base) e 1489 (override de autoescala), folga de 11. Testes com o `stock` REAL (W1–W13, S1–S9), e2e com os passos (a) stock fora e (b) queda do `reservation` no meio da rajada. Detalhes no `Projeto/Backend/CLAUDE.md`, "Serviço stock e saga stock + wallet"; spec em `docs/superpowers/specs/2026-10-29-saga-stock-wallet-design.md`; diagrama e janelas de falha em [`docs/arquitetura/fase7-servicos.md`](/gerenciador-eventos/docs/arquitetura/fase7-servicos). A medição é da Rodada 5 (#180), sobre a mesma configuração da R4.
 As decisões D1–D4 da saga ficaram na opção (a): orquestração síncrona pelo `reservation`, log primeiro no wallet, `stock` com uma réplica fixa e devolução da vaga
-por evento. O `stock` escalável (D3 b) é a #205, junto com a #197.
+por evento. O `stock` escalável (D3 b) foi a #205, junto com a #197, e a #231 o reverteu no cluster (1 réplica fixa, Hikari 245; ver o item #197/#205 abaixo).
 
 **Implementado (issue #204, 2026-10-29, Batch 2):** o harness da Rodada 5, sobre o kit da R4 — o `coleta-host.sh` ganha 5 colunas no fim (`lag_stock`,
 `lag_stock_catalog`, `saga_reservando`, `saga_orfas`, `saga_compensando`; 36 no total, as 31 da R4 inalteradas), o resumo pós-bloco grava as compensações por
@@ -345,8 +354,8 @@ PR #218; resultados e tabelas R4 × R5 em `Projeto/carga/results/08-rodada5-saga
 **Implementado (issue #46, 2026-10-29, Batch 2):** READMEs atualizados ou criados na raiz, em `Projeto/`, `Projeto/Backend/` (e `db/`, `monolito/`), `Projeto/frontend/`,
 em cada serviço e nos `*-client`. Eles só linkam os resultados das etapas. PR #211.
 
-**Decidido, não implementado:** a autoescala em Kubernetes com HPA/KEDA (opção D da ADR `docs/adr/Architecture-Decision-Autoescala.md`, #197) e, junto, o `stock`
-escalável até 3 réplicas (D3 b da saga, #205). O mapa da Opção B (`docs/adr/Architecture-Decision-Microservices-Split.md`) está extraído: `notification` (#32),
+**Implementado (#197 e #205, branch `K8s`):** a autoescala em Kubernetes com HPA/KEDA (opção D da ADR `docs/adr/Architecture-Decision-Autoescala.md`; cluster kind,
+trilhas B1/C, dry-run local em `Projeto/k8s/README.md`) e, no cluster, o `stock` escalável até 3 réplicas (D3 b da saga, #205) — **revertido na #231**: o `stock` voltou a 1 réplica fixa, Hikari 245, `Recreate` e sem ScaledObject, porque o Hikari 60 × 3 esgotava o pool do stock e fez o K2 parar a 20k (diagnóstico do K2, `Projeto/carga/results/10-k8s-db-remoto/K2-diagnostico/`, diagnóstico 1 × teste A; no K2-repetição, sem a #231, o b1 passou do 20k e parou no 32k, o mesmo ponto do K2-pos-231, já com ela: `K2-pos-231/`); a soma no Supavisor é 4×200 + 4×10 + 4×3 + 4×50 + 4×50 + 245 = 1497 ≤ 1500 (o compose segue com 1 réplica e 250). O mapa da Opção B (`docs/adr/Architecture-Decision-Microservices-Split.md`) está extraído: `notification` (#32),
 `reservation` (#33), `catalog` (#35), `identity` (#36), `admission` (#41) e `stock` (#47); o `gateway` é o único conteúdo do módulo `monolito` desde a #36. A
 camada de alta carga (#41–#43, com a UI da #44) e a autoescala opção A (#111/#112) existem e foram medidas na Rodada 4; a saga (#47) foi medida na Rodada 5 (#180).
 Follow-ups abertos no `BACKLOG.md`, seção Estado.

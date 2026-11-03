@@ -104,4 +104,4 @@ O [Event Management System](./visao-geral.md) hoje é um monólito CRUD (Java/Sp
 
 ---
 
-*Sincronizado automaticamente de `Backend-Architecture.md` em 2026-10-30T19:11:52.866Z.*
+*Sincronizado automaticamente de `Backend-Architecture.md` em 2026-11-03T15:35:58.010Z.*

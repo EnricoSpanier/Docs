@@ -226,4 +226,4 @@ estados intermediários deixam o sistema quebrado).
 
 ---
 
-*Sincronizado automaticamente de `Architecture-Decision-Microservices-Split.md` em 2026-10-30T19:11:52.865Z.*
+*Sincronizado automaticamente de `Architecture-Decision-Microservices-Split.md` em 2026-11-03T15:35:58.009Z.*

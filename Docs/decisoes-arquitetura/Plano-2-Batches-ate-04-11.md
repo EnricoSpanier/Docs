@@ -100,4 +100,4 @@ Objetivo: implementar o que depende do X definitivo (`admission` e autoescala), 
 
 ---
 
-*Sincronizado automaticamente de `Plano-2-Batches-ate-04-11.md` em 2026-10-30T19:11:52.868Z.*
+*Sincronizado automaticamente de `Plano-2-Batches-ate-04-11.md` em 2026-11-03T15:35:58.012Z.*

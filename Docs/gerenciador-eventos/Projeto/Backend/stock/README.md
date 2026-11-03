@@ -17,7 +17,7 @@ container `gerenciador-stock`, **uma réplica fixa** (fora do scaler de autoesca
   group `stock`, em lote e numa transação. **Reconciliação** (`CatalogReconciliationConsumer`): o `EventCreated` de `catalog.event` cria o `eventcap`
   que a chamada síncrona do catalog não criou (group `stock-catalog`).
 - **Sem event store nem relay:** o stock só consome; não publica eventos.
-- **Rodar:** `docker compose -f Projeto/docker-compose.yml up -d --build stock` (depende do one-shot `stock-seek`, que posiciona o group `stock` no
+- **Rodar:** `docker compose -f Projeto/docker-compose.yml up -d stock` (depende do one-shot `stock-seek`, que posiciona o group `stock` no
   Redpanda no 1º `up`). Variáveis (só nomes): `INTERNAL_API_TOKEN`, `SPRING_DATASOURCE_*`, `SPRING_KAFKA_BOOTSTRAP_SERVERS`, `EVENTS_CONSUMER_ENABLED`,
   `STOCK_RELEASE_CONSUMER_*`, `STOCK_CATALOG_RECONCILIATION_*`. Com ele parado, cancelar e expirar seguem respondendo e a vaga volta quando ele volta.
 - **Banco:** `Projeto/Backend/db/init-scripts/16-stock.sql` (banco novo) ou a migração `20261029-stock-schema.sql` (ver [`../db/README.md`](../db/README.md)).

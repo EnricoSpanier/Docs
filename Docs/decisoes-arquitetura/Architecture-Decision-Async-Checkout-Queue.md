@@ -127,4 +127,4 @@ Cliente ──"colocar no carrinho"──▶ uso < 80%?
 
 ---
 
-*Sincronizado automaticamente de `Architecture-Decision-Async-Checkout-Queue.md` em 2026-10-30T19:11:52.863Z.*
+*Sincronizado automaticamente de `Architecture-Decision-Async-Checkout-Queue.md` em 2026-11-03T15:35:58.008Z.*

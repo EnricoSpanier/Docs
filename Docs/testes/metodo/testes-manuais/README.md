@@ -15,4 +15,4 @@ Os smokes da Fase 7 (#33, #35, #36) precisam da stack inteira com o seed ligado 
 `docker compose -f Projeto/docker-compose.yml -f Projeto/carga/docker-compose.carga.yml up -d --build`.
 
 Cada script **é o teste**: sai com código ≠ 0 se a garantia verificada quebrar.
-Pré-requisito comum: `docker compose -f Projeto/docker-compose.yml up -d --build db backend`.
+Pré-requisito comum: `docker compose -f Projeto/docker-compose.yml up -d db backend`.

@@ -186,12 +186,40 @@ const PONTOS = [
     situacao: "feito",
     texto: "Mesma escada e mesmos parâmetros da Rodada 4; só a saga muda. Sem autoescala, ficou estável até 98k: 0 5xx, 0 órfãs, 0 compensações, e lag de devolução da vaga com p95 de 448 ms. O braço C parou em 44k (na R4, 38k), de novo pelo health check do `lb` (#207). O CAS manteve overselling 0.",
   },
+  // Etapas 09 a 11: o banco numa máquina dedicada, a autoescala em Kubernetes e o teste longo.
+  {
+    pasta: "r5-db-remoto",
+    rotulo: "R5 com o banco remoto",
+    titulo: "R5 com o Postgres numa máquina dedicada (#227)",
+    config: "O código e as imagens da Rodada 5, com só o `db` num Dell dedicado (pooler e serviços no host)",
+    issues: "#227",
+    situacao: "feito",
+    texto: "Braço base da R5, com o banco fora do host. Ficou estável até 98k: 0 5xx, 0 órfãs, 0 compensações e CAS com overselling 0. O 1º degrau degradou em 32k (na R5, 38k), o p95 de janela de 50k a 98k foi de 0,27 a 0,47 s (na R5, 0,27 a 0,87 s) e o lag de devolução da vaga teve p95 de 640 ms (na R5, 448 ms). O Dell não saturou (CPU média de até 43%); o host ficou no teto de CPU.",
+  },
+  {
+    pasta: "k8s",
+    rotulo: "Kubernetes com o banco remoto",
+    titulo: "Autoescala em Kubernetes com o banco remoto (#228, #231, #237)",
+    config: "A branch `K8s` (#197/#205) num cluster kind, com KEDA/HPA, trilhas de balanceamento e o banco no Dell",
+    issues: "#228, #237",
+    situacao: "feito",
+    texto: "Mesma escada da #227. K0 (banco no cluster): 1º degrau degradado em 26k. K1 (banco no Dell, sem autoescala): 1º degrau degradado em 32k, até 98k com 0 5xx. K2 (Istio e autoescala de 1 a 3): parou no 20k, pelo pool do `stock` com Hikari 60 por réplica (diagnóstico e teste A). A #231 voltou o `stock` a 1 réplica fixa com Hikari 245. O K2-repetição (sem a #231) e o K2-pos-231 (#237, com ela) pararam os dois no 32k. O limite provável, não isolado, é o lock da linha quente do `eventcap`. O CAS manteve overselling 0 em todos.",
+  },
+  {
+    pasta: "soak",
+    rotulo: "Teste longo (soak)",
+    titulo: "Teste longo: 2 h com picos e vales por serviço (#232)",
+    config: "O cluster Kubernetes (trilha b1, banco no Dell) com os 5 tipos de carga e o Mailpit no lugar do SMTP",
+    issues: "#232",
+    situacao: "feito",
+    texto: "Blocos de 2 h com picos e vales aleatórios de leitura, reserva, login, cadastro e escrita no catálogo. S1 (X = 56k, sem fila): aprovado, com 0 5xx, overselling 0 e 1 e-mail por cadastro (37.253 de 37.253). S2 (X = 4k, com fila): REPROVADO no critério de 5xx por 12 respostas 503 na consulta da fila num minuto de pico (causa provável, não provada: timeout do Redis no `admission`), aceito sem re-teste; o resto passou, e o overselling 0 dele foi conferido, mas não estressado. Antes, o 1º S2 tinha reprovado por e-mails duplicados e pelo `admission` com 1 pod nas rampas; as duas causas foram corrigidas (correção no harness e a #235).",
+  },
 ];
 const GRUPOS_C = [...PONTOS, { pasta: "metodo", rotulo: "Método e ferramentas" }, { pasta: "artigo", rotulo: "Artigo" }];
 
 // Etapa de Projeto/carga/results (prefixo NN-) -> pasta do ponto. Etapa sem entrada cai no ponto 3
 // (05 e 06); ao abrir uma rodada nova, mapear a etapa aqui.
-const PONTO_ETAPA = { "01": "pre-serie", "02": "pre-serie", "03": "ponto-1", "04": "ponto-2", "07": "rodada-4", "08": "rodada-5" };
+const PONTO_ETAPA = { "01": "pre-serie", "02": "pre-serie", "03": "ponto-1", "04": "ponto-2", "07": "rodada-4", "08": "rodada-5", "09": "r5-db-remoto", "10": "k8s", "11": "soak" };
 const pastaEtapa = (nn) => PONTO_ETAPA[nn] ?? "ponto-3";
 
 // Resultado em docs/carga/ -> pasta do ponto. O que não estiver aqui é método (vai para metodo/).
@@ -272,7 +300,7 @@ function gravarPontos() {
   }
   const visao = [
     "---", "sidebar_position: 1", 'sidebar_label: "Visão geral"', "---", "", "# Testes", "",
-    "A série do experimento roda o mesmo protocolo (matriz CAS × ingênuo para o overselling e escada de carga para o limiar X) em três configurações da arquitetura. As Rodadas 4 e 5 vêm depois da série e medem, sobre a configuração final, a camada de alta carga (`admission` e autoescala) e a saga `stock` + `wallet`. Cada ponto e cada rodada tem a própria seção, com as etapas de `Projeto/carga/results/` e os relatórios dela.", "",
+    "A série do experimento roda o mesmo protocolo (matriz CAS × ingênuo para o overselling e escada de carga para o limiar X) em três configurações da arquitetura. As Rodadas 4 e 5 vêm depois da série e medem, sobre a configuração final, a camada de alta carga (`admission` e autoescala) e a saga `stock` + `wallet`. Depois delas vêm a R5 com o banco numa máquina dedicada, a autoescala em Kubernetes e o teste longo de 2 h. Cada ponto e cada rodada tem a própria seção, com as etapas de `Projeto/carga/results/` e os relatórios dela.", "",
     "| Grupo | Configuração | Issue | Situação |", "|---|---|---|---|",
     ...PONTOS.map((p) => `| [${p.rotulo}](${rotaC(`${p.pasta}/index.md`)}) | ${p.config} | ${p.issues} | ${p.situacao} |`), "",
     "O que vale para todos os pontos fica em [Método e ferramentas](/testes/metodo/setup) (setup do gerador, tipos de teste, harness e testes manuais). A seção do artigo está em [Artigo](/testes/artigo/experimento-monolito), e o índice das etapas em [Índice das etapas](/testes/etapas).", "",
@@ -572,7 +600,7 @@ function dadosBrutosCarga() {
 // Os READMEs das etapas usam links relativos ao repo; no site viram rotas das páginas geradas
 // (o Docusaurus tira o prefixo numérico "NN-" do slug) ou, fora do site, o GitHub.
 const GITHUB_BLOB = "https://github.com/endydragonn/GerenciadorEventos/blob/main/";
-function linksEtapa(texto, ehIndice) {
+function linksEtapa(texto, ehIndice, etapaRel = "") {
   return texto.replace(/\]\(([^)\s]+)\)/g, (m, alvo) => {
     if (/^(https?:|#|\/)/.test(alvo)) return m;
     let t = alvo.replace(/^(\.\.\/)+docs\//, "docs/");
@@ -582,6 +610,8 @@ function linksEtapa(texto, ehIndice) {
     if (/(^|\/)ANALISE\.md$/.test(t)) return "](/testes/pre-serie/analise)";
     const etapa = t.match(/^(?:\.\.\/)?(\d\d)([a-z]?)-([^/]+)\/?$/);
     if (etapa) return `](/testes/${pastaEtapa(etapa[1])}/${etapa[2] ? `${etapa[1]}${etapa[2]}-` : ""}${etapa[3]})`;
+    // Arquivo ou subpasta da própria etapa (ex.: `K2-pos-231/README.md`, `S1b/`): não vira página no site, vai para o GitHub.
+    if (etapaRel && !t.startsWith("../")) return `](${GITHUB_BLOB.replace("/blob/", t.endsWith("/") ? "/tree/" : "/blob/")}${etapaRel}/${t})`;
     return m;
   });
 }
@@ -669,7 +699,7 @@ function sincronizarResultados() {
     const frontmatter = d === RESULTS_DIR ? '---\nsidebar_label: "Índice das etapas"\nsidebar_position: 20\n---\n\n' : "";
     mkdirSync(path.dirname(destino), { recursive: true });
     registrar(readme, destino);
-    writeFileSync(destino, frontmatter + escaparChavesForaDeCodigo(linksEtapa(readFileSync(readme, "utf8").replace(/^﻿/, ""), d === RESULTS_DIR)));
+    writeFileSync(destino, frontmatter + escaparChavesForaDeCodigo(linksEtapa(readFileSync(readme, "utf8").replace(/^﻿/, ""), d === RESULTS_DIR, d === RESULTS_DIR ? "" : `Projeto/carga/results/${nome}`)));
     nEtapas++;
   }
   console.log(`[sync-docs] Fonte C (resultados): ${contagem} run(s) consolidado(s), ${nEtapas} página(s) de etapa.`);

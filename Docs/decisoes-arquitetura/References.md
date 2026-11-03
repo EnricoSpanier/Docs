@@ -107,4 +107,4 @@ Temas de 2026-09-02, mais os que entraram depois. "Fonte acadêmica" aponta para
 
 ---
 
-*Sincronizado automaticamente de `References.md` em 2026-10-30T19:11:52.868Z.*
+*Sincronizado automaticamente de `References.md` em 2026-11-03T15:35:58.012Z.*

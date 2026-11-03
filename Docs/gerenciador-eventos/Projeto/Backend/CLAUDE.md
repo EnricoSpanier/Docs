@@ -5,28 +5,33 @@ Leia também o CLAUDE.md da raiz (regras gerais) e o de `db/` (schema).
 
 ## Rodar
 
-- Via Docker (recomendado): `docker compose -f Projeto/docker-compose.yml up -d --build backend`
+**Imagens (#197):** os 7 serviços Java (backend, identity, catalog, reservation, stock, notification, admission) rodam, por padrão, as imagens enxutas
+`gerenciador-eventos-<serviço>.slim:${SLIM_TAG:-latest}` (sem `build:`, `pull_policy: never`: sem a imagem o `up` falha com "image not found"). Gere com
+`Projeto/slim/gerar-imagens-slim.sh [serviço ...]` — e de novo depois de mudar o código de um serviço, porque `up -d --build <serviço>` **não** o reconstrói mais.
+Para depurar com a imagem completa: `docker compose -f Projeto/docker-compose.yml -f Projeto/docker-compose.completa.yml up -d --build <serviço>`.
+
+- Via Docker (recomendado): `docker compose -f Projeto/docker-compose.yml up -d backend`
   — porta `8081`, container `gerenciador-backend`. Sobe junto `db`, `supabase-pooler` e `redpanda` (o
   backend espera o broker ficar `healthy`); no Docker o backend fala **pelo pooler** (Supavisor), ver
   "Pooler" em Persistência, e com o broker em `redpanda:9092` (`SPRING_KAFKA_BOOTSTRAP_SERVERS`).
-- Serviço `notification` (issue #32): `docker compose -f Projeto/docker-compose.yml up -d --build notification`
+- Serviço `notification` (issue #32): `docker compose -f Projeto/docker-compose.yml up -d notification`
   — container `gerenciador-notification`, sem porta. Ver "Serviço notification". O `backend` NÃO depende dele.
-- Serviço `reservation` (issue #33): `docker compose -f Projeto/docker-compose.yml up -d --build reservation` — container
+- Serviço `reservation` (issue #33): `docker compose -f Projeto/docker-compose.yml up -d reservation` — container
   `gerenciador-reservation`, API interna na `:8082` **só na rede `gerenciador-net`** (sem porta no host). Ver "Serviço reservation".
   O `backend` **depende dele** (`depends_on: reservation: service_healthy`): sem ele não há reserva (o resto do monólito sobe).
-- Serviço `stock` (issue #47): `docker compose -f Projeto/docker-compose.yml up -d --build stock` — container `gerenciador-stock`, API interna na `:8086` **só na rede**; entrypoint
+- Serviço `stock` (issue #47): `docker compose -f Projeto/docker-compose.yml up -d stock` — container `gerenciador-stock`, API interna na `:8086` **só na rede**; entrypoint
   `com.gerenciador.eventos.stock.StockApplication`, `stock/Dockerfile`. Dono do `eventcap` (CAS) e do ledger de holds; o `reservation` **depende dele** (`service_healthy`, que por sua vez espera o
   one-shot `stock-seek`). Ver "Serviço stock e saga stock + wallet".
-- Serviço `catalog` (issue #35): `docker compose -f Projeto/docker-compose.yml up -d --build catalog` — container `gerenciador-catalog`,
+- Serviço `catalog` (issue #35): `docker compose -f Projeto/docker-compose.yml up -d catalog` — container `gerenciador-catalog`,
   API interna na `:8083` **só na rede**; entrypoint `com.gerenciador.eventos.catalog.CatalogApplication`, `catalog/Dockerfile`. O `backend`
   também depende dele (`service_healthy`); com ele parado `/bff/events/**` e a reserva respondem 503 (na reserva, um positivo de `exists`
   ainda no cache de 30 s do gateway deixa a reserva seguir). Ver "Serviço catalog".
-- Serviço `identity` (issue #36): `docker compose -f Projeto/docker-compose.yml up -d --build identity` — container `gerenciador-identity`,
+- Serviço `identity` (issue #36): `docker compose -f Projeto/docker-compose.yml up -d identity` — container `gerenciador-identity`,
   API interna na `:8084` **só na rede**; entrypoint `com.gerenciador.eventos.identity.IdentityApplication`, `identity/Dockerfile`. Gera (1º boot) e
   guarda a chave de assinatura do JWT no volume `identity-keys`. O `backend` **depende dele** (`service_healthy`); com ele parado login, cadastro,
   `/bff/users/**` e `/bff/my-wallets/**` respondem 503, mas quem tem token válido segue reservando (JWKS em cache no gateway). **Não sobe** com a
   migração `20261028` pendente (`PublicSchemaGuard`). Ver "Serviço identity".
-- Serviço `admission` (issue #41): `docker compose -f Projeto/docker-compose.yml up -d --build admission` — container `gerenciador-admission`, API interna
+- Serviço `admission` (issue #41): `docker compose -f Projeto/docker-compose.yml up -d admission` — container `gerenciador-admission`, API interna
   na `:8085` **só na rede**; entrypoint `com.gerenciador.eventos.admission.AdmissionApplication`, `admission/Dockerfile`. Sobe junto o **Redis**
   (`gerenciador-redis`) e, desde a #42, o **RabbitMQ** (`gerenciador-rabbitmq`) e o `reservation` (depende dos três, `service_healthy`: o worker pool da fila de
   admissão chama o reservation). O `backend` **não** depende dele (o gateway faz fail-open): com ele parado a reserva segue
@@ -51,7 +56,7 @@ serviço é um módulo com o próprio jar e Dockerfile; o que é comum é uma li
 
 ```
 Backend/
-  pom.xml                agregador (módulos: shared, reservation-client, stock-client, catalog-client, identity-client, admission-client, monolito, notification, reservation, stock, catalog, identity, admission)
+  pom.xml                agregador (módulos: shared, client-lb, reservation-client, stock-client, catalog-client, identity-client, admission-client, monolito, notification, reservation, stock, catalog, identity, admission)
   checkstyle*.xml        um só para todos os módulos (${maven.multiModuleProjectDirectory})
   run-tests.sh           roda o reactor inteiro
   shared/                LIB (jar simples, sem repackage): DatabaseConnection + shared.events (EventStore, relay, consumer,
@@ -109,7 +114,7 @@ Backend/
 
 `./run-tests.sh` — sobe um container Maven na rede `gerenciador-net`, com `--env-file ../.env`
 (URL direta `db:5432`, **sem passar pelo pooler**),
-e roda `mvn -fae clean test` na raiz: o **reactor inteiro** (`shared`, `reservation-client`, `stock-client`, `catalog-client`, `identity-client`, `admission-client`, `monolito`, `notification`,
+e roda `mvn -fae clean test` na raiz: o **reactor inteiro** (`shared`, `client-lb`, `reservation-client`, `stock-client`, `catalog-client`, `identity-client`, `admission-client`, `monolito`, `notification`,
 `reservation`, `stock`, `catalog`, `identity`, `admission`; `-fae` = um módulo vermelho não esconde o resultado dos outros). **Pré-requisito do `stock` (#47):** o banco migrado (`db/migrations/20261029-stock-schema.sql`): o script ABORTA se `reservation.eventcap` ainda existe ou se faltam `stock.eventcap`/`stock.hold`, e se o
 `gerenciador-stock` (ou réplica com o label do serviço) estiver rodando; ao fim move os groups `stock`/`stock-catalog` para o fim dos tópicos. `TEST_DB_NAME` (default `meu_banco`) e `ENV_FILE` (default
 `../.env`) permitem rodar os testes num banco isolado (o `meu_banco` fica no schema da R4); o banco novo é criado com os init scripts da worktree. **Pré-requisito do `catalog` (#35):** o banco
@@ -1690,6 +1695,12 @@ O `reservation` mantém nome, container, porta `:8082` e a API `/internal/reserv
   (`STOCK_CLIENT_*`). **Conta do Supavisor (≤ 1500):** base 1000 (reservation) + 250 (stock) + 10 (backend) + 3 (notification) + 100 (catalog) + 100 (identity) =
   **1463**; override de autoescala 3×300 + 3×10 + 3×3 + 3×50 + 3×50 + 250 = **1489** (folga de 11; pré-condição da R5: Hikari de identity/catalog da R4 ≤ 51 por
   réplica, senão o Hikari do `stock` = 1500 − soma da R4). Nenhum Hikari da R4 muda.
+  **No cluster Kubernetes o `stock` voltou a 1 réplica fixa (#231; a #205, D3 b, o tinha deixado escalar de 1 a 3 com Hikari 60 por réplica):** sem ScaledObject, `replicas: 1`,
+  `strategy: Recreate` e Hikari **245** (o pool real do Supavisor no overlay `rodada`; em base, e2e e carga é 45); a conta do cluster (4×200 + 4×10 + 4×3 + 4×50 + 4×50 + 245 = **1497 ≤ 1500**) está em "Cluster Kubernetes". O diagnóstico do K2
+  (`Projeto/carga/results/10-k8s-db-remoto/K2-diagnostico/`, diagnóstico 1 contra o teste A) mostrou que o Hikari 60 × 3 esgotava o pool do stock e fez o K2 parar a 20k (entrada do gateway 5,6 s no p50; no K2-repetição, sem a #231, o b1 passou do 20k e parou no 32k, o mesmo ponto do K2-pos-231, já com ela: `Projeto/carga/results/10-k8s-db-remoto/K2-pos-231/`), e que
+  com 250 × 1 o degrau passou (160 ms no p50): o CAS na linha quente do `eventcap` serializa as reservas, então réplicas extras não compensam o pool menor. O compose segue com 1 réplica e 250.
+  O `stock` não tem job agendado (o reaper é do `reservation`): com N réplicas só os dois consumers dividem o
+  tópico, e ambos são idempotentes (provado em `StockReleaseConsumerTest` e `CatalogReconciliationTest`, abaixo; o código continua pronto para réplicas, só o cluster não as usa).
 - **Schema e migração**: `db/init-scripts/16-stock.sql` (schema `stock`, `eventcap` movido do `13-reservation.sql`, `hold`), na lista do `db/supabase-app-init.sql`;
   banco existente: `db/migrations/20261029-stock-schema.sql` (+ `verify-20261029-migration.{sh,sql}`) — **com backend, reservation, catalog e stock parados e depois do
   backup `pg_dump -h localhost -U admin --clean --if-exists -n reservation meu_banco`**; move `reservation.eventcap` para `stock`, cria `stock.hold`, as colunas da saga
@@ -1701,7 +1712,9 @@ O `reservation` mantém nome, container, porta `:8082` e a API `/internal/reserv
   desenvolvida (`meu_banco_s5` criado com os init scripts da worktree). O módulo `reservation` trunca também o schema `stock` (`test.db.schemas=reservation,stock`).
 - **Testes** (Postgres e Redpanda reais): módulo `stock` — `StockHoldTest` (S1–S4, S7, S8: idempotência por `holdId`, `release` idempotente e lápide, overselling 0
   com releases misturados, release × reservar em voo), `StockReleaseConsumerTest` (S5/S5b: lote com duplicatas/tipos misturados, `quant` agregado, rebalance, `Cancelled`
-  v1 sem `holdId`, `earliest`), `EventCapUpdatePolicyTest` (S6: conversão ilimitado → limitado), `CatalogReconciliationTest`, `StockApiE2ETest`, `StockConfigTest`;
+  v1 sem `holdId`, `earliest`; **#205, 2+ réplicas:** além do rebalance com dois containers no mesmo group, 4 réplicas ao MESMO tempo com o mesmo lote de
+  `ReservationCancelled`/`ReservationExpired` repetidos do mesmo `holdId`, e lotes que só se sobrepõem em 2 eventos: cada hold sai de `held` UMA vez (soma exata dos retornos),
+  `eventcap.quant` sobe exatamente 1 por hold e não há deadlock; libera-se só parte dos holds de propósito, porque o teto de `devolver` esconderia a devolução em dobro), `EventCapUpdatePolicyTest` (S6: conversão ilimitado → limitado), `CatalogReconciliationTest`, `StockApiE2ETest`, `StockConfigTest`;
   módulo `reservation` — `ReservationSagaTest` (W1, W3, W5, W6, W8, W10–W12), `SagaReaperTest` (W2, W4, W7, W13), `SagaReaperConcorrenteTest` (W9), com o `stock` REAL
   atrás do `StockProxy` (JDK `HttpServer` que fica fora, atrasa ou comita e perde a resposta), `SagaDb` e o helper `InvariantesDaSaga` (o único código de teste que lê os
   dois schemas: `quant = capacity − holds debitados`, nenhum `walletevent` ativo sem hold `held`, **e no sentido inverso** todo hold `held` tem `walletevent` ativo, saga em
@@ -1747,18 +1760,81 @@ exigem `E2E_REPLAY=1`, ficam PULADAS no `run-tests.sh`, não truncam nada e reut
   (`service_completed_successfully`). Group novo não relê o log (evento de teste de uma stack apagada não vira e-mail); group existente (e-mail
   legítimo pendente com o serviço parado) fica intocado. Tópico inexistente não falha.
 - **Healthchecks** (#37): `backend` (GET cru em `/actuator/health` por `bash /dev/tcp`, espera `200`), `notification` (sem HTTP: há conexão TCP ESTABELECIDA ao broker :9092 em `/proc/net/tcp`/`tcp6`, consumer ligado; o lag do group segue sendo o sinal de que ele consome) e
-  `frontend` (`wget` do busybox do nginx); o `frontend` agora espera o `backend` `service_healthy`. `docker compose up -d --build --wait` termina com
+  `frontend` (`wget` do busybox do nginx); o `frontend` agora espera o `backend` `service_healthy`. `docker compose up -d --wait` termina com
   todo serviço de longa duração `healthy` (o `notification-seek` termina com 0).
 - Pré-requisitos: `Projeto/.env` e `Projeto/supabase/.env`, python, e RAM para ~15 containers a mais (a stack real pode ficar no ar; se faltar,
   `docker compose -p gerenciador-eventos stop`, nunca `down`). O 1º build (inclui o Flutter do frontend) leva vários minutos.
 
 ### Imagens enxutas (Slim) — issue #177
 
-Opcional, sem mexer nos Dockerfiles: `Projeto/slim/gerar-imagens-slim.sh` gera as imagens `gerenciador-eventos-<serviço>.slim` (probe nos
-endpoints `/internal/**`, `/bff/**`, actuator, JWKS e no caminho Kafka) e `Projeto/docker-compose.slim.yml` as ativa por override
-(`build: !reset null`). `E2E_SLIM=1 Projeto/e2e/run-e2e.sh` roda a suíte e2e com elas e confere que cada serviço usa o ID da imagem `*.slim`.
+Sem mexer nos Dockerfiles: `Projeto/slim/gerar-imagens-slim.sh` gera as imagens `gerenciador-eventos-<serviço>.slim:${SLIM_TAG:-latest}` (probe nos
+endpoints `/internal/**`, `/bff/**`, actuator, JWKS e no caminho Kafka). Desde a #197 elas são o padrão do `docker-compose.yml` (sem `build:`, `pull_policy: never`) e
+o `docker-compose.completa.yml` (`build:` + `image: !reset null` + `pull_policy: !reset null`) devolve a imagem completa para depurar; o script usa esse override no build gordo.
+`SLIM_TAG` (opcional, default `latest`; vale da shell ou do `Projeto/.env`, como qualquer variável do compose) muda a tag gerada/usada, para um lote novo sem sobrescrever o `:latest`; os scripts perguntam ao próprio compose qual tag ele resolve e a mostram no log. `Projeto/e2e/run-e2e.sh` roda a suíte e2e com as slim e confere que cada serviço usa o
+ID da imagem `*.slim:$SLIM_TAG` (`E2E_COMPLETA=1`: as completas construídas no project, com o mesmo conferido de ID).
 Tabela antes/depois, includes (com motivo) e perfis Seccomp/AppArmor (opcionais, não aplicados por padrão) em `Projeto/slim/README.md`. Desde a #47 inclui o `stock` (probe de `/internal/holds`,
 `/internal/eventcaps/**` e do `StockReleaseConsumer`, com um `ReservationCancelled` produzido antes do start).
+
+### Cluster Kubernetes (kind) — issue #197, etapas 2, 3, 4a e 4b
+
+A stack inteira também roda num cluster kind de um nó (`Projeto/k8s/`, ver o README de lá): `cluster.sh up --trilha b1|c|nenhuma` (a trilha é obrigatória), com dados descartáveis e a autoescala KEDA/HPA da etapa 4a (abaixo) e o dry-run de carga da 4b (`Projeto/k8s/dry-run.sh --trilha b1|c|nenhuma`, `registrar-replicas.sh`; README de `Projeto/k8s`). O perfil Seccomp do `cluster.sh` precisa do `getegid` (`k8s/seccomp-extras.txt`): sem ele o HotSpot ignora `JAVA_TOOL_OPTIONS` em silêncio.
+O compose, o `run-tests.sh` e o e2e em compose **não mudam**. O que o cluster exige dos serviços:
+- **Actuator só para as probes (#207).** O `identity`, `catalog`, `reservation`, `stock` e `admission` ganharam `spring-boot-starter-actuator` com o HTTP de management **desligado por padrão**
+  (`management.server.port=-1`, só `health` exposto, `show-details=never`): sem env nova nada muda no compose. O manifest liga `MANAGEMENT_SERVER_PORT=8090` (outro conector e outro pool de
+  threads que a API, então a probe não espera atrás das 300 threads), `management.endpoint.health.probes.enabled=true` e o grupo `readiness` só com `readinessState` (banco, Redis, broker e
+  downstream NÃO entram: um Postgres lento sob carga não esvazia o Service). O gateway (`backend`) já tinha o actuator (`/actuator/health` público na 8081 pelo healthcheck do compose) e usa as
+  mesmas envs; o `SecurityConfig` ganhou `GET /actuator/health/liveness` e `/readiness` liberados (a porta de management herda a cadeia de segurança e devolvia 401 às probes; `ActuatorProbesTest`, classe própria porque ligar as probes faz a raiz `/actuator/health` listar `groups`, o que o `HttpContractTest` não espera). A 8090 não entra no Service; o filtro do `X-Internal-Token` é do contexto da API e não vale nela. O `notification` (sem HTTP) repete o healthcheck do compose (TCP ao broker).
+  `management.observations.enable.http.server.requests=false` nos 5: sem a observação o actuator não põe o timer `http.server.requests` (uma observação por requisição) no caminho quente.
+  **As `*.slim:latest` da R5 não têm o actuator:** até a R5 terminar use SEMPRE `SLIM_TAG=k8s` (gerar: `SLIM_TAG=k8s Projeto/slim/gerar-imagens-slim.sh`; subir: `SLIM_TAG=k8s Projeto/k8s/cluster.sh up --trilha nenhuma`);
+  as `:latest` só são regeradas depois da R5 (o `cluster.sh` aborta com `SLIM_TAG=latest`, a menos que `K8S_PERMITIR_LATEST=1`, para depois disso).
+- **Pool por réplica no cluster** (env no manifest; o compose mantém 1000 e 250): Hikari **200** no `reservation`, 50 no `identity` e no `catalog`, 10 no `backend`, 3 no `notification` e **245 no `stock`, 1 réplica fixa** (#231).
+  Conta do Supavisor (teto `POOLER_MAX_CLIENT_CONN` 1500, pool real 45 inalterado) com **até 3 réplicas por serviço escalável e +1 pod em término** (a descida deixa o pool aberto; o rollout não soma, por `maxSurge: 0`) e o `stock` uma vez só
+  (`Recreate`, o pod velho sai antes do novo, sem sobreposição): 4×200 + 4×10 + 4×3 + 4×50 + 4×50 + 245 = **1497 ≤ 1500** (com 3 réplicas e nenhuma em término, 1184). Máximo acima de 3 em qualquer serviço escalável exige refazer a conta; `K8S_STOCK_MIN`/`K8S_STOCK_MAX`
+  deixaram de existir e o `cluster.sh` aborta com valor diferente de 1. O 245 é o pool real do Supavisor no overlay `rodada` (`POOLER_DEFAULT_POOL_SIZE`; em base, e2e e carga é 45): conexão do Hikari acima disso só espera no Supavisor (teste A do K2: `pg_conexoes` parou em 247).
+  Evidência e a comparação 60 × 3 contra 250 × 1 em `Projeto/carga/results/10-k8s-db-remoto/K2-diagnostico/`. O "sem sobreposição" do `Recreate` vale só para o rollout de template: num delete de pod ou numa eviction o ReplicaSet sobe o novo com o velho ainda em `Terminating` (grace de 60 s) e podem ficar 2×245 por alguns segundos. Os Hikari 200 e 245 ficam abaixo do
+  Tomcat 300: as threads esperam no Hikari (`connection-timeout` 5 s); muda só onde a fila espera.
+- **Rodada com o db remoto (#228; `Projeto/k8s/README.md`, "Rodada com o db remoto"):** `K8S_OVERLAY=rodada` (base + `SEED_ENABLED`, pool real do Supavisor 245 e, com o db no cluster, `max_connections=300`), `K8S_DB_REMOTO=<ip>:<porta>` (componente `db-remoto`: sem StatefulSet `db`, Service sem selector + EndpointSlice; `cluster.sh db-teste` antes da carga) e `K8S_POOLS=r5` (Hikari 1000/250/100/100/10/3 e workers 32 de réplica única, só com `K8S_<SVC>_MAX=1`: 1463 &lt;= 1500; sem ele valem os pools do cluster acima). O kit de carga fala com o cluster com `CARGA_K8S=<contexto>` (`Projeto/carga/README.md`, "Modo cluster"). **Teste longo (#232):** `K8S_OVERLAY=soak` (`rodada` + componente `overlays/mailpit` + env do `notification` apontado para o Mailpit, API na NodePort 30825/host 8025; guarda fail-closed no `cluster.sh`, `MAILPIT_AUTH` no ambiente; `Projeto/k8s/README.md`, "Teste longo (soak)").
+- **Partições:** o Job `particoes` leva `reservation.wallet` e `identity.notification` a 3 partições e os `initContainers` de seek do `notification` e do `stock` (e a espera do `reservation`) só andam
+  com 3, para nenhum consumer assinar o tópico com 1 e ficar até 300 s sem ver as outras.
+- **Seccomp:** o perfil do Slim cru não deixa nem o container iniciar (faltam as syscalls do runc) nem o relay Kafka do catalog funcionar (`writev`/`shutdown`); o `cluster.sh` soma `k8s/seccomp-extras.txt` ao perfil de cada serviço
+  antes de copiá-lo para o nó (detalhes e o risco no `Projeto/k8s/README.md`). AppArmor não se aplica ao kernel do Docker Desktop.
+- **Término sem 5xx:** `preStop.sleep` 20 s + `terminationGracePeriodSeconds` 60; `maxSurge: 0, maxUnavailable: 1` nos serviços com banco.
+- **Autoescala (#197, etapa 4a; D5 = a, KEDA sem Prometheus; detalhes e tabela em `Projeto/k8s/README.md`, "Autoescala").** `cluster.sh up` instala metrics-server (chart 3.14.0) e KEDA (chart 2.21.0, `KEDA_RESTRICT_SECRET_ACCESS=true`) por helm e aplica 6 ScaledObjects (o `stock` não tem, #231: 1 réplica fixa): `reservation` por
+  `metrics-api` em `GET /internal/metrics/hot` do `admission` (alvo `AverageValue` = `0,5 × ADMISSION_X_RPM`, da mesma variável que o admission recebe), `notification` por `kafka` (lag do group), os demais (`backend`, `identity`, `catalog`, `admission`) por `cpu` 50% do container da aplicação.
+  `K8S_<SVC>_MIN`/`_MAX` (default 1/3, teto 3 por causa da conta do pool acima; **exceto o `admission`, de mínimo 2** (#235: com um pod só, o degrau da rampa estourava os timeouts de 200 ms do Redis/RabbitMQ antes do KEDA ter outro pronto e a consulta da fila dava 503; com teto efetivo 1 o default acompanha o teto; sem datasource, o pool do Supavisor não muda)), `K8S_DESCE_SEG` (120), descida de 1 pod por 60 s e subida de 1 pod por 15 s (#206). **Duas mudanças no `admission` (módulo `admission`, sem dependência nova, nada muda no compose):**
+  - **`GET /internal/metrics/hot` (`MetricsController`)**: devolve `{"rpm": <adm:hot>}`, `200` com `0` se a chave não existe (**nunca 404**: o KEDA, em erro, congela as réplicas) e 503 com o Redis fora. O `InternalTokenFilter` ganhou o **token só de métrica** (`ADMISSION_METRICS_TOKEN`, `admission.metrics.token`, **só no
+    cluster**: gerado pelo `cluster.sh` a cada cluster novo, Secret `admission-metrics`, fora do `.env`): nessa rota (método `GET` e `getRequestURI()` cru IGUAL a `/internal/metrics/hot`; qualquer variação cai no ramo do mestre, fail-closed) vale **só** o token de métrica, e o `INTERNAL_API_TOKEN` mestre
+    **não** abre a rota; em toda outra rota vale só o mestre e o de métrica não abre nada. Sem `ADMISSION_METRICS_TOKEN` (compose) a rota responde 401 a tudo e o serviço sobe normalmente. Testes sem infra: `TokenDeMetricaFilterTest` e `MetricsHotTest`.
+  - **Réplicas ativas pela API do Kubernetes (D4 = b)**: `ReplicasDoKubernetes`, `@Scheduled` de 2 s ligado só por `admission.k8s.replicas.enabled` (`ADMISSION_K8S_REPLICAS_ENABLED`, default `false`; o `@EnableScheduling` está na própria classe condicional, então no compose nem existe scheduler). `GET
+    https://kubernetes.default.svc/apis/apps/v1/namespaces/<ns>/deployments/reservation` com o `java.net.http.HttpClient` (token da ServiceAccount relido a cada chamada, `ca.crt` num `SSLContext` próprio, namespace do arquivo, timeout de 1 s), grava `adm:replicas` com TTL 15 s (a chave do scaler da opção A; o Lua não muda). Falha ou
+    `readyReplicas` ausente/0/fora de `[1, K8S_RESERVATION_MAX]` (`admission.k8s.replicas.max`) **não grava**: vale `ADMISSION_RESERVATION_REPLICAS`. RBAC só de `get` em `deployments/reservation`; só o admission monta o token. Teste: `ReplicasDoKubernetesTest` (servidor HTTP falso: readyReplicas, 401/403/500,
+    timeout, JSON inválido, fora do intervalo, token relido, falha do Redis); o caminho real (TLS, RBAC) é coberto no e2e do cluster. **Envs novas** (só no cluster, sem default inseguro e sem nada novo no `.env`): `ADMISSION_METRICS_TOKEN`, `ADMISSION_K8S_REPLICAS_ENABLED`, `K8S_RESERVATION_MAX`.
+  - `CLIENT_LB_TTL_MS` passou a ser validada (`> 0` com `CLIENT_LB_ENABLED=true`; `ClientLb` recusa, `ClientLbTest`).
+- e2e: `SLIM_TAG=k8s E2E_K8S=1 E2E_K8S_TRILHA=nenhuma|c|b1 Projeto/e2e/run-e2e.sh` (cluster próprio `gerenciador-e2e`, sem porta no host; pod `e2e-cli` com a imagem Maven, sem sidecar). O passo 7 (só no cluster) sobe uma 2ª réplica do `catalog`
+  com GETs sequenciais no gateway e mede as conexões ESTABLISHED do gateway no pod novo: nas trilhas `b1` e `c` o pod novo recebe, na `nenhuma` (o controle: Service L4) não. Desde a 4a o e2e sobe com min=max=1 nos ScaledObjects
+  (`K8S_<SVC>_MIN/MAX=1`; o reservation com teto 2, limitado a 1 logo depois do `up`), o passo 7 e o novo passo 8 mexem no min/max do ScaledObject (nunca `kubectl scale`), "stock fora" é um `kubectl scale` direto (o `stock` não tem ScaledObject) e o passo 8 confere
+  ScaledObjects/HPAs, o `/internal/metrics/hot` (200 com o token de métrica, 401 sem token/errado/noutra rota) e `adm:replicas` = `readyReplicas` do reservation (2 e de volta a 1).
+- **Trilhas de balanceamento (#197, etapa 3).** O `Service` do Kubernetes balanceia por conexão, e os 5 clientes mantêm as conexões abertas (`max-keep-alive-requests=-1`): um pod novo não recebe tráfego
+  das conexões já abertas. `cluster.sh up --trilha ...` escolhe como resolver isso, sobre a mesma base e a mesma imagem (trocar = `down` + `up`); as trilhas são **componentes kustomize**
+  (`k8s/overlays/trilha-*`) que o `cluster.sh` soma, num kustomization temporário, ao overlay `base` ou `e2e`:
+  - **`c` (balanceamento no cliente)** — lib Maven **`client-lb`** (`com.gerenciador.eventos.clientlb`, sem Spring; dependência das 5 libs `*-client`). `ClientLb.aplicar(poolBuilder, connectionConfigBuilder)` é chamado por cada
+    `*Client` antes do `build()` e, ligado, SOMA ao que o cliente já monta: `DnsResolver` round-robin (cada conexão nova resolve o host e roda os endereços em uma posição), `ConnectionConfig.setTimeToLive`
+    (`CLIENT_LB_TTL_MS`, default 15000) e `PoolReusePolicy.FIFO`; os timeouts de conexão, socket e resposta ficam os do cliente. **Sem retry próprio:** o cliente segue com `disableAutomaticRetries` e o
+    failover para o próximo endereço (um que recusa a conexão) é do operador de conexão do HttpClient 5 (provado no teste, então não entrou `HttpRequestRetryStrategy`). **Desligado por padrão:**
+    `CLIENT_LB_ENABLED=false` (`client.lb.enabled`, em `monolito`, `catalog`, `reservation` e `admission`; no `admission` o bean do worker pool tem a mesma env) = a montagem de sempre; cada `*Client` ganhou um construtor
+    com o `ClientLb` como último parâmetro e o antigo delega com `ClientLb.desligado()`. O overlay liga `CLIENT_LB_ENABLED` nos 4 serviços que chamam serviços (gateway → identity/catalog/reservation/admission,
+    catalog e reservation → stock, admission → reservation), aponta os `*_SERVICE_URL` para os Services **headless** `*-pods` (o DNS devolve só pods prontos) e passa o cache de DNS da JVM para 5 s
+    (`networkaddress.cache.ttl=5`, `negative.ttl=1`) por um `java.security` extra em ConfigMap (`JAVA_TOOL_OPTIONS=-Djava.security.properties=...`; `-Dnetworkaddress.cache.ttl` não vale). Teste:
+    `ClientLbTest` (resolver e flag, no módulo `client-lb`) e `ClientLbCincoClientesTest` no **monolito** (o único módulo que enxerga os 5 clientes sem ciclo Maven; sem Docker nem banco:
+    `mvn -pl monolito -am test -Dtest=ClientLbCincoClientesTest -Dsurefire.failIfNoSpecifiedTests=false`): pelos 5 `*Client` reais, "pods" são servidores JDK em 127.0.0.1/2/3 na mesma porta e o DNS é falso (1 → 3 → 2
+    endereços): as conexões novas se espalham, depois do TTL o endereço removido não recebe mais nada, um endereço que recusa a conexão é pulado, o timeout de resposta de hoje continua e `desligado` não usa o resolver da trilha.
+  - **`b1` (Istio 1.31.1, sidecar)** — instalado por helm no `up` (`istio/base` + `istio/istiod`, versão fixa, repositório `https://blob.istio.io/istio-release/charts`; `k8s/istio/istiod-values.yaml`): retry da malha desligado
+    (`defaultHttpRetryPolicy.attempts: 0`), `holdApplicationUntilProxyStarts`, `EXIT_ON_ZERO_ACTIVE_CONNECTIONS`, istiod com 1 réplica. Sidecar só nos 7 serviços e no frontend (label `istio-injection=enabled` no namespace; `inject: "false"`
+    em db, Supavisor, Redpanda, Redis, RabbitMQ, Mailpit e no Job `particoes`); portas não-HTTP fora do Envoy (`excludeOutboundPorts` 5432, 6543, 9092, 6379, 5672, 443, 587, 1025); as probes não passam pelo sidecar
+    (`rewriteAppHTTPProbers: "false"`, `excludeInboundPorts: "8090"`); readiness do sidecar alinhada à do app; proxy com request 100m/128Mi e limit só de memória (256Mi; **1Gi só no sidecar do `backend`**, decisão de 2026-10-30: com 256Mi o do gateway saturado foi OOMKilled no dry-run da 4b; verificação pendente na próxima janela de host, depois da R5: `SLIM_TAG=k8s Projeto/k8s/dry-run.sh --trilha b1` (e `--trilha c`, com o teto de CPU do k6), medindo o sidecar com `kubectl top pod --containers`), **sem limit de CPU**. Sem
+    `DestinationRule`/`outlierDetection` (#207). Nenhuma env de serviço muda: o Envoy intercepta pelo VIP do Service (as mesmas URLs do compose) e balanceia por requisição. O sidecar é nativo (initContainer); os `espera`
+    rodam como UID 1337 (o que o iptables do Istio não redireciona), para testarem o Service de verdade.
+  - **`nenhuma`** — a base pura (Service L4), o controle da comparação.
 
 ## Cadastro em duas fases + e-mail
 

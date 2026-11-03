@@ -5,7 +5,7 @@ sidebar_label: "Visão geral"
 
 # Testes
 
-A série do experimento roda o mesmo protocolo (matriz CAS × ingênuo para o overselling e escada de carga para o limiar X) em três configurações da arquitetura. As Rodadas 4 e 5 vêm depois da série e medem, sobre a configuração final, a camada de alta carga (`admission` e autoescala) e a saga `stock` + `wallet`. Cada ponto e cada rodada tem a própria seção, com as etapas de `Projeto/carga/results/` e os relatórios dela.
+A série do experimento roda o mesmo protocolo (matriz CAS × ingênuo para o overselling e escada de carga para o limiar X) em três configurações da arquitetura. As Rodadas 4 e 5 vêm depois da série e medem, sobre a configuração final, a camada de alta carga (`admission` e autoescala) e a saga `stock` + `wallet`. Depois delas vêm a R5 com o banco numa máquina dedicada, a autoescala em Kubernetes e o teste longo de 2 h. Cada ponto e cada rodada tem a própria seção, com as etapas de `Projeto/carga/results/` e os relatórios dela.
 
 | Grupo | Configuração | Issue | Situação |
 |---|---|---|---|
@@ -15,5 +15,8 @@ A série do experimento roda o mesmo protocolo (matriz CAS × ingênuo para o ov
 | [Ponto 3: distribuído](/testes/ponto-3) | `reservation` como serviço próprio atrás do `gateway`; a checagem de disponibilidade cruza a rede | #34 | feito |
 | [Rodada 4: admission](/testes/rodada-4) | Configuração da etapa 06 mais o `admission` (contador no Redis, fila RabbitMQ, gatilho 80/70, 202) e a autoescala por compose + HAProxy | #179 | feito |
 | [Rodada 5: saga](/testes/rodada-5) | Configuração da Rodada 4 mais a saga `stock` + `wallet` (serviço `stock` com hold e CAS, `reservation` orquestrador, compensação e reaper) | #180 | feito |
+| [R5 com o banco remoto](/testes/r5-db-remoto) | O código e as imagens da Rodada 5, com só o `db` num Dell dedicado (pooler e serviços no host) | #227 | feito |
+| [Kubernetes com o banco remoto](/testes/k8s) | A branch `K8s` (#197/#205) num cluster kind, com KEDA/HPA, trilhas de balanceamento e o banco no Dell | #228, #237 | feito |
+| [Teste longo (soak)](/testes/soak) | O cluster Kubernetes (trilha b1, banco no Dell) com os 5 tipos de carga e o Mailpit no lugar do SMTP | #232 | feito |
 
 O que vale para todos os pontos fica em [Método e ferramentas](/testes/metodo/setup) (setup do gerador, tipos de teste, harness e testes manuais). A seção do artigo está em [Artigo](/testes/artigo/experimento-monolito), e o índice das etapas em [Índice das etapas](/testes/etapas).

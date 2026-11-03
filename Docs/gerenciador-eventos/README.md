@@ -59,8 +59,11 @@ serviço) não são serviços. Infra de apoio no compose: `db` (`supabase/postgr
 ## Subir a stack
 
 ```bash
-# tudo, reconstruindo as imagens e esperando todos os serviços ficarem healthy
-docker compose -f Projeto/docker-compose.yml up -d --build --wait
+# antes: gerar as imagens enxutas dos 7 serviços Java (padrão do compose desde a #197; sem elas o up falha com "image not found")
+Projeto/slim/gerar-imagens-slim.sh
+
+# tudo, esperando todos os serviços ficarem healthy
+docker compose -f Projeto/docker-compose.yml up -d --wait
 
 # estado e logs
 docker compose -f Projeto/docker-compose.yml ps
@@ -73,7 +76,7 @@ combináveis com `-f`:
 | Override | Para quê | Detalhes |
 |---|---|---|
 | `Projeto/docker-compose.autoescala.yml` | réplicas atrás de um HAProxy (`lb`) e scaler no host; **irreversível**: leva `identity.notification` e `reservation.wallet` a 3 partições | [`Projeto/autoescala/README.md`](https://github.com/endydragonn/GerenciadorEventos/blob/main/Projeto/autoescala/README.md) |
-| `Projeto/docker-compose.slim.yml` | imagens enxutas dos serviços (precisam ser geradas antes) | [`Projeto/slim/README.md`](https://github.com/endydragonn/GerenciadorEventos/blob/main/Projeto/slim/README.md) |
+| `Projeto/docker-compose.completa.yml` | imagens completas (build do Dockerfile) dos serviços Java, para depurar; o padrão do compose são as enxutas (`*.slim`, geradas antes) | [`Projeto/slim/README.md`](https://github.com/endydragonn/GerenciadorEventos/blob/main/Projeto/slim/README.md) |
 | `Projeto/carga/docker-compose.carga.yml` | ambiente de teste de carga e `POST /bff/seed` ligado | [`Projeto/carga/README.md`](https://github.com/endydragonn/GerenciadorEventos/blob/main/Projeto/carga/README.md) |
 
 Exemplo: `docker compose -f Projeto/docker-compose.yml -f Projeto/carga/docker-compose.carga.yml up -d --build`. Guia de containers,
@@ -88,7 +91,7 @@ volumes e comandos do dia a dia: [`Projeto/README.md`](Projeto/README.md).
   antigo vira 401) e move consumer groups do Redpanda; os efeitos estão no mesmo README.
 - **Stack inteira (e2e)**: `Projeto/e2e/run-e2e.sh` sobe tudo num project temporário `gerenciador-e2e`, isolado da stack real e sem
   e-mail de verdade (captador Mailpit), exercita cadastro, evento, reserva, confirmação, a saga e a fila, e derruba só esse project
-  no fim. `MANTER=1` mantém o project; `E2E_SLIM=1` usa as imagens enxutas. Precisa de `python` e `openssl` no host, além de `Projeto/.env` e `Projeto/supabase/.env`.
+  no fim. `MANTER=1` mantém o project; roda com as imagens enxutas (precisam existir; `SLIM_TAG` escolhe a tag) e `E2E_COMPLETA=1` usa as completas. Precisa de `python` e `openssl` no host, além de `Projeto/.env` e `Projeto/supabase/.env`.
 - **Front-end**: lint, teto de tamanho de arquivo e `flutter test` rodam no container do SDK Flutter; o comando está em
   [`Projeto/frontend/README.md`](Projeto/frontend/README.md).
 

@@ -16,7 +16,7 @@ Spec: [`docs/superpowers/specs/2026-10-24-catalog-servico-design.md`](https://gi
   commit do evento, `PATCH .../policy` no update, busca em lote para hidratar listas e `DELETE` antes de cancelar (409 se há reserva). O catalog
   não depende do `stock` no boot: se a chamada de criação falhar, o `stock` cria o `eventcap` pelo `EventCreated` de `catalog.event`.
 - **Event sourcing:** o relay publica no tópico `catalog.event` (ligado no compose por `EVENTS_RELAY_ENABLED`); sem consumer.
-- **Rodar:** `docker compose -f Projeto/docker-compose.yml up -d --build catalog`. Variáveis (só nomes): `INTERNAL_API_TOKEN`, `SPRING_DATASOURCE_*`,
+- **Rodar:** `docker compose -f Projeto/docker-compose.yml up -d catalog`. Variáveis (só nomes): `INTERNAL_API_TOKEN`, `SPRING_DATASOURCE_*`,
   `SPRING_KAFKA_BOOTSTRAP_SERVERS`, `EVENTS_RELAY_*`, `STOCK_SERVICE_URL`, `STOCK_CLIENT_*`. Com ele parado, `/bff/events/**` e a reserva respondem 503
   (na reserva, um `exists` positivo ainda no cache de 30 s do gateway deixa a reserva seguir).
 - **Banco:** `Projeto/Backend/db/init-scripts/14-catalog.sql` (banco novo) ou a migração `20261026-catalog-schema.sql` (ver [`../db/README.md`](../db/README.md)).

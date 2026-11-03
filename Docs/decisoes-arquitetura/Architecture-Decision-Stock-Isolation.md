@@ -101,4 +101,4 @@ Lista completa com tema e qual parte do projeto usa cada uma: [References](./Ref
 
 ---
 
-*Sincronizado automaticamente de `Architecture-Decision-Stock-Isolation.md` em 2026-10-30T19:11:52.865Z.*
+*Sincronizado automaticamente de `Architecture-Decision-Stock-Isolation.md` em 2026-11-03T15:35:58.009Z.*

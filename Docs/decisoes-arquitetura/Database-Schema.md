@@ -167,4 +167,4 @@ Mudanças de referência:
 
 ---
 
-*Sincronizado automaticamente de `Database-Schema.md` em 2026-10-30T19:11:52.867Z.*
+*Sincronizado automaticamente de `Database-Schema.md` em 2026-11-03T15:35:58.011Z.*

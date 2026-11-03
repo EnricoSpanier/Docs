@@ -32,7 +32,7 @@ Dois blocos, os mesmos da R4 para a comparação:
 
 - **Host:** Ryzen 7 7700X, 2,5 GbE onboard (192.168.68.64), Docker com os dados em SSD NVMe.
   - `pg_test_fsync`, fdatasync, sempre &lt; 1 ms (`host-telemetria/pg_test_fsync-r5*.txt`):
-    - **0,421 ms** no volume antigo (29/10, 10:5x);
+    - **0,421 ms** no volume antigo (29/10, 11:10);
     - **0,378 ms** no volume novo, depois do reset (29/10, 11:4x);
     - **0,405 ms** antes do bloco 2 (30/10).
 - **Gerador:** EnzoAMD (192.168.68.54), k6 2.2.0, kit em `850d38e` (o mesmo do host).
@@ -266,7 +266,7 @@ Leitura:
 | Compensações por minuto | — | 0 |
 | Órfãs e tempo até resolver | — | 0 órfãs; sem amostra de tempo |
 | Lag de devolução p50 / p95 / máx. | — | 111 / 619 / 1.226 ms |
-| Banco depois da fila drenar | 40.424 `confirmed`, 11.942 `expired` | 60.899 `confirmed`, 13.840 `expired` |
+| Banco depois da fila drenar | 40.424 `confirmed`, 8.969 `expired`, 2.973 `pending` (que expiraram em seguida) | 60.899 `confirmed`, 13.840 `expired` |
 | CPU do host (média na coleta inteira) / máx. | 72,3 / 114 | 64,8 / 114 |
 | Overselling no CAS | 0 | 0 |
 
@@ -284,7 +284,7 @@ Leitura:
   commit; só a saga muda): **cumprido nos dois blocos**. O `netsh dynamicport` do gerador fica para o usuário reverter.
 - CAS com overselling 0, conferido no banco do host: **cumprido** (`verificar-rpm` RC 0 nos blocos 1 e 2); também 0 no bloco abortado.
 - Órfãs resolvidas em tempo limitado, medido: **cumprido**, com 0 órfãs nos dois blocos (coluna `saga_orfas` e `verificar-rpm` sem código 4).
-  Não houve órfã para medir o tempo até resolver; o dry-run da #204 mediu ~10–12 s com queda provocada.
+  Não houve órfã para medir o tempo até resolver; no dry-run da #204, com queda provocada, as órfãs se resolveram em ~10–12 s depois de religar o serviço, e o `resolved_at − created_at` do reaper teve p50 de 86–114 s.
 - Resultados em `08-…` com README e linha nova no `results/README.md`: **cumprido**.
 - Tabela R4 × R5 (X, p50/p95/p99, erro, compensações, órfãs, tempo até resolver, lag de devolução): **feita para os dois braços**.
 - A seção do artigo saiu do aceite (comentário "Atualização de aceite (2026-10-29)" da #180): nada em `docs/artigo/`.
@@ -293,7 +293,7 @@ Leitura:
 
 - **Bloco abortado (`Deg-57569`).** O k6 do gerador foi morto pelo reaper de memória do Claude Code ("the system is running low on memory").
   Foi a mesma causa do `Deg-28100` da R4.
-  - Pela coleta do host, a carga foi de 11:22:51 a 11:40:16. O k6 completou 10 degraus (20k a 74k) e morreu 16 s depois do início do de 80k.
+  - Pela coleta do host, a carga foi de 11:22:2x a 11:40:16. O k6 completou 10 degraus (20k a 74k) e morreu 16 s depois do início do de 80k.
   - O `POST /bff/event-wallets: EOF` das 11:24:12 foi uma requisição isolada e a única linha impressa pelo `--quiet`, não o fim do teste.
   - Nenhum container caiu ou reiniciou: `RestartCount` 0 e `OOMKilled` false. Não houve `ERROR` no `reservation` nem no `stock`, e a RAM
     livre do host ficou em pelo menos 5,2 GB.
@@ -314,7 +314,7 @@ Leitura:
 - **Limitação do sinal (#206):** o `adm:hot` é o RPM da janela de 200 ms do evento mais quente e não é suavizado. Ele oscila entre 0 e ~2× o
   oferecido. No bloco 2 o máximo lido foi 49.119, contra 76.578 no bloco 3 da R4. A calibragem mexe só nas capacidades e no
   `AUTOESCALA_DESCE_SEG`, sem mudar o código.
-- **Espera de 17 h entre o preparo e o bloco 2:** o gerador ficou offline em 29/10. O bloco 2 rodou em 30/10, com a stack subida do zero sobre
+- **Espera de cerca de 21 h entre o preparo e o bloco 2:** o gerador ficou offline em 29/10. O bloco 2 rodou em 30/10, com a stack subida do zero sobre
   os mesmos volumes, banco limpo e seed novo. O `pg_test_fsync` deu 0,405 ms.
 - O cabeçalho do `verificacoes-r5.log` traz `printenv` ausente: a imagem slim do `reservation` não tem `printenv`. É cosmético, como na R4.
 - **Probe do `admission` no `gerar-imagens-slim.sh`** desatualizado desde a #47: ele cria o `eventcap` no `reservation` em vez do `stock`

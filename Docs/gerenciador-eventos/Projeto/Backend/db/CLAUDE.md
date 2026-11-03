@@ -137,7 +137,7 @@ ignorados. Para reaplicar do zero:
 
 ```bash
 docker compose -f Projeto/docker-compose.yml down -v
-docker compose -f Projeto/docker-compose.yml up -d --build
+docker compose -f Projeto/docker-compose.yml up -d
 ```
 
 `db/seed-data.sql` popula dados de exemplo (`ON CONFLICT DO NOTHING`); rode manualmente:

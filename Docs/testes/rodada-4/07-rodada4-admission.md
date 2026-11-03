@@ -9,7 +9,7 @@
 ## Configuração
 
 - Host: Ryzen 7 7700X, 2,5 GbE onboard (192.168.68.64), Docker com os dados em SSD NVMe: `pg_test_fsync` fdatasync **0,367 ms** (03:00) e
-  **0,389 ms** (08:1x, antes do bloco 1), &lt; 1 ms (`host-telemetria/pg_test_fsync-r4*.txt`).
+  **0,389 ms** (08:07, antes do bloco 1), &lt; 1 ms (`host-telemetria/pg_test_fsync-r4*.txt`).
 - Gerador: EnzoAMD (192.168.68.54), k6 2.2.0, kit em `35955ef` (o mesmo do host), RAM livre 9,3 GB antes da rodada e 10,2 / 10,1 / 10,1 GB ao
   fim dos blocos 1 / 2 / 3; `netsh dynamicport` em 10000/55535 (o usuário reverte).
 - Stack com `docker-compose.carga.yml` + `rpm/docker-compose.rpm.yml` + `docker-compose.slim.yml` (+ `docker-compose.autoescala.yml` no

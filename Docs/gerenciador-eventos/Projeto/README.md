@@ -24,13 +24,14 @@ Guia para subir, parar e inspecionar os containers da stack. Visão geral do sis
 Da raiz do repositório:
 
 ```bash
-# reconstrói as imagens e espera todos os serviços de longa duração ficarem healthy
-docker compose -f Projeto/docker-compose.yml up -d --build --wait
+# os 7 serviços Java rodam as imagens enxutas (*.slim): gere-as antes com Projeto/slim/gerar-imagens-slim.sh (#197; sem elas o up falha com "image not found")
+# espera todos os serviços de longa duração ficarem healthy
+docker compose -f Projeto/docker-compose.yml up -d --wait
 
 docker compose -f Projeto/docker-compose.yml ps
 ```
 
-Ou de dentro de `Projeto/`: `cd Projeto && docker compose up -d --build --wait`.
+Ou de dentro de `Projeto/`: `cd Projeto && docker compose up -d --wait`.
 
 ## Containers
 
@@ -59,22 +60,22 @@ eles parados a reserva segue síncrona e o cadastro segue funcionando (o e-mail 
 
 - Rede: `gerenciador-net`. Volumes: `supabase-db-data`, `db-config`, `redpanda-data` e `identity-keys`.
 - `POST /bff/seed` fica desligado (404) no compose normal; o override de carga liga (`SEED_ENABLED`).
-- Subir só um serviço (e o que ele exige): `docker compose -f Projeto/docker-compose.yml up -d --build identity`.
+- Subir só um serviço (e o que ele exige): `docker compose -f Projeto/docker-compose.yml up -d identity`.
 
 ## Overrides opcionais
 
-Combinam com o compose base por `-f`, na ordem `base`, depois `slim`, depois `autoescala`:
+Combinam com o compose base por `-f`, na ordem `base`, depois `completa`, depois `autoescala`:
 
 ```bash
 # ambiente de teste de carga (liga o POST /bff/seed, SQL em INFO)
 docker compose -f Projeto/docker-compose.yml -f Projeto/carga/docker-compose.carga.yml up -d --build
 
-# imagens enxutas (geradas antes por Projeto/slim/gerar-imagens-slim.sh)
-docker compose -f Projeto/docker-compose.yml -f Projeto/docker-compose.slim.yml up -d --wait
+# imagens COMPLETAS dos serviços Java, para depurar (o padrão do base são as *.slim, geradas por Projeto/slim/gerar-imagens-slim.sh; SLIM_TAG escolhe a tag)
+docker compose -f Projeto/docker-compose.yml -f Projeto/docker-compose.completa.yml up -d --build <serviço>
 
 # autoescala: réplicas atrás de HAProxy (lb publica a 8081); o scaler roda no host
 # IRREVERSÍVEL: leva identity.notification e reservation.wallet a 3 partições (ver o aviso abaixo)
-docker compose -f Projeto/docker-compose.yml -f Projeto/docker-compose.autoescala.yml up -d --build --wait
+docker compose -f Projeto/docker-compose.yml -f Projeto/docker-compose.autoescala.yml up -d --wait
 ```
 
 O de autoescala aumenta para 3 as partições de `identity.notification` e `reservation.wallet`, **de forma irreversível**; leia o
@@ -92,8 +93,9 @@ docker compose -f Projeto/docker-compose.yml down --remove-orphans    # remove c
 docker compose -f Projeto/docker-compose.yml logs -f backend           # logs de um serviço
 docker compose -f Projeto/docker-compose.yml logs --tail=100           # últimas linhas de todos
 docker compose -f Projeto/docker-compose.yml restart backend           # reinicia sem rebuild
-docker compose -f Projeto/docker-compose.yml up -d --build backend     # rebuild de um serviço
-docker compose -f Projeto/docker-compose.yml build --no-cache backend  # rebuild sem cache
+Projeto/slim/gerar-imagens-slim.sh backend                             # regera a imagem slim de um serviço Java (depois: up -d backend)
+docker compose -f Projeto/docker-compose.yml -f Projeto/docker-compose.completa.yml up -d --build backend  # depurar: build da imagem completa
+docker compose -f Projeto/docker-compose.yml up -d --build frontend    # rebuild do frontend (único com build no base)
 ```
 
 `down -v` apaga também a chave de assinatura do JWT (volume `identity-keys`): todo token vira 401 e o login recomeça.
@@ -126,7 +128,7 @@ Os scripts de init só rodam na **primeira** criação do volume `supabase-db-da
 
 ```bash
 docker builder prune --all --force   # cache de build
-docker image prune -a -f             # imagens não usadas
+docker image prune -a -f             # imagens não usadas; ATENÇÃO: apaga também as *.slim sem container (regere com slim/gerar-imagens-slim.sh)
 # não use `docker volume prune`: no Docker 23+ só poda volume anônimo (e com `--all`, também os nomeados sem container, como o banco)
 ```
 
@@ -134,5 +136,5 @@ docker image prune -a -f             # imagens não usadas
 
 - Compose: `Projeto/docker-compose.yml` (mais os includes de `supabase/`) e os overrides acima.
 - Back-end multi-módulo: [`Backend/`](Backend/README.md). Banco: [`Backend/db/`](Backend/db/README.md). Front-end: [`frontend/`](frontend/README.md).
-- Suíte e2e da stack inteira: `Projeto/e2e/run-e2e.sh` (project temporário `gerenciador-e2e`, e-mail em Mailpit; `MANTER=1` mantém, `E2E_SLIM=1` usa as imagens slim;
+- Suíte e2e da stack inteira: `Projeto/e2e/run-e2e.sh` (project temporário `gerenciador-e2e`, e-mail em Mailpit; `MANTER=1` mantém, roda com as imagens slim (`SLIM_TAG` escolhe a tag) e `E2E_COMPLETA=1` usa as completas;
   precisa de `python` e `openssl` no host).

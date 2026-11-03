@@ -115,4 +115,4 @@ imgproxy, edge functions. Não sobem no compose enxuto.
 
 ---
 
-*Sincronizado automaticamente de `Architecture-Decision-Supabase-Self-Host.md` em 2026-10-30T19:11:52.866Z.*
+*Sincronizado automaticamente de `Architecture-Decision-Supabase-Self-Host.md` em 2026-11-03T15:35:58.010Z.*

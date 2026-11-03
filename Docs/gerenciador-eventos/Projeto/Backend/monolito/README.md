@@ -38,7 +38,7 @@ Visão geral: [`../../../README.md`](../../../README.md); detalhes: [`../CLAUDE.
 ## Rodar
 
 ```bash
-docker compose -f Projeto/docker-compose.yml up -d --build backend    # sobe junto o que ele exige (identity, catalog, reservation, stock...)
+docker compose -f Projeto/docker-compose.yml up -d backend    # sobe junto o que ele exige (identity, catalog, reservation, stock...)
 curl -i http://localhost:8081/actuator/health
 ```
 

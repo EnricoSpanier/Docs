@@ -17,7 +17,8 @@ autoescala, quality gates): [`CLAUDE.md`](CLAUDE.md).
 | [`stock`](stock/README.md) | serviço | `eventcap` (CAS) e ledger de holds (:8086) |
 | [`notification`](notification/README.md) | serviço | consumer de `identity.notification` que envia e-mail por SMTP (sem HTTP) |
 | [`admission`](admission/README.md) | serviço | contador de RPM (Redis), fila de admissão (RabbitMQ) e worker pool (:8085, sem banco) |
-| [`reservation-client`](reservation-client/README.md), [`stock-client`](stock-client/README.md), [`catalog-client`](catalog-client/README.md), [`identity-client`](identity-client/README.md), [`admission-client`](admission-client/README.md) | libs | contrato HTTP de cada serviço (DTOs, interfaces e o cliente com pool); nenhuma lib de contrato depende de outra |
+| [`reservation-client`](reservation-client/README.md), [`stock-client`](stock-client/README.md), [`catalog-client`](catalog-client/README.md), [`identity-client`](identity-client/README.md), [`admission-client`](admission-client/README.md) | libs | contrato HTTP de cada serviço (DTOs, interfaces e o cliente com pool); nenhuma lib de contrato depende de outra (todas dependem só da `client-lb`, abaixo) |
+| [`client-lb`](https://github.com/endydragonn/GerenciadorEventos/blob/main/Projeto/Backend/client-lb/README.md) | lib | balanceamento no cliente da trilha C do Kubernetes (#197): DNS round-robin, TTL de conexão e reuso FIFO, desligado por padrão |
 | [`db`](db/README.md) | fora do Maven | init-scripts, migrações e seed |
 
 Um serviço só depende de `shared` e das libs de contrato dos serviços que chama: a fronteira entre serviços é o HTTP, e nenhum serviço
@@ -31,8 +32,8 @@ Um Dockerfile por serviço (`monolito/Dockerfile`, `identity/Dockerfile`, `catal
 (`-pl <serviço> -am`) e roda numa imagem JRE. Pelo compose, da raiz do repositório:
 
 ```bash
-docker compose -f Projeto/docker-compose.yml build identity          # um serviço
-docker compose -f Projeto/docker-compose.yml up -d --build backend   # o gateway (sobe junto o que ele exige)
+Projeto/slim/gerar-imagens-slim.sh identity                          # um serviço (imagem slim, a do compose); completa: -f Projeto/docker-compose.completa.yml build identity
+docker compose -f Projeto/docker-compose.yml up -d backend   # o gateway (sobe junto o que ele exige)
 ```
 
 Com Maven e JDK 21 no host (opcional), tudo a partir desta pasta: `mvn -pl monolito -am test` (módulo e libs de que depende),

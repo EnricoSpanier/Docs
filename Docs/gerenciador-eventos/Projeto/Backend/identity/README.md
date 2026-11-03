@@ -17,7 +17,7 @@ Spec: [`docs/superpowers/specs/2026-10-26-identity-servico-design.md`](https://g
   gateway guarda o JWKS em cache). O serviço **não sobe** se `public.users` ainda existir (migração `20261028` pendente).
 - **`uid` reciclado:** `TRUNCATE ... RESTART IDENTITY` em `identity.users` exige apagar a chave do volume `identity-keys` e reiniciar este serviço
   e o backend (cache de JWKS do gateway). O `run-tests.sh` e o `Projeto/carga/limpar-banco.sh` fazem isso.
-- **Rodar:** `docker compose -f Projeto/docker-compose.yml up -d --build identity`. Variáveis (só nomes): `INTERNAL_API_TOKEN`,
+- **Rodar:** `docker compose -f Projeto/docker-compose.yml up -d identity`. Variáveis (só nomes): `INTERNAL_API_TOKEN`,
   `RECAPTCHA_SECRET_KEY`, `SPRING_DATASOURCE_*`, `SPRING_KAFKA_BOOTSTRAP_SERVERS`, `JWT_SIGNING_KEY_PATH`, `JWT_EXPIRATION_SECONDS`, `EVENTS_RELAY_*`.
 - **Banco:** `Projeto/Backend/db/init-scripts/15-identity.sql` (banco novo) ou a migração `20261028-identity-schema.sql` (ver [`../db/README.md`](../db/README.md)).
 - **Testar:** `Projeto/Backend/run-tests.sh` (reactor inteiro; pré-requisitos e `docker stop` dos serviços em [`../README.md`](../README.md)). Os testes
